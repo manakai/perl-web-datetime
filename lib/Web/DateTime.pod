@@ -17,7 +17,203 @@ date and time representations used in Web.
 
 Following methods are available:
 
-XXX
+=head2 Instantiation methods
+
+=over 4
+
+=item $dt = Web::DateTime->new
+
+Create a new instance of object with an undefined time value and no
+associated time zone value.
+
+=item $dt->onerror ($code)
+
+=item $code = $dt->onerror
+
+Get or set the error handler for parser methods.  Any parse error, as
+well as warning and additional processing information, is reported to
+the handler.  See
+<https://github.com/manakai/data-errors/blob/master/doc/onerror.txt>
+for details of error handling.
+
+The value should not be set while the parser is running.  If the value
+is changed, the result is undefined.
+
+=back
+
+=head2 Parsing methods
+
+=over 4
+
+=item $dt->parse_date_string ($string)
+
+Parse the specified argument as an HTML date string [HTML].  Set the
+result to the object.  If the argument is not a date string, errors
+are reported through the C<onerror> handler.
+
+This method is suitable for values from HTML C<< <input type=date> >>.
+
+=item $dt->parse_date_string_with_optional_time ($string)
+
+Parse the specified argument as an HTML date string with optional time
+[HTML].  Set the result to the object.  If the argument is not a date
+string with optional time, errors are reported through the C<onerror>
+handler.
+
+This method is suitable for values in HTML C<< <ins datetime=""> >>
+and C<< <del datetime="" >> attributes.
+
+=item $dt->parse_global_date_and_time_string ($string)
+
+Parse the specified argument as an HTML global date and time string
+[HTML].  Set the result to the object.  If the argument is not a
+global date and time string, errors are reported through the
+C<onerror> handler.
+
+This method is suitable for values from HTML C<< <input type=datetime>
+>>.
+
+=item $dt->parse_local_date_and_time_string ($string)
+
+Parse the specified argument as an HTML local date and time string
+[HTML].  Set the result to the object.  If the argument is not a local
+date and time string, errors are reported through the C<onerror>
+handler.
+
+This method is suitable for values from HTML C<< <input
+type=datetime-local> >>.
+
+=item $dt->parse_month_string ($string)
+
+Parse the specified argument as an HTML month string [HTML].  Set the
+result to the object.  If the argument is not a month string, errors
+are reported through the C<onerror> handler.
+
+This method is suitable for values from HTML C<< <input type=month>
+>>.
+
+=item $dt->parse_time_string ($string)
+
+Parse the specified argument as an HTML time string [HTML].  Set the
+result to the object.  If the argument is not a time string, errors
+are reported through the C<onerror> handler.
+
+This method is suitable for values from HTML C<< <input type=time> >>.
+
+=item $dt->parse_week_string ($string)
+
+Parse the specified argument as an HTML week string [HTML].  Set the
+result to the object.  If the argument is not a week string, errors
+are reported through the C<onerror> handler.
+
+This method is suitable for values from HTML C<< <input type=week> >>.
+
+=item $boolean = $dt->has_value
+
+Return whether a valid time value is set to the object or not.  When a
+new object is created by the C<new> method, or when a parse method
+fails, the object's value is unset (i.e. this method returns false).
+
+=back
+
+=head2 Serialization methods
+
+=over 4
+
+=item $string = $dt->to_date_string
+
+Serialize the date value represented by the object as an HTML valid
+date string [HTML].  Note that time and time zone are ignored.
+
+This method is suitable for values for HTML C<< <input type=date> >>,
+C<time> elements, and C<< <ins datetime=""> >> and C<< <del
+datetime=""> >> attributes.
+
+=item $string = $dt->to_date_string_with_optional_time
+
+Serialize the date value represented by the object as HTML valid date
+string with optional time [HTML].  If the object represents a date,
+time, and time zone, it is serialized as a global date and time
+string.  Otherwise, it is serialized as a date string.
+
+This method is suitable for values for HTML C<< <ins datetime=""> >>
+and C<< <del datetime=""> >> attributes.
+
+=item $string = $dt->to_global_date_and_time_string
+
+Serialize the date value represented by the object as an HTML valid
+global date and time string [HTML].
+
+The serialized value always uses the UTC time zone.  The time zone of
+the object is ignored (it does affect the value but the time zone
+itself does not appear in the serialization).  If the object is not
+associated with any time zone, it is interpreted as UTC timestamp
+(which could be wrong, however).
+
+Use C<to_timezoned_global_date_and_time_string> method to preserve
+time zone.
+
+The value might not be a normalized date and time string.  It is, in
+most cases, also a valid XML Schema C<xs:dateTime> and
+C<xs:dateTimeStamp> value and a valid RFC 3339 C<date-time> value.
+
+This method is suitable for values for HTML C<< <input type=datetime>
+>>, C<time> elements, and C<< <ins datetime=""> >> and C<< <del
+datetime=""> >> attributes.
+
+=item $string = $dt->to_local_date_and_time_string
+
+Serialize the date value represented by the object as an HTML valid
+local date and time string [HTML].  Note that time zone is ignored.
+
+The value might not be a normalized local date and time string.  It
+is, in most cases, also a valid XML Schema C<xs:dateTime> value.
+
+This method is suitable for values for HTML C<< <input
+type=datetime-local> >> and C<time> elements.
+
+=item $string = $dt->to_month_string
+
+Serialize the month value represented by the object as an HTML valid
+month string [HTML].  Note that day, time, and time zone are ignored.
+
+This method is suitable for values for HTML C<< <input type=month> >>
+and C<time> elements.
+
+=item $string = $dt->to_time_string
+
+Serialize the time value represented by the object as an HTML valid
+time string [HTML].  Note that date and time zone are ignored.
+
+This method is suitable for values for HTML C<< <input type=time> >>
+and C<time> elements.
+
+=item $string = $dt->to_timezoned_global_date_and_time_string
+
+Serialize the date value represented by the object as an HTML valid
+global date and time string [HTML].
+
+If a time zone is associated with the object, it is used to serialize
+the time value.  If the object is not associated with any time zone,
+it is interpreted as UTC timestamp (which could be wrong, however).
+
+Use C<to_date_and_time_string> method to always obtain a UTC
+timestamp.
+
+This method is suitable for values for HTML C<< <input type=datetime>
+>>, C<time> elements, and C<< <ins datetime=""> >> and C<< <del
+datetime=""> >> attributes.
+
+=item $string = $dt->to_week_string
+
+Serialize the week value represented by the object as an HTML valid
+week string [HTML].  Note that month, day, time, and time zone are
+ignored.
+
+This method is suitable for values for HTML C<< <input type=week> >>
+and C<time> elements.
+
+=back
 
 =head2 Cast methods
 
@@ -57,6 +253,10 @@ The C<to_datetime> method requires more module.
 =head1 SPECIFICATIONS
 
 =over 4
+
+=item HTML
+
+HTML Standard <http://www.whatwg.org/specs/web-apps/current-work/>.
 
 =item POSIX.1
 
