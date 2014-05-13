@@ -298,10 +298,10 @@ sub to_global_date_and_time_string ($) {
       $self->utc_second, $self->second_fraction_string;
 } # to_global_date_and_time_string
 
-sub to_timezoned_global_date_and_time_string ($) {
+sub to_time_zoned_global_date_and_time_string ($) {
   my $self = shift;
-  return $self->to_local_date_and_time_string . ($self->timezone_string || 'Z');
-} # to_timezoned_global_date_and_time_string
+  return $self->to_local_date_and_time_string . ($self->to_time_zone_offset_string || 'Z');
+} # to_time_zoned_global_date_and_time_string
 
 ## Parse a date or time string
 ## <http://www.whatwg.org/specs/web-apps/current-work/#parse-a-date-or-time-string>
@@ -383,16 +383,18 @@ sub parse_date_string_with_optional_time ($$) {
 sub to_date_string_with_optional_time ($) {
   my $self = $_[0];
   if (defined $self->{timezone_hour}) {
-    return $self->to_timezoned_global_date_and_time_string;
+    return $self->to_time_zoned_global_date_and_time_string;
   } else {
     return $self->to_date_string;
   }
 } # to_date_string_with_optional_time
 
-sub timezone_offset_second ($) {
+sub time_zone_offset_as_seconds ($) {
   my $self = shift;
-  return (($self->timezone_hour || 0) * 3600 + ($self->timezone_minute || 0) * 60);
-} # timezone_offset_second
+  my $hour = $self->time_zone_offset_hour;
+  return undef unless defined $hour;
+  return $hour * 3600 + $self->time_zone_offset_minute * 60;
+} # time_zone_offset_as_seconds
 
 sub utc_week ($) {
   my $self = shift;
@@ -433,16 +435,13 @@ sub utc_week_year ($) {
   return $self->{cache}->{utc_week_year};
 } # utc_week_year
 
+## <http://www.whatwg.org/specs/web-apps/current-work/#month-state-(type=month)>
 sub to_html_month_number ($) {
   my $self = shift;
-
-  ## ISSUE: "the number of months between January 1970 and the parsed
-  ## month.": "between"?  inclusive or exclusive or anything else?
-  ## months before 1970?
-
+  ## Note that the spec does not explicitly define what should be
+  ## defined when the year is less than 1970.
   my $y = $self->year - 1970;
   my $m = $self->month - 1;
-
   return $y * 12 + $m;
 } # to_html_month_number
 
@@ -519,8 +518,9 @@ sub second_fraction_string ($) {
   }
 } # second_fraction_string
 
-## Timezone component [HTML5]
-sub timezone_string ($) {
+# XXX parse_time_zone_offset_string
+
+sub to_time_zone_offset_string ($) {
   my $self = shift;
   if (not defined $self->{timezone_hour}) {
     return undef;
@@ -533,7 +533,7 @@ sub timezone_string ($) {
     return sprintf '-%02d:%02d',
         -$self->{timezone_hour}, $self->{timezone_minute};
   }
-} # timezone_string
+} # to_time_zone_offset_string
 
 sub _utc_time ($) {
   my $self = shift;
@@ -542,7 +542,7 @@ sub _utc_time ($) {
 
 sub _local_time ($) {
   my $self = shift;
-  $self->{cache}->{local_time} = [gmtime (($self->{value} || 0) + $self->timezone_offset_second)];
+  $self->{cache}->{local_time} = [gmtime (($self->{value} || 0) + ($self->time_zone_offset_as_seconds || 0))];
 } # _local_time
 
 sub year ($) {
@@ -639,15 +639,15 @@ sub utc_fractional_second ($) {
   return $self->utc_second + $self->{second_fraction};
 } # utc_fractional_second
 
-sub timezone_hour ($) {
+sub time_zone_offset_hour ($) {
   my $self = shift;
   return $self->{timezone_hour}; # or undef
-} # timezone_hour
+} # time_zone_offset_hour
 
-sub timezone_minute ($) {
+sub time_zone_offset_minute ($) {
   my $self = shift;
   return $self->{timezone_minute}; # or undef
-} # timezone_minute
+} # time_zone_offset_minute
 
 sub to_html_number ($) {
   my $self = shift;
@@ -668,11 +668,25 @@ sub to_unix_integer ($) {
 sub to_datetime ($) {
   my $self = shift;
   require DateTime;
-  my $tz = $self->timezone_string;
+  my $tz = $self->to_time_zone_offset_string;
   $tz = 'floating' unless defined $tz;
   return DateTime->from_epoch (epoch => $self->to_unix_integer,
                                time_zone => $tz);
 } # to_datetime
+
+# XXX to_time_piece
+
+# XXX from_datetime
+# XXX from_time_piece
+
+# XXX normalized serializer
+# XXX XML Schema datatypes
+# XXX OGP datetime
+# XXX RFC 3339 date-time
+# XXX document.lastModified
+# XXX HTTP datetime
+
+# XXX JavaScript timestamp parser/serializer
 
 1;
 
