@@ -18,7 +18,7 @@ test {
   is $date->utc_second, 3;
   is $date->second_fraction_string, '';
   is $date->to_global_date_and_time_string, '2010-12-13T02:02:03Z';
-  is $date->to_timezoned_global_date_and_time_string, '2010-12-13T01:02:03-01:00';
+  is $date->to_time_zoned_global_date_and_time_string, '2010-12-13T01:02:03-01:00';
   done $c;
 } n => 9, name => 'parse_global_date_and_time_string';
 
@@ -34,7 +34,7 @@ test {
   is $date->utc_second, 3;
   is $date->second_fraction_string, '';
   is $date->to_global_date_and_time_string, '2010-12-13T01:02:03Z';
-  is $date->to_timezoned_global_date_and_time_string, '2010-12-13T01:02:03Z';
+  is $date->to_time_zoned_global_date_and_time_string, '2010-12-13T01:02:03Z';
   done $c;
 } n => 9, name => 'parse_global_date_and_time_string';
 
@@ -82,8 +82,8 @@ test {
   is $date->utc_second, 11;
   is $date->second_fraction_string, '';
   is $date->to_local_date_and_time_string, '2000-02-29T21:33:11';
-  is $date->to_timezoned_global_date_and_time_string, '2000-02-29T21:33:11Z';
-  is $date->timezone_string, undef;
+  is $date->to_time_zoned_global_date_and_time_string, '2000-02-29T21:33:11Z';
+  is $date->to_time_zone_offset_string, undef;
   done $c;
 } n => 10, name => 'parse_local_date_and_time_string';
 
@@ -144,7 +144,7 @@ test {
   is $date->second_fraction_string, '';
   is $date->to_global_date_and_time_string, '2010-12-13T00:00:00Z';
   is $date->to_date_string_with_optional_time, '2010-12-13';
-  is $date->timezone_string, undef;
+  is $date->to_time_zone_offset_string, undef;
   done $c;
 } n => 10, name => 'parse_date_string_with_optional_time';
 
