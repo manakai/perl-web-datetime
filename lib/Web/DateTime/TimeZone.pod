@@ -1,0 +1,84 @@
+=head1 NAME
+
+Web::DateTime::TimeZone - Time zone for Web
+
+=head1 SYNOPSIS
+
+  use Web::DateTime::TimeZone;
+  $tz = Web::DateTime::TimeZone->new_from_offset (+9*60*60+0*60);
+  warn $tz->to_offset_string;
+
+=head1 DESCRIPTION
+
+The C<Web::DateTime::TimeZone> class can be used to represent a time
+zone.
+
+=head1 METHODS
+
+Following methods are available:
+
+=over 4
+
+=item $tz = Web::DateTime::TimeZone->new_utc
+
+Create a new time zone object representing the UTC time zone.
+
+=item $tz = Web::DateTime::TimeZone->new_from_offset ($integer)
+
+Create a new time zone object whose offset is the integer (in seconds)
+specified as the argument.
+
+=item $number = $tz->offset_as_seconds
+
+Return the number of seconds of the time-zone offset.
+
+=item $sign = $tz->offset_sign
+
+Return the sign of the time-zone offset.  If the offset is positive,
+number C<+1> is returned.  Otherwise, number C<-1> is returned.
+
+=item $number = $tz->offset_hour
+
+Return the hour component of the time-zone offset (without sign).
+
+=item $number = $tz->offset_minute
+
+Return the minute component of the time-zone offset.
+
+=item $string = $tz->to_offset_string
+
+Serialize the time-zone offset as an HTML time-zone offset string
+[HTML].
+
+=back
+
+=head1 DEPENDENCY
+
+The module requires Perl 5.8 or later.
+
+=head1 SEE ALSO
+
+L<Web::DateTime>.
+
+=head1 SPECIFICATION
+
+=over 4
+
+=item HTML
+
+HTML Standard <http://www.whatwg.org/specs/web-apps/current-work/>.
+
+=back
+
+=head1 AUTHOR
+
+Wakaba <wakaba@suikawiki.org>.
+
+=head1 LICENSE
+
+Copyright 2008-2014 Wakaba <wakaba@suikawiki.org>.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

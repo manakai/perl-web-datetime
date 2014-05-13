@@ -83,7 +83,7 @@ test {
   is $date->second_fraction_string, '';
   is $date->to_local_date_and_time_string, '2000-02-29T21:33:11';
   is $date->to_time_zoned_global_date_and_time_string, '2000-02-29T21:33:11Z';
-  is $date->to_time_zone_offset_string, undef;
+  is $date->time_zone, undef;
   done $c;
 } n => 10, name => 'parse_local_date_and_time_string';
 
@@ -144,7 +144,7 @@ test {
   is $date->second_fraction_string, '';
   is $date->to_global_date_and_time_string, '2010-12-13T00:00:00Z';
   is $date->to_date_string_with_optional_time, '2010-12-13';
-  is $date->to_time_zone_offset_string, undef;
+  is $date->time_zone, undef;
   done $c;
 } n => 10, name => 'parse_date_string_with_optional_time';
 

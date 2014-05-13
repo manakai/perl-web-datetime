@@ -300,7 +300,9 @@ sub to_global_date_and_time_string ($) {
 
 sub to_time_zoned_global_date_and_time_string ($) {
   my $self = shift;
-  return $self->to_local_date_and_time_string . ($self->to_time_zone_offset_string || 'Z');
+  return $self->to_local_date_and_time_string . (
+    defined $self->{tz} ? $self->{tz}->to_offset_string : 'Z'
+  );
 } # to_time_zoned_global_date_and_time_string
 
 ## Parse a date or time string
@@ -382,19 +384,16 @@ sub parse_date_string_with_optional_time ($$) {
 
 sub to_date_string_with_optional_time ($) {
   my $self = $_[0];
-  if (defined $self->{timezone_hour}) {
+  if (defined $self->{tz}) {
     return $self->to_time_zoned_global_date_and_time_string;
   } else {
     return $self->to_date_string;
   }
 } # to_date_string_with_optional_time
 
-sub time_zone_offset_as_seconds ($) {
-  my $self = shift;
-  my $hour = $self->time_zone_offset_hour;
-  return undef unless defined $hour;
-  return $hour * 3600 + $self->time_zone_offset_minute * 60;
-} # time_zone_offset_as_seconds
+sub time_zone ($) {
+  return $_[0]->{tz}; # or undef
+} # time_zone
 
 sub utc_week ($) {
   my $self = shift;
@@ -460,8 +459,13 @@ sub _set ($$$$$$$$$$;$) {
   delete $self->{cache};
   $self->{value} = Time::Local::timegm_nocheck
       ($s, $m - ($zm || 0), $h - ($zh|| 0), $d, $M-1, $y);
-  $self->{timezone_hour} = $zh; # or undef
-  $self->{timezone_minute} = $zm; # or undef
+  if (defined $zh) {
+    require Web::DateTime::TimeZone;
+    $self->{tz} = Web::DateTime::TimeZone->new_from_offset
+        ($zh * 60 * 60 + $zm * 60);
+  } else {
+    delete $self->{tz};
+  }
 
   if ($self->year != $y or
       $self->month != $M or
@@ -518,23 +522,6 @@ sub second_fraction_string ($) {
   }
 } # second_fraction_string
 
-# XXX parse_time_zone_offset_string
-
-sub to_time_zone_offset_string ($) {
-  my $self = shift;
-  if (not defined $self->{timezone_hour}) {
-    return undef;
-  } elsif ($self->{timezone_hour} == 0 and
-           $self->{timezone_minute} == 0) {
-    return 'Z';
-  } elsif ($self->{timezone_hour} >= 0) {
-    return sprintf '+%02d:%02d', $self->{timezone_hour}, $self->{timezone_minute};
-  } else {
-    return sprintf '-%02d:%02d',
-        -$self->{timezone_hour}, $self->{timezone_minute};
-  }
-} # to_time_zone_offset_string
-
 sub _utc_time ($) {
   my $self = shift;
   $self->{cache}->{utc_time} = [gmtime ($self->{value} || 0)];
@@ -542,7 +529,7 @@ sub _utc_time ($) {
 
 sub _local_time ($) {
   my $self = shift;
-  $self->{cache}->{local_time} = [gmtime (($self->{value} || 0) + ($self->time_zone_offset_as_seconds || 0))];
+  $self->{cache}->{local_time} = [gmtime (($self->{value} || 0) + (defined $self->{tz} ? $self->{tz}->offset_as_seconds : 0))];
 } # _local_time
 
 sub year ($) {
@@ -639,16 +626,6 @@ sub utc_fractional_second ($) {
   return $self->utc_second + $self->{second_fraction};
 } # utc_fractional_second
 
-sub time_zone_offset_hour ($) {
-  my $self = shift;
-  return $self->{timezone_hour}; # or undef
-} # time_zone_offset_hour
-
-sub time_zone_offset_minute ($) {
-  my $self = shift;
-  return $self->{timezone_minute}; # or undef
-} # time_zone_offset_minute
-
 sub to_html_number ($) {
   my $self = shift;
   my $int = $self->{value} - $unix_epoch;
@@ -668,10 +645,9 @@ sub to_unix_integer ($) {
 sub to_datetime ($) {
   my $self = shift;
   require DateTime;
-  my $tz = $self->to_time_zone_offset_string;
-  $tz = 'floating' unless defined $tz;
-  return DateTime->from_epoch (epoch => $self->to_unix_integer,
-                               time_zone => $tz);
+  return DateTime->from_epoch
+      (epoch => $self->to_unix_integer,
+       time_zone => defined $self->{tz} ? $self->{tz}->to_offset_string : 'floating');
 } # to_datetime
 
 # XXX to_time_piece
