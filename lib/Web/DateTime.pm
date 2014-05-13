@@ -24,8 +24,8 @@ sub _is_leap_year ($) {
   return ($_[0] % 400 == 0 or ($_[0] % 4 == 0 and $_[0] % 100 != 0));
 } # _is_leap_year
 
+## <http://www.whatwg.org/specs/web-apps/current-work/#week-number-of-the-last-day>
 sub _last_week_number ($) {
-  ## ISSUE: HTML5 definition is wrong. <http://en.wikipedia.org/wiki/ISO_week_date#Relation_with_the_Gregorian_calendar>
   my $jan1_dow = [gmtime Time::Local::timegm (0, 0, 0, 1, 1 - 1, $_[0])]->[6];
   return ($jan1_dow == 4 or
           ($jan1_dow == 3 and _is_leap_year ($_[0]))) ? 53 : 52;
@@ -40,241 +40,235 @@ sub _week_year_diff ($) {
   }
 } # _week_year_diff
 
-## Time string [HTML5]
 sub parse_time_string ($$) {
   my ($self, $value) = @_;
-  
   if ($value =~ /\A
-                 ([0-9]{2}):([0-9]{2})(?>:([0-9]{2})(?>(\.[0-9]+))?)?
-                 \z/x) {
+    ([0-9]{2}):([0-9]{2})(?>:([0-9]{2})(?>(\.[0-9]+))?)?
+  \z/x) {
     my ($h, $m, $s, $sf) = ($1, $2, $3, $4);
     $self->onerror->(type => 'datetime:bad hour',
-                       level => 'm'), return undef if $h > 23;
+                     value => $h,
+                     level => 'm'), return $self->_reset if $h > 23;
     $self->onerror->(type => 'datetime:bad minute',
-                       level => 'm'), return undef if $m > 59;
+                     value => $m,
+                     level => 'm'), return $self->_reset if $m > 59;
     $s ||= 0;
     $self->onerror->(type => 'datetime:bad second',
-                       level => 'm'), return undef if $s > 59;
+                     value => $s,
+                     level => 'm'), return $self->_reset if $s > 59;
     $sf = defined $sf ? $sf : '';
-
-    if (defined wantarray) {
-      return $self->_create_object (1970, 1, 1, $h, $m, $s, $sf, undef, undef);
-    }
+    return $self->_set (1970, 1, 1, $h, $m, $s, $sf, undef, undef);
   } else {
-    $self->onerror->(type => 'time:syntax error', ## TODOC: type
-                       level => 'm');
-    return undef;
+    $self->onerror->(type => 'time:syntax error',
+                     level => 'm');
+    return $self->_reset;
   }
 } # parse_time_string
 
-## Time string [HTML5]
 sub to_time_string ($) {
   my $self = shift;
-  
   return sprintf '%02d:%02d:%02d%s',
       $self->utc_hour, $self->utc_minute,
       $self->utc_second, $self->second_fraction_string;
 } # to_time_string
 
-## Week string [HTML5]
 sub parse_week_string ($$) {
   my ($self, $value) = @_;
-  
   if ($value =~ /\A([0-9]{4,})-W([0-9]{2})\z/x) {
     my ($y, $w) = ($1, $2);
     $self->onerror->(type => 'datetime:bad year',
-                       level => 'm'), return undef if $y == 0;
-    $self->onerror->(type => 'week:bad week', ## TODOC: type
-                       level => 'm'), return undef
+                     value => $y,
+                     level => 'm'), return $self->_reset if $y == 0;
+    $self->onerror->(type => 'week:bad week',
+                     value => $w,
+                     level => 'm'), return $self->_reset
         if $w > _last_week_number ($y) || $w == 0;
-    
-    if (defined wantarray) {
-      my $day = ($w - 1) * 7 - _week_year_diff ($y);
-    
-      return $self->_create_object ($y, 1, 1, 0, 0, 0, '', undef, undef,
-                                    $day * 24 * 3600 * 1000);
-    }
+    my $day = ($w - 1) * 7 - _week_year_diff ($y);
+    return $self->_set ($y, 1, 1, 0, 0, 0, '', undef, undef, $day * 24 * 3600 * 1000);
   } else {
-    $self->onerror->(type => 'week:syntax error', ## TODOC: type
-                       level => 'm');
-    return undef;
+    $self->onerror->(type => 'week:syntax error',
+                     level => 'm');
+    return $self->_reset;
   }
 } # parse_week_string
 
-## Week string [HTML5]
 sub to_week_string ($) {
   my $self = shift;
-  
   return sprintf '%04d-W%02d', $self->utc_week_year, $self->utc_week;
 } # to_week_string
 
-## Month string [HTML5]
 sub parse_month_string ($$) {
   my ($self, $value) = @_;
-  
   if ($value =~ /\A([0-9]{4,})-([0-9]{2})\z/) {
     my ($y, $M) = ($1, $2);
     if ($y == 0) {
       $self->onerror->(type => 'datetime:bad year',
-                         level => 'm');
-      return undef;
+                       value => $y,
+                       level => 'm');
+      return $self->_reset;
     }
 
     if (0 < $M and $M < 13) {
       #
     } else {
       $self->onerror->(type => 'datetime:bad month',
-                         level => 'm');
-      return undef;
+                       value => $M,
+                       level => 'm');
+      return $self->_reset;
     }
 
-    if (defined wantarray) {
-      return $self->_create_object ($y, $M, 1, 0, 0, 0, '', undef, undef);
-    }
+    return $self->_set ($y, $M, 1, 0, 0, 0, '', undef, undef);
   } else {
-    $self->onerror->(type => 'month:syntax error', ## TODOC: type
-                       level => 'm');
-    return undef;
+    $self->onerror->(type => 'month:syntax error',
+                     level => 'm');
+    return $self->_reset;
   }
 } # parse_month_string
 
-## Month string [HTML5]
 sub to_month_string ($) {
   my $self = shift;
-  
   return sprintf '%04d-%02d', $self->utc_year, $self->utc_month;
 } # to_month_string
 
-## Date string [HTML5]
 sub parse_date_string ($$) {
   my ($self, $value) = @_;
-  
   if ($value =~ /\A([0-9]{4,})-([0-9]{2})-([0-9]{2})\z/x) {
     my ($y, $M, $d) = ($1, $2, $3);
     $self->onerror->(type => 'datetime:bad year',
-                       level => 'm'), return undef if $y == 0;
+                     year => $y,
+                     level => 'm'), return $self->_reset if $y == 0;
     if (0 < $M and $M < 13) {
       $self->onerror->(type => 'datetime:bad day',
-                         level => 'm'), return undef
+                       year => $d,
+                       level => 'm'), return $self->_reset
           if $d < 1 or
               $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$M];
       $self->onerror->(type => 'datetime:bad day',
-                         level => 'm'), return undef
+                       value => $d,
+                       level => 'm'), return $self->_reset
           if $M == 2 and $d == 29 and
               not ($y % 400 == 0 or ($y % 4 == 0 and $y % 100 != 0));
     } else {
       $self->onerror->(type => 'datetime:bad month',
-                         level => 'm');
-      return undef;
-    }
-
-    if (defined wantarray) {
-      return $self->_create_object ($y, $M, $d, 0, 0, 0, '', undef, undef);
-    }
-  } else {
-    $self->onerror->(type => 'date:syntax error', ## TODOC: type
+                       value => $M,
                        level => 'm');
-    return undef;
+      return $self->_reset;
+    }
+    return $self->_set ($y, $M, $d, 0, 0, 0, '', undef, undef);
+  } else {
+    $self->onerror->(type => 'date:syntax error',
+                     level => 'm');
+    return $self->_reset;
   }
 } # parse_date_string
 
-## Date string [HTML5]
 sub to_date_string ($) {
   my $self = shift;
-  
   return sprintf '%04d-%02d-%02d',
       $self->utc_year, $self->utc_month, $self->utc_day;
 } # to_date_string
 
-## Local date and time string [HTML5]
 sub parse_local_date_and_time_string ($$) {
   my ($self, $value) = @_;
-  
-  if ($value =~ /\A([0-9]{4,})-([0-9]{2})-([0-9]{2})T
-                 ([0-9]{2}):([0-9]{2})(?>:([0-9]{2})(?>(\.[0-9]+))?)?\z/x) {
+  if ($value =~ /\A
+    ([0-9]{4,})-([0-9]{2})-([0-9]{2})
+    [T\x20]
+    ([0-9]{2}):([0-9]{2})(?>:([0-9]{2})(?>(\.[0-9]+))?)?
+  \z/x) {
     my ($y, $M, $d, $h, $m, $s, $sf) = ($1, $2, $3, $4, $5, $6, $7);
-
     $self->onerror->(type => 'datetime:bad year',
-                       level => 'm'), return undef if $y == 0;
+                     value => $y,
+                     level => 'm'), return $self->_reset if $y == 0;
     if (0 < $M and $M < 13) {
       $self->onerror->(type => 'datetime:bad day',
-                         level => 'm'), return undef
+                       value => $d,
+                       level => 'm'), return $self->_reset
           if $d < 1 or
-              $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$M];
+             $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$M];
       $self->onerror->(type => 'datetime:bad day',
-                         level => 'm'), return undef
+                       value => $d,
+                       level => 'm'), return $self->_reset
           if $M == 2 and $d == 29 and not _is_leap_year ($y);
     } else {
       $self->onerror->(type => 'datetime:bad month',
-                         level => 'm');
-      return undef;
+                       value => $M,
+                       level => 'm');
+      return $self->_reset;
     }
     $self->onerror->(type => 'datetime:bad hour',
-                       level => 'm'), return undef if $h > 23;
+                     value => $h,
+                     level => 'm'), return $self->_reset if $h > 23;
     $self->onerror->(type => 'datetime:bad minute',
-                       level => 'm'), return undef if $m > 59;
+                     value => $m,
+                     level => 'm'), return $self->_reset if $m > 59;
     $s ||= 0;
     $self->onerror->(type => 'datetime:bad second',
-                       level => 'm'), return undef if $s > 59;
+                     value => $d,
+                     level => 'm'), return $self->_reset if $s > 59;
     $sf = defined $sf ? $sf : '';
-
-    if (defined wantarray) {
-      return $self->_create_object ($y, $M, $d, $h, $m, $s, $sf, undef, undef);
-    }
+    return $self->_set ($y, $M, $d, $h, $m, $s, $sf, undef, undef);
   } else {
-    $self->onerror->(type => 'datetime-local:syntax error', ## TODOC: type
-                       level => 'm');
-    return undef;
+    $self->onerror->(type => 'datetime-local:syntax error',
+                     level => 'm');
+    return $self->_reset;
   }
 } # parse_local_date_and_time_string
 
-## Local date and time string [HTML5]
 sub to_local_date_and_time_string ($) {
   my $self = shift;
-  
   return sprintf '%04d-%02d-%02dT%02d:%02d:%02d%s',
       $self->year, $self->month, $self->day,
       $self->hour, $self->minute, $self->second, $self->second_fraction_string;
 } # to_local_date_and_time_string
 
-## Global date and time string [HTML5]
 sub parse_global_date_and_time_string ($$) {
   my ($self, $value) = @_;
-  
-  if ($value =~ /\A([0-9]{4,})-([0-9]{2})-([0-9]{2})T
-                 ([0-9]{2}):([0-9]{2})(?>:([0-9]{2})(?>(\.[0-9]+))?)?
-                 (?>Z|([+-][0-9]{2}):([0-9]{2}))\z/x) {
+  if ($value =~ /\A
+    ([0-9]{4,})-([0-9]{2})-([0-9]{2})
+    [T\x20]
+    ([0-9]{2}):([0-9]{2})(?>:([0-9]{2})(?>(\.[0-9]+))?)?
+    (?>Z|([+-][0-9]{2}):([0-9]{2}))
+  \z/x) {
     my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm)
         = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
     if (0 < $M and $M < 13) {
       $self->onerror->(type => 'datetime:bad day',
-                         level => 'm'), return undef
+                       value => $d,
+                       level => 'm'), return $self->_reset
           if $d < 1 or
-              $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$M];
+             $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$M];
       $self->onerror->(type => 'datetime:bad day',
-                         level => 'm'), return undef
+                       value => $d,
+                       level => 'm'), return $self->_reset
           if $M == 2 and $d == 29 and not _is_leap_year ($y);
     } else {
       $self->onerror->(type => 'datetime:bad month',
-                         level => 'm');
-      return undef;
+                       value => $M,
+                       level => 'm');
+      return $self->_reset;
     }
     $self->onerror->(type => 'datetime:bad year',
-                       level => 'm'), return undef if $y == 0;
+                     value => $y,
+                     level => 'm'), return $self->_reset if $y == 0;
     $self->onerror->(type => 'datetime:bad hour',
-                       level => 'm'), return undef if $h > 23;
+                     value => $h,
+                     level => 'm'), return $self->_reset if $h > 23;
     $self->onerror->(type => 'datetime:bad minute',
-                       level => 'm'), return undef if $m > 59;
+                     value => $m,
+                     level => 'm'), return $self->_reset if $m > 59;
     $s ||= 0;
     $self->onerror->(type => 'datetime:bad second',
-                       level => 'm'), return undef if $s > 59;
+                     value => $s,
+                     level => 'm'), return $self->_reset if $s > 59;
     $sf = defined $sf ? $sf : '';
     if (defined $zh) {
       $self->onerror->(type => 'datetime:bad timezone hour',
-                         level => 'm'), return undef
+                       value => $zh,
+                       level => 'm'), return $self->_reset
           if $zh > 23 or $zh < -23;
       $self->onerror->(type => 'datetime:bad timezone minute',
-                         level => 'm'), return undef
+                       value => $zm,
+                       level => 'm'), return $self->_reset
           if $zm > 59;
     } else {
       $zh = 0;
@@ -282,100 +276,118 @@ sub parse_global_date_and_time_string ($$) {
     }
 
     if ($zh eq '-00' and $zm eq '00') {
-      $self->onerror->(type => 'datetime:-00:00', # XXXtype
-                         level => 'm'); # don't return
-      if (defined wantarray) {
-        return $self->_create_object ($y, $M, $d, $h, $m, $s, $sf, undef, undef);
-      }
+      $self->onerror->(type => 'datetime:-00:00',
+                       level => 'm'); # don't return
+      return $self->_set ($y, $M, $d, $h, $m, $s, $sf, undef, undef);
     } else {
-      if (defined wantarray) {
-        return $self->_create_object ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
-      }
+      return $self->_set ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
     }
   } else {
     $self->onerror->(type => 'datetime:syntax error',
-                       level => 'm');
-    return undef;
+                     level => 'm');
+    return $self->_reset;
   }
 } # parse_global_date_and_time_string
 
-## Global date and time string [HTML5], always in UTC
 sub to_global_date_and_time_string ($) {
   my $self = shift;
-  
+  ## Always in UTC
   return sprintf '%04d-%02d-%02dT%02d:%02d:%02d%sZ',
       $self->utc_year, $self->utc_month, $self->utc_day,
       $self->utc_hour, $self->utc_minute,
       $self->utc_second, $self->second_fraction_string;
 } # to_global_date_and_time_string
 
-## Date string with optional time [Web Applications 1.0]
+sub to_timezoned_global_date_and_time_string ($) {
+  my $self = shift;
+  return $self->to_local_date_and_time_string . ($self->timezone_string || 'Z');
+} # to_timezoned_global_date_and_time_string
+
+## Parse a date or time string
+## <http://www.whatwg.org/specs/web-apps/current-work/#parse-a-date-or-time-string>
+## but time-only string is not allowed
+## <http://www.whatwg.org/specs/web-apps/current-work/#attr-mod-datetime>
 sub parse_date_string_with_optional_time ($$) {
   my ($self, $value) = @_;
-  
-  if ($value =~ /\A([0-9]{4,})-([0-9]{2})-([0-9]{2})(?:T
-                 ([0-9]{2}):([0-9]{2})(?>:([0-9]{2})(?>(\.[0-9]+))?)?
-                 (?>Z|([+-][0-9]{2}):([0-9]{2})))?\z/x) {
+  if ($value =~ /\A
+    ([0-9]{4,})-([0-9]{2})-([0-9]{2})
+    (?:[T\x20]
+      ([0-9]{2}):([0-9]{2})(?>:([0-9]{2})(?>(\.[0-9]+))?)?
+      (?>Z|([+-][0-9]{2}):([0-9]{2})))?
+  \z/x) {
     my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm)
         = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
     if (0 < $M and $M < 13) {
       $self->onerror->(type => 'datetime:bad day',
-                         level => 'm'), return undef
+                       value => $d,
+                       level => 'm'), return $self->_reset
           if $d < 1 or
-              $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$M];
+             $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$M];
       $self->onerror->(type => 'datetime:bad day',
-                         level => 'm'), return undef
+                       value => $d,
+                       level => 'm'), return $self->_reset
           if $M == 2 and $d == 29 and not _is_leap_year ($y);
     } else {
       $self->onerror->(type => 'datetime:bad month',
-                         level => 'm');
-      return undef;
+                       value => $M,
+                       level => 'm');
+      return $self->_reset;
     }
     $self->onerror->(type => 'datetime:bad year',
-                       level => 'm'), return undef if $y == 0;
+                     value => $y,
+                     level => 'm'), return $self->_reset if $y == 0;
     
     if (defined $h) {
       $self->onerror->(type => 'datetime:bad hour',
-                         level => 'm'), return undef if $h > 23;
+                       value => $h,
+                       level => 'm'), return $self->_reset if $h > 23;
       $self->onerror->(type => 'datetime:bad minute',
-                         level => 'm'), return undef if $m > 59;
+                       value => $m,
+                       level => 'm'), return $self->_reset if $m > 59;
       $s ||= 0;
       $self->onerror->(type => 'datetime:bad second',
-                         level => 'm'), return undef if $s > 59;
+                       value => $s,
+                       level => 'm'), return $self->_reset if $s > 59;
       $sf = defined $sf ? $sf : '';
       if (defined $zh) {
         $self->onerror->(type => 'datetime:bad timezone hour',
-                           level => 'm'), return undef
+                         value => $zh,
+                         level => 'm'), return $self->_reset
             if $zh > 23 or $zh < -23;
         $self->onerror->(type => 'datetime:bad timezone minute',
-                           level => 'm'), return undef
+                         value => $zm,
+                         level => 'm'), return $self->_reset
             if $zm > 59;
       } else {
         $zh = 0;
         $zm = 0;
       }
       if ($zh eq '-00' and $zm eq '00') {
-        $self->onerror->(type => 'datetime:-00:00', # XXXtype
-                           level => 'm'); # don't return
-        if (defined wantarray) {
-          return $self->_create_object ($y, $M, $d, $h, $m, $s, $sf, undef, undef);
-        }
+        $self->onerror->(type => 'datetime:-00:00',
+                         level => 'm'); # don't return
+        return $self->_set ($y, $M, $d, $h, $m, $s, $sf, undef, undef);
       } else {
-        if (defined wantarray) {
-          return $self->_create_object ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
-        }
+        return $self->_set ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
       }
     } else {
-      if (defined wantarray) {
-        return $self->_create_object ($y, $M, $d, 0, 0, 0, 0, 0, 0);
-      }
+      ## A valid date string
+      return $self->_set ($y, $M, $d, 0, 0, 0, 0, undef, undef);
     }
   } else {
-    $self->onerror->(type => 'dateandopttime:syntax error', ## XXXtype
-                       level => 'm');
-    return undef;
+    $self->onerror->(type => 'dateandopttime:syntax error',
+                     level => 'm');
+    return $self->_reset;
   }
 } # parse_date_string_with_optional_time
+
+sub to_date_string_with_optional_time ($) {
+  my $self = $_[0];
+  if (defined $self->{timezone_hour}) {
+    return $self->to_timezoned_global_date_and_time_string;
+  } else {
+    return $self->to_date_string;
+  }
+} # to_date_string_with_optional_time
 
 sub timezone_offset_second ($) {
   my $self = shift;
@@ -391,7 +403,7 @@ sub utc_week ($) {
 
   my $year = $self->utc_year;
 
-  my $jan1 = __PACKAGE__->new->_create_object ($year, 1, 1, 0, 0, 0, 0, undef, undef);
+  my $jan1 = __PACKAGE__->new->_set ($year, 1, 1, 0, 0, 0, 0, undef, undef);
 
   my $days = $self->to_unix_integer - $jan1->to_unix_integer;
   $days /= 24 * 3600;
@@ -434,12 +446,19 @@ sub to_html_month_number ($) {
   return $y * 12 + $m;
 } # to_html_month_number
 
+sub _reset ($) {
+  delete $_[0]->{$_} for qw(cache value timezone_hour timezone_minute
+                            second_fraction);
+  return $_[0];
+} # _reset
+
 my $unix_epoch = Time::Local::timegm (0, 0, 0, 1, 1 - 1, 1970);
 
-sub _create_object ($$$$$$$$$$;$) {
+sub _set ($$$$$$$$$$;$) {
   my $self = shift;
   my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff) = @_;
   
+  delete $self->{cache};
   $self->{value} = Time::Local::timegm_nocheck
       ($s, $m - ($zm || 0), $h - ($zh|| 0), $d, $M-1, $y);
   $self->{timezone_hour} = $zh; # or undef
@@ -454,7 +473,7 @@ sub _create_object ($$$$$$$$$$;$) {
     $self->onerror->(type => 'date value not supported',
                        value => join (", ", @_),
                        level => 'u');
-    return undef;
+    return $self->_reset;
   }
   
   if ($diff) {
@@ -477,10 +496,12 @@ sub _create_object ($$$$$$$$$$;$) {
 
   $self->{second_fraction} = $sf;
 
-  delete $self->{cache};
-
   return $self;
-} # _set_value
+} # _set
+
+sub has_value ($) {
+  return defined $_[0]->{value};
+} # has_value
 
 sub second_fraction_string ($) {
   my $self = shift;
@@ -516,12 +537,12 @@ sub timezone_string ($) {
 
 sub _utc_time ($) {
   my $self = shift;
-  $self->{cache}->{utc_time} = [gmtime $self->{value}];
+  $self->{cache}->{utc_time} = [gmtime ($self->{value} || 0)];
 } # _utc_time
 
 sub _local_time ($) {
   my $self = shift;
-  $self->{cache}->{local_time} = [gmtime ($self->{value} + $self->timezone_offset_second)];
+  $self->{cache}->{local_time} = [gmtime (($self->{value} || 0) + $self->timezone_offset_second)];
 } # _local_time
 
 sub year ($) {
