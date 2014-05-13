@@ -5,10 +5,11 @@ use lib glob path (__FILE__)->parent->parent->child ('t_deps', 'modules', '*', '
 use Test::More;
 use Test::X1;
 use Web::DateTime;
+use Web::DateTime::Parser;
 
 test {
   my $c = shift;
-  my $date = Web::DateTime->new->parse_global_date_and_time_string
+  my $date = Web::DateTime::Parser->new->parse_global_date_and_time_string
       ('2010-12-13 01:02:03-01:00');
   is $date->utc_year, 2010;
   is $date->utc_month, 12;
@@ -24,7 +25,7 @@ test {
 
 test {
   my $c = shift;
-  my $date = Web::DateTime->new->parse_global_date_and_time_string
+  my $date = Web::DateTime::Parser->new->parse_global_date_and_time_string
       ('2010-12-13T01:02:03Z');
   is $date->utc_year, 2010;
   is $date->utc_month, 12;
@@ -40,7 +41,7 @@ test {
 
 test {
   my $c = shift;
-  my $date = Web::DateTime->new->parse_month_string
+  my $date = Web::DateTime::Parser->new->parse_month_string
       ('2010-12');
   is $date->utc_year, 2010;
   is $date->utc_month, 12;
@@ -56,7 +57,7 @@ test {
 
 test {
   my $c = shift;
-  my $date = Web::DateTime->new->parse_date_string
+  my $date = Web::DateTime::Parser->new->parse_date_string
       ('2000-02-29');
   is $date->utc_year, 2000;
   is $date->utc_month, 2;
@@ -72,7 +73,7 @@ test {
 
 test {
   my $c = shift;
-  my $date = Web::DateTime->new->parse_local_date_and_time_string
+  my $date = Web::DateTime::Parser->new->parse_local_date_and_time_string
       ('2000-02-29 21:33:11.00');
   is $date->utc_year, 2000;
   is $date->utc_month, 2;
@@ -89,35 +90,35 @@ test {
 
 test {
   my $c = shift;
-  my $date = Web::DateTime->new->parse_week_string ('2010-W01');
+  my $date = Web::DateTime::Parser->new->parse_week_string ('2010-W01');
   is $date->to_week_string, '2010-W01';
   is $date->utc_year, 2010;
   is $date->utc_month, 1;
   is $date->utc_day, 4;
 
-  $date = Web::DateTime->new->parse_week_string ('2010-W51');
+  $date = Web::DateTime::Parser->new->parse_week_string ('2010-W51');
   is $date->to_week_string, '2010-W51';
   is $date->utc_year, 2010;
   is $date->utc_month, 12;
   is $date->utc_day, 20;
 
-  $date = Web::DateTime->new->parse_week_string ('2010-W52');
+  $date = Web::DateTime::Parser->new->parse_week_string ('2010-W52');
   is $date->to_week_string, '2010-W52';
   is $date->utc_year, 2010;
   is $date->utc_month, 12;
   is $date->utc_day, 27;
 
-  $date = Web::DateTime->new->parse_week_string ('2010-W00');
-  ok not $date->has_value;
+  $date = Web::DateTime::Parser->new->parse_week_string ('2010-W00');
+  is $date, undef;
 
-  $date = Web::DateTime->new->parse_week_string ('2010-W53');
-  ok not $date->has_value;
+  $date = Web::DateTime::Parser->new->parse_week_string ('2010-W53');
+  is $date, undef;
   done $c;
 } n => 14, name => 'parse_week_string';
 
 test {
   my $c = shift;
-  my $date = Web::DateTime->new->parse_date_string_with_optional_time
+  my $date = Web::DateTime::Parser->new->parse_date_string_with_optional_time
       ('2010-12-13 01:02:03-01:00');
   is $date->utc_year, 2010;
   is $date->utc_month, 12;
@@ -133,7 +134,7 @@ test {
 
 test {
   my $c = shift;
-  my $date = Web::DateTime->new->parse_date_string_with_optional_time
+  my $date = Web::DateTime::Parser->new->parse_date_string_with_optional_time
       ('2010-12-13');
   is $date->utc_year, 2010;
   is $date->utc_month, 12;

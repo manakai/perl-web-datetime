@@ -4,113 +4,20 @@ Web::DateTime - Date and time for Web
 
 =head1 SYNOPSIS
 
-  use Web::DateTime;
-  $dt = Web::DateTime->new->parse_global_date_and_time_string ($value);
+  use Web::DateTime::Parser;
+  $parser = Web::DateTime::Parser->new;
+  $dt = $parser->parse_global_date_and_time_string ($value);
   warn $dt->to_unix_integer;
 
 =head1 DESCRIPTION
 
-The C<Web::DateTime> module has parsers and serializers of various
-date and time representations used in Web.
+The C<Web::DateTime> class represents a date and/or time with accessor
+and serializer methods for Web.  To create an instance of the
+C<Web::DateTime> class, use L<Web::DateTime::Parser> module.
 
 =head1 METHODS
 
 Following methods are available:
-
-=head2 Instantiation methods
-
-=over 4
-
-=item $dt = Web::DateTime->new
-
-Create a new instance of object with an undefined time value and no
-associated time zone value.
-
-=item $dt->onerror ($code)
-
-=item $code = $dt->onerror
-
-Get or set the error handler for parser methods.  Any parse error, as
-well as warning and additional processing information, is reported to
-the handler.  See
-<https://github.com/manakai/data-errors/blob/master/doc/onerror.txt>
-for details of error handling.
-
-The value should not be set while the parser is running.  If the value
-is changed, the result is undefined.
-
-=back
-
-=head2 Parsing methods
-
-=over 4
-
-=item $dt->parse_date_string ($string)
-
-Parse the specified argument as an HTML date string [HTML].  Set the
-result to the object.  If the argument is not a date string, errors
-are reported through the C<onerror> handler.
-
-This method is suitable for values from HTML C<< <input type=date> >>.
-
-=item $dt->parse_date_string_with_optional_time ($string)
-
-Parse the specified argument as an HTML date string with optional time
-[HTML].  Set the result to the object.  If the argument is not a date
-string with optional time, errors are reported through the C<onerror>
-handler.
-
-This method is suitable for values in HTML C<< <ins datetime=""> >>
-and C<< <del datetime="" >> attributes.
-
-=item $dt->parse_global_date_and_time_string ($string)
-
-Parse the specified argument as an HTML global date and time string
-[HTML].  Set the result to the object.  If the argument is not a
-global date and time string, errors are reported through the
-C<onerror> handler.
-
-This method is suitable for values from HTML C<< <input type=datetime>
->>.
-
-=item $dt->parse_local_date_and_time_string ($string)
-
-Parse the specified argument as an HTML local date and time string
-[HTML].  Set the result to the object.  If the argument is not a local
-date and time string, errors are reported through the C<onerror>
-handler.
-
-This method is suitable for values from HTML C<< <input
-type=datetime-local> >>.
-
-=item $dt->parse_month_string ($string)
-
-Parse the specified argument as an HTML month string [HTML].  Set the
-result to the object.  If the argument is not a month string, errors
-are reported through the C<onerror> handler.
-
-This method is suitable for values from HTML C<< <input type=month>
->>.
-
-=item $dt->parse_time_string ($string)
-
-Parse the specified argument as an HTML time string [HTML].  Set the
-result to the object.  If the argument is not a time string, errors
-are reported through the C<onerror> handler.
-
-This method is suitable for values from HTML C<< <input type=time> >>.
-
-=item $dt->parse_week_string ($string)
-
-Parse the specified argument as an HTML week string [HTML].  Set the
-result to the object.  If the argument is not a week string, errors
-are reported through the C<onerror> handler.
-
-This method is suitable for values from HTML C<< <input type=week> >>.
-
-=back
-
-=head2 Serialization methods
 
 =over 4
 
@@ -207,12 +114,6 @@ ignored.
 This method is suitable for values for HTML C<< <input type=week> >>
 and C<time> elements.
 
-=back
-
-=head2 Cast methods
-
-=over 4
-
 =item $datetime = $dt->to_datetime
 
 Return a new L<DateTime> object which represents the time represented
@@ -247,18 +148,6 @@ that the number might not be an integer.
 Return the number (an integer) of the month represented by the object,
 as used for C<< <input type=month> >> (i.e. number of months from
 January 1970) [HTML].
-
-=back
-
-=head2 Value accessors
-
-=over 4
-
-=item $boolean = $dt->has_value
-
-Return whether a valid time value is set to the object or not.  When a
-new object is created by the C<new> method, or when a parse method
-fails, the object's value is unset (i.e. this method returns false).
 
 =item $number = $dt->year
 
