@@ -198,12 +198,6 @@ This method is suitable for values for HTML C<< <input type=datetime>
 >>, C<time> elements, and C<< <ins datetime=""> >> and C<< <del
 datetime=""> >> attributes.
 
-=item $string = $dt->to_time_zone_offset_string
-
-Serialize the time zone associated with the object as an HTML valid
-time-zone offset string [HTML].  If no time zone is associated with
-the object, C<undef> is returned instead.
-
 =item $string = $dt->to_week_string
 
 Serialize the week value represented by the object as an HTML valid
@@ -241,17 +235,18 @@ without associated time zone information.  If the object has no
 associated time zone, it is considered as a UTC timestamp for the
 purpose of conversion.
 
+=item $number = $dt->to_html_number
+
+Return the number of the date and time represented by the object, as
+used for, e.g., C<< <input type=datetime> >> (i.e. number of
+milliseconds from the beginning of January 1, 1970 UTC) [HTML].  Note
+that the number might not be an integer.
+
 =item $number = $dt->to_html_month_number
 
-Return the number of the month represented by the object, as used for
-C<< <input type=month> >> (i.e. number of months from January 1970)
-[HTML].
-
-=item $number = $dt->time_zone_offset_as_seconds
-
-Return the number of seconds of the time zone offset associated with
-the object.  If no time zone is associated, C<undef> is returned
-instead.
+Return the number (an integer) of the month represented by the object,
+as used for C<< <input type=month> >> (i.e. number of months from
+January 1970) [HTML].
 
 =back
 
@@ -305,6 +300,28 @@ component of the object, respectively.  If a time zone is associated
 with the object, the return value is converted into UTC.  Otherwise,
 no convertion is performed.
 
+=item $number = $dt->day_of_week
+
+Return the day of week represented by the object, as a number.
+Sunday, Monday, ..., and Saturday are represented as C<0>, C<1>, ...,
+and C<6>, respectively.
+
+=item $number = $dt->utc_day_of_week
+
+Return the day of week of the UTC date represented by the object, as a
+number.  Sunday, Monday, ..., and Saturday are represented as C<0>,
+C<1>, ..., and C<6>, respectively.
+
+=item $number = $dt->fractional_second
+
+Return the second component, including fractional part if any, as a
+number.
+
+=item $number = $dt->utc_fractional_second
+
+Return the second component of the UTC time represented by the object,
+including fractional part if any, as a number.
+
 =item $number = $dt->utc_week
 
 Return the week number of the UTC date and time represented by the
@@ -315,11 +332,12 @@ object.
 Return the week-year number of the UTC date and time represented by
 the object.
 
-=back
+=item $tz = $dt->time_zone
 
-# XXX day_of_week utc_day_of_week fractional_second
-# utc_fractional_second time_zne_offset_hour time_zone_offset_minute
-# to_html_number
+Return the associated L<Web::DateTime::TimeZone> object, if any, or
+C<undef>.
+
+=back
 
 =head1 DEPENDENCY
 
