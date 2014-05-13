@@ -1,7 +1,7 @@
 package Web::DateTime;
 use strict;
 use warnings;
-our $VERSION = '2.0';
+our $VERSION = '3.0';
 use Time::Local;
 
 sub new ($) {
@@ -19,22 +19,6 @@ sub onerror ($;$) {
     warn join '; ', @msg, "\n";
   };
 } # onerror
-
-sub _create_object ($$$$$$$$$;$) {
-  #my ($self, $y, $M, $d, $h, $m, $s, $zh, $zm, $diff) = @_;
-  my $self = shift;
-
-  my $class = 'Web::DateTime::TimeT';
-#  unless ($DateTime::VERSION) {
-#    eval { require DateTime };
-#  }
-#  if ($DateTime::VERSION) {
-#    $class = 'Web::DateTime::DateTime';
-#  }
-  
-  bless $self, $class;
-  return $self->_set_value (@_);
-} # _create_object
 
 sub _is_leap_year ($) {
   return ($_[0] % 400 == 0 or ($_[0] % 4 == 0 and $_[0] % 100 != 0));
@@ -74,7 +58,7 @@ sub parse_time_string ($$) {
     $sf = defined $sf ? $sf : '';
 
     if (defined wantarray) {
-      return $self->_create_object (1970, 1, 1, $h, $m, $s, $sf, 0, 0);
+      return $self->_create_object (1970, 1, 1, $h, $m, $s, $sf, undef, undef);
     }
   } else {
     $self->onerror->(type => 'time:syntax error', ## TODOC: type
@@ -107,7 +91,7 @@ sub parse_week_string ($$) {
     if (defined wantarray) {
       my $day = ($w - 1) * 7 - _week_year_diff ($y);
     
-      return $self->_create_object ($y, 1, 1, 0, 0, 0, '', 0, 0,
+      return $self->_create_object ($y, 1, 1, 0, 0, 0, '', undef, undef,
                                     $day * 24 * 3600 * 1000);
     }
   } else {
@@ -145,7 +129,7 @@ sub parse_month_string ($$) {
     }
 
     if (defined wantarray) {
-      return $self->_create_object ($y, $M, 1, 0, 0, 0, '', 0, 0);
+      return $self->_create_object ($y, $M, 1, 0, 0, 0, '', undef, undef);
     }
   } else {
     $self->onerror->(type => 'month:syntax error', ## TODOC: type
@@ -185,7 +169,7 @@ sub parse_date_string ($$) {
     }
 
     if (defined wantarray) {
-      return $self->_create_object ($y, $M, $d, 0, 0, 0, '', 0, 0);
+      return $self->_create_object ($y, $M, $d, 0, 0, 0, '', undef, undef);
     }
   } else {
     $self->onerror->(type => 'date:syntax error', ## TODOC: type
@@ -235,7 +219,7 @@ sub parse_local_date_and_time_string ($$) {
     $sf = defined $sf ? $sf : '';
 
     if (defined wantarray) {
-      return $self->_create_object ($y, $M, $d, $h, $m, $s, $sf, '-00', 0);
+      return $self->_create_object ($y, $M, $d, $h, $m, $s, $sf, undef, undef);
     }
   } else {
     $self->onerror->(type => 'datetime-local:syntax error', ## TODOC: type
@@ -296,13 +280,17 @@ sub parse_global_date_and_time_string ($$) {
       $zh = 0;
       $zm = 0;
     }
+
     if ($zh eq '-00' and $zm eq '00') {
       $self->onerror->(type => 'datetime:-00:00', # XXXtype
                          level => 'm'); # don't return
-    }
-
-    if (defined wantarray) {
-      return $self->_create_object ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
+      if (defined wantarray) {
+        return $self->_create_object ($y, $M, $d, $h, $m, $s, $sf, undef, undef);
+      }
+    } else {
+      if (defined wantarray) {
+        return $self->_create_object ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
+      }
     }
   } else {
     $self->onerror->(type => 'datetime:syntax error',
@@ -369,10 +357,13 @@ sub parse_date_string_with_optional_time ($$) {
       if ($zh eq '-00' and $zm eq '00') {
         $self->onerror->(type => 'datetime:-00:00', # XXXtype
                            level => 'm'); # don't return
-      }
-
-      if (defined wantarray) {
-        return $self->_create_object ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
+        if (defined wantarray) {
+          return $self->_create_object ($y, $M, $d, $h, $m, $s, $sf, undef, undef);
+        }
+      } else {
+        if (defined wantarray) {
+          return $self->_create_object ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
+        }
       }
     } else {
       if (defined wantarray) {
@@ -388,7 +379,7 @@ sub parse_date_string_with_optional_time ($$) {
 
 sub timezone_offset_second ($) {
   my $self = shift;
-  return $self->timezone_hour * 3600 + $self->timezone_minute * 60;
+  return (($self->timezone_hour || 0) * 3600 + ($self->timezone_minute || 0) * 60);
 } # timezone_offset_second
 
 sub utc_week ($) {
@@ -400,7 +391,7 @@ sub utc_week ($) {
 
   my $year = $self->utc_year;
 
-  my $jan1 = __PACKAGE__->new->_create_object ($year, 1, 1, 0, 0, 0, 0, 0, 0);
+  my $jan1 = __PACKAGE__->new->_create_object ($year, 1, 1, 0, 0, 0, 0, undef, undef);
 
   my $days = $self->to_unix_integer - $jan1->to_unix_integer;
   $days /= 24 * 3600;
@@ -443,19 +434,16 @@ sub to_html_month_number ($) {
   return $y * 12 + $m;
 } # to_html_month_number
 
-package Web::DateTime::TimeT;
-push our @ISA, 'Web::DateTime';
-
 my $unix_epoch = Time::Local::timegm (0, 0, 0, 1, 1 - 1, 1970);
 
-sub _set_value ($$$$$$$$$$;$) {
+sub _create_object ($$$$$$$$$$;$) {
   my $self = shift;
   my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff) = @_;
   
   $self->{value} = Time::Local::timegm_nocheck
-      ($s, $m - $zm, $h - $zh, $d, $M-1, $y);
-  $self->{timezone_hour} = $zh;
-  $self->{timezone_minute} = $zm;
+      ($s, $m - ($zm || 0), $h - ($zh|| 0), $d, $M-1, $y);
+  $self->{timezone_hour} = $zh; # or undef
+  $self->{timezone_minute} = $zm; # or undef
 
   if ($self->year != $y or
       $self->month != $M or
@@ -513,8 +501,8 @@ sub second_fraction_string ($) {
 ## Timezone component [HTML5]
 sub timezone_string ($) {
   my $self = shift;
-  if ($self->{timezone_hour} eq '-00') {
-    return sprintf '-00:%02d', $self->{timezone_minute};
+  if (not defined $self->{timezone_hour}) {
+    return undef;
   } elsif ($self->{timezone_hour} == 0 and
            $self->{timezone_minute} == 0) {
     return 'Z';
@@ -632,12 +620,12 @@ sub utc_fractional_second ($) {
 
 sub timezone_hour ($) {
   my $self = shift;
-  return $self->{timezone_hour};
+  return $self->{timezone_hour}; # or undef
 } # timezone_hour
 
 sub timezone_minute ($) {
   my $self = shift;
-  return $self->{timezone_minute};
+  return $self->{timezone_minute}; # or undef
 } # timezone_minute
 
 sub to_html_number ($) {
@@ -656,23 +644,20 @@ sub to_unix_integer ($) {
   return $self->{value} - $unix_epoch;
 } # to_unix_integer
 
-#sub to_datetime ($) {
-#  my $self = shift;
-#  require DateTime;
-#  return DateTime->from_epoch (epoch => $self->to_unix_integer);
-#} # to_datetime
-
-#package Web::DateTime::DateTime;
-#push our @ISA, 'Web::DateTime';
-
-## TODO: Implement this module.  Use "floating" time_zone such that
-## leap seconds are not taken into account.
+sub to_datetime ($) {
+  my $self = shift;
+  require DateTime;
+  my $tz = $self->timezone_string;
+  $tz = 'floating' unless defined $tz;
+  return DateTime->from_epoch (epoch => $self->to_unix_integer,
+                               time_zone => $tz);
+} # to_datetime
 
 1;
 
 =head1 LICENSE
 
-Copyright 2008-2013 Wakaba <wakaba@suikawiki.org>.
+Copyright 2008-2014 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

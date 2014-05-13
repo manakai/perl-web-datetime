@@ -15,7 +15,55 @@ date and time representations used in Web.
 
 =head1 METHODS
 
+Following methods are available:
+
 XXX
+
+=head2 Cast methods
+
+=over 4
+
+=item $number = $dt->to_unix_integer
+
+Return a Unix time value (C<time_t> integer) [POSIX.1] of the time
+represented by the object.  The value can be positive or negative, and
+might not be a 32-bit integer.  Any fraction part of seconds is
+discarded.  Note that the Unix C<time_t> value represents the time
+without associated time zone information.  If the object has no
+associated time zone, it is considered as a UTC timestamp for the
+purpose of conversion.
+
+=item $datetime = $dt->to_datetime
+
+Return a new L<DateTime> object which represents the time represented
+by the object.  If the object has associated time zone, the returned
+object is in the equivalent time zone.  Otherwise, the returned object
+is in the C<floating> time zone.  Note that Web date and time formats
+do not support leap seconds while L<DateTime> does support them such
+that operations on Web date and time values and L<DateTime> objects
+might obtain different results.
+
+This method requires the L<DateTime> module.
+
+=back
+
+=head1 DEPENDENCY
+
+The module requires Perl 5.8 or later and the L<Time::Local> module
+(which is a core module).
+
+The C<to_datetime> method requires more module.
+
+=head1 SPECIFICATIONS
+
+=over 4
+
+=item POSIX.1
+
+POSIX.1-2008
+<http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html#tag_04_15>.
+
+=back
 
 =head1 AUTHOR
 
@@ -23,7 +71,7 @@ Wakaba <wakaba@suikawiki.org>.
 
 =head1 LICENSE
 
-Copyright 2008-2013 Wakaba <wakaba@suikawiki.org>.
+Copyright 2008-2014 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
