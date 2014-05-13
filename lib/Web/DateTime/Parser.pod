@@ -1,0 +1,132 @@
+=head1 NAME
+
+Web::DateTime::Parser - Date and time parser for Web
+
+=head1 SYNOPSIS
+
+  use Web::DateTime::Parser;
+  $parser = Web::DateTime::Parser->new;
+  $dt = $parser->parse_global_date_and_time_string ($value);
+
+=head1 DESCRIPTION
+
+The C<Web::DateTime::Parser> module is a collection of parsing methods
+for various date and time formats used in Web.
+
+=head1 METHODS
+
+Following methods are available:
+
+=over 4
+
+=item $parser = Web::DateTime::Parser->new
+
+Create a new instance of the parser.
+
+=item $parser->onerror ($code)
+
+=item $code = $parser->onerror
+
+Get or set the error handler for parser methods.  Any parse error, as
+well as warning and additional processing information, is reported to
+the handler.  See
+<https://github.com/manakai/data-errors/blob/master/doc/onerror.txt>
+for details of error handling.
+
+The value should not be set while the parser is running.  If the value
+is changed, the result is undefined.
+
+=item $dt = $parser->parse_date_string ($string)
+
+Parse the specified argument as an HTML date string [HTML] and return
+a L<Web::DateTime> (or C<undef> if failed).  Any error is reported
+through the C<onerror> handler.
+
+This method is suitable for values from HTML C<< <input type=date> >>.
+
+=item $dt = $parser->parse_date_string_with_optional_time ($string)
+
+Parse the specified argument as an HTML date string with optional time
+[HTML] and return a L<Web::DateTime> (or C<undef> if failed).  Any
+error is reported through the C<onerror> handler.
+
+This method is suitable for values in HTML C<< <ins datetime=""> >>
+and C<< <del datetime="" >> attributes.
+
+=item $dt = $parser->parse_global_date_and_time_string ($string)
+
+Parse the specified argument as an HTML global date and time string
+[HTML] and return a L<Web::DateTime> (or C<undef> if failed).  Any
+error is reported through the C<onerror> handler.
+
+This method is suitable for values from HTML C<< <input type=datetime>
+>>.
+
+=item $dt = $parser->parse_local_date_and_time_string ($string)
+
+Parse the specified argument as an HTML local date and time string
+[HTML] and return a L<Web::DateTime> (or C<undef> if failed).  Any
+error is reported through the C<onerror> handler.
+
+This method is suitable for values from HTML C<< <input
+type=datetime-local> >>.
+
+=item $dt = $parser->parse_month_string ($string)
+
+Parse the specified argument as an HTML month string [HTML] and return
+a L<Web::DateTime> (or C<undef> if failed).  Any error is reported
+through the C<onerror> handler.
+
+This method is suitable for values from HTML C<< <input type=month>
+>>.
+
+=item $dt = $parser->parse_time_string ($string)
+
+Parse the specified argument as an HTML time string [HTML] and return
+a L<Web::DateTime> (or C<undef> if failed).  Any error is reported
+through the C<onerror> handler.
+
+This method is suitable for values from HTML C<< <input type=time> >>.
+
+=item $dt = $parser->parse_week_string ($string)
+
+Parse the specified argument as an HTML week string [HTML] and return
+a L<Web::DateTime> (or C<undef> if failed).  Any error is reported
+through the C<onerror> handler.
+
+This method is suitable for values from HTML C<< <input type=week> >>.
+
+=item $tz = $parser->parse_time_zone_offset_string ($string)
+
+Parse the specified argument as an HTML time-zone offset string [HTML]
+and return a L<Web::DateTime::TimeZone> (or C<undef> if failed).  Any
+error is reported through the C<onerror> handler.
+
+=back
+
+=head1 DEPENDENCY
+
+The module requires Perl 5.8 or later.
+
+=head1 SPECIFICATION
+
+=over 4
+
+=item HTML
+
+HTML Standard <http://www.whatwg.org/specs/web-apps/current-work/>.
+
+=back
+
+=head1 AUTHOR
+
+Wakaba <wakaba@suikawiki.org>.
+
+=head1 LICENSE
+
+Copyright 2008-2014 Wakaba <wakaba@suikawiki.org>.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
