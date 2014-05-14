@@ -419,6 +419,143 @@ sub _create {
 
 # XXX parser for HTML <time> value
 
+my $DurationScale = {
+  W => 604800,
+  w => 604800,
+  D => 86400,
+  d => 86400,
+  H => 3600,
+  h => 3600,
+  M => 60,
+  m => 60,
+  S => 1,
+  s => 1,
+};
+
+sub parse_duration_string ($$) {
+  return shift->_parse_duration
+      ($_[0],
+       allow_html_duration => 1,
+       allow_second_fraction => 1,
+       allow_hs => 1);
+} # parse_duration_string
+
+sub parse_vevent_duration_string ($$) {
+  return shift->_parse_duration ($_[0], allow_w => 1);
+} # parse_vevent_duration_string
+
+sub _parse_duration ($$%) {
+  my ($self, $value, %args) = @_;
+  if ($value =~ m{\A
+    [\x09\x0A\x0C\x0D\x20]*
+    P?
+    (?:
+      T [\x09\x0A\x0C\x0D\x20]*
+        |
+      [0-9]+ [\x09\x0A\x0C\x0D\x20]* [YyWwDdHhMmSs] [\x09\x0A\x0C\x0D\x20]*
+        |
+      [0-9]+\.[0-9]+ [\x09\x0A\x0C\x0D\x20]* [Ss] [\x09\x0A\x0C\x0D\x20]*
+        |
+      \.[0-9]+ [\x09\x0A\x0C\x0D\x20]* [Ss] [\x09\x0A\x0C\x0D\x20]*
+    )+
+  \z}x) {
+    if ($value =~ tr/\x09\x0A\x0C\x0D\x20//d) {
+      if ($value =~ /[PT]/) {
+        $self->onerror->(type => 'duration:space',
+                         level => 'm');
+      }
+    }
+    my $seconds = 0;
+    my $months = 0;
+    my $m = 'minute';
+    my $suffix = '';
+    for (grep { length } split /([0-9.]+[A-Za-z]|[PT])/, $value) {
+      if (/\A([0-9]+)[Mm]\z/) {
+        if ($m eq 'minute') {
+          $seconds += $1 * $DurationScale->{M};
+        } else {
+          $months += $1;
+        }
+      } elsif (/\A([0-9]+)[Yy]\z/) {
+        $months += $1 * 12;
+      } elsif (/\A([0-9.]+)([A-Za-z])\z/) {
+        $seconds += $1 * $DurationScale->{$2};
+      }
+
+      if (/([A-Za-z])\z/) {
+        $suffix .= $1;
+      }
+      
+      if ($_ eq 'P' or /[Yy]\z/) {
+        $m = 'month';
+      } elsif (/[Mm]\z/) {
+        #
+      } else {
+        $m = 'minute';
+      }
+    }
+    if (not $args{allow_second_fraction} and
+        $value =~ /[.][0-9]+[Ss]/) {
+      $self->onerror->(type => 'datetime:fractional second',
+                       level => 'm');
+    }
+    if ($months) {
+      $self->onerror->(type => 'duration:months',
+                       level => 'm');
+      return undef;
+    } else {
+      if ($value =~ /[PT]/) {
+        if ($value =~ /T/ and not $value =~ /P/) {
+          $self->onerror->(type => 'duration:syntax error',
+                           value => $suffix,
+                           level => 'm');
+        } else {
+          if ($suffix =~ /([a-z])/) {
+            $self->onerror->(type => 'duration:case',
+                             value => $1,
+                             level => 'm');
+            $suffix = uc $suffix;
+          }
+          if ($args{allow_w} and $suffix =~ /\APW\z/) {
+            #
+          } elsif ($suffix =~ /\AP?(?:D|TH?M?S?|DTH?M?S?)\z/) {
+            if ($suffix =~ /T/) {
+              if ($suffix =~ /THS/) {
+                if ($args{allow_hs}) {
+                  #
+                } else {
+                  $self->onerror->(type => 'duration:syntax error',
+                                   value => $suffix,
+                                   level => 'm');
+                }
+              } elsif ($suffix =~ /THM?S?|TH?MS?|TH?M?S/) {
+                #
+              } else {
+                $self->onerror->(type => 'duration:syntax error',
+                                 value => $suffix,
+                                 level => 'm');
+              }
+            }
+          } else {
+            $self->onerror->(type => 'duration:syntax error',
+                             value => $suffix,
+                             level => 'm');
+          }
+        }
+      } elsif (not $args{allow_html_duration}) {
+        $self->onerror->(type => 'duration:html duration',
+                         level => 'm');
+      }
+      require Web::DateTime::Duration;
+      return Web::DateTime::Duration->new_from_seconds ($seconds);
+    }
+  } else {
+    $self->onerror->(type => 'duration:syntax error',
+                     level => 'm');
+    return undef;
+  }
+} # _parse_duration
+
 1;
 
 =head1 LICENSE

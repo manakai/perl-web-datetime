@@ -396,7 +396,6 @@ sub to_time_piece_local ($) {
   return Time::Piece::localtime ($self->to_unix_integer);
 } # to_time_piece_local
 
-# XXX duration formats
 # XXX period formats
 # XXX XML Schema datatypes
 # XXX microdata vocab datetime

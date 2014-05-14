@@ -104,6 +104,121 @@ for my $test (
   } n => 2;
 }
 
+for my $test (
+  ['', undef],
+  ['z', undef],
+  ['1000.0', undef],
+  ['-41s', undef],
+  ['-PT31H31M', undef],
+  ['41s' => 41, undef, [{type => 'duration:html duration', level => 'm'}]],
+  ["10m\t30s" => 10*60+30, undef,
+   [{type => 'duration:html duration', level => 'm'}]],
+  ['420.400 s' => 420.4, undef,
+   [{type => 'datetime:fractional second', level => 'm'},
+    {type => 'duration:html duration', level => 'm'}]],
+  [' PT132S', 132, [{type => 'duration:space', level => 'm'}]],
+  ['32w21d' => 32*7*24*60*60+21*24*60*60, undef,
+   [{type => 'duration:html duration', level => 'm'}]],
+  ['0h' => 0, undef, [{type => 'duration:html duration', level => 'm'}]],
+  ['42.44m' => undef],
+  ['332.000s' => 332, undef,
+   [{type => 'datetime:fractional second', level => 'm'},
+    {type => 'duration:html duration', level => 'm'}]],
+  ['32Y32M' => undef, [{type => 'duration:months', level => 'm'}]],
+  ['32M' => 32*60, undef, [{type => 'duration:html duration', level => 'm'}]],
+  ['T32M' => 32*60, [{type => 'duration:syntax error', level => 'm',
+                      value => 'TM'}]],
+  ['0Y32M' => undef, [{type => 'duration:months', level => 'm'}]],
+  ['P32M' => undef, [{type => 'duration:months', level => 'm'}]],
+  ['32M10M' => 42*60, undef,
+   [{type => 'duration:html duration', level => 'm'}]],
+  ['10s32M' => 32*60+10, undef,
+   [{type => 'duration:html duration', level => 'm'}]],
+  ['P10s32M' => 32*60+10, [{type => 'duration:case', level => 'm',
+                            value => 's'},
+                           {type => 'duration:syntax error', level => 'm',
+                            value => 'PSM'}]],
+  ['10d32M' => 10*24*60*60+32*60, undef,
+   [{type => 'duration:html duration', level => 'm'}]],
+  ['32MPT' => undef],
+  ['32MT' => 32*60, [{type => 'duration:syntax error', level => 'm',
+                      value => 'MT'}]],
+  ['10.3d' => undef],
+  ['PT42M31d' => 42*60+31*24*60*60, [{type => 'duration:case', level => 'm',
+                                      value => 'd'},
+                                     {type => 'duration:syntax error',
+                                      level => 'm',
+                                      value => 'PTMD'}]],
+  ['P10h2h' => 12*60*60, [{type => 'duration:case',
+                           value => 'h',
+                           level => 'm'},
+                          {type => 'duration:syntax error',
+                           value => 'PHH',
+                           level => 'm'}]],
+  ['31Y' => undef, [{type => 'duration:months', level => 'm'}]],
+  ['P21W' => 21*7*24*60*60, [{type => 'duration:syntax error',
+                              value => 'PW',
+                              level => 'm'}], []],
+  ['PT21D' => 21*24*60*60, [{type => 'duration:syntax error',
+                             value => 'PTD',
+                             level => 'm'}]],
+  ['P21WT31H' => 21*7*24*60*60+31*60*60,
+   [{type => 'duration:syntax error',
+     value => 'PWTH',
+     level => 'm'}]],
+  ['P21W31D' => 21*7*24*60*60+31*24*60*60,
+   [{type => 'duration:syntax error',
+     value => 'PWD',
+     level => 'm'}]],
+  ['PT12H3S' => 12*60*60+3, undef, [{type => 'duration:syntax error',
+                                     value => 'PTHS',
+                                     level => 'm'}]],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $duration = $parser->parse_duration_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $duration, 'Web::DateTime::Duration';
+      is $duration && $duration->months, 0;
+      is $duration && $duration->seconds, $test->[1];
+      eq_or_diff \@error, $test->[2] || [];
+    } else {
+      is $duration, undef;
+      ok 1;
+      ok 1;
+      eq_or_diff \@error, $test->[2] || [{type => 'duration:syntax error', level => 'm'}];
+    }
+    done $c;
+  } n => 4, name => ['parse_duration_string', $test->[0]];
+
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $duration = $parser->parse_vevent_duration_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $duration, 'Web::DateTime::Duration';
+      is $duration && $duration->months, 0;
+      is $duration && $duration->seconds, $test->[1];
+      eq_or_diff \@error, $test->[3] || $test->[2] || [];
+    } else {
+      is $duration, undef;
+      ok 1;
+      ok 1;
+      eq_or_diff \@error, $test->[3] || $test->[2] || [{type => 'duration:syntax error', level => 'm'}];
+    }
+    done $c;
+  } n => 4, name => ['parse_vevent_duration_string', $test->[0]];
+}
+
 run_tests;
 
 =head1 LICENSE
