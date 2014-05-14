@@ -33,6 +33,16 @@ second argument must be the number of months, which is a non-negative
 integer.  The third argument must be the direction, which is one of
 number C<+1> (positive) or number C<-1> (negative).
 
+=item false = $duration->is_datetime
+
+=item false = $duration->is_time_zone
+
+=item true = $duration->is_duration
+
+=item false = $duration->is_period
+
+Return whether the object is of the specified type or not.
+
 =item $number = $duration->seconds
 
 Return the number of seconds, which might have a fractional part.  The

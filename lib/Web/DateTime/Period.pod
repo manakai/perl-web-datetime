@@ -1,0 +1,94 @@
+=head1 NAME
+
+Web::DateTime::Period - Period between dates for Web
+
+=head1 SYNOPSIS
+
+  use Web::DateTime::Period;
+  $period = Web::DateTime::Period->new_from_datetimes ($dt1, $dt2);
+  warn $period->to_datetimes_string;
+
+=head1 DESCRIPTION
+
+The C<Web::DateTime::Period> class represents a time period between
+two dates and times.
+
+=head1 METHODS
+
+Following methods are available:
+
+=over 4
+
+=item $period = Web::DateTime::Period->new_from_datetimes ($dt1, $dt2)
+
+Create a new period object from start and end L<Web::DateTime>
+objects.  The first date/time must be less than or equal to the second
+date/time.
+
+=item $period = Web::DateTime::Period->new_from_datetime_and_duration ($dt, $duration)
+
+Create a new period object from start L<Web::DateTime> object and
+L<Web::DateTime::Duration> object.  The duration must be positive and
+must not have non-zero months.
+
+=item false = $period->is_datetime
+
+=item false = $period->is_time_zone
+
+=item false = $period->is_duration
+
+=item true = $period->is_period
+
+Return whether the object is of the specified type or not.
+
+=item $dt = $period->start_datetime
+
+Return the L<Web::DateTime> object representing the start date and
+time of the period.
+
+=item $dt = $period->end_datetime
+
+Return the L<Web::DateTime> object representing the end date and time
+of the period.
+
+=item $duration = $period->duration
+
+Return the L<Web::DateTime::Duration> object representing the duration
+between the start and end dates and times.
+
+=item $string = $period->to_datetimes_string
+
+Return the string representing the period, using the format of two
+valid global date and time strings, which is appropriate for vEvent
+microdata [HTML].
+
+=item $string = $period->to_datetime_and_duration_string
+
+Return the string representing the period, using the format of a valid
+global date and time string and an vevent duration string, which is
+appropriate for vEvent microdata [HTML].
+
+=back
+
+=head1 SPECIFICATION
+
+=over 4
+
+=item HTML
+
+HTML Standard <http://www.whatwg.org/specs/web-apps/current-work/>.
+
+=back
+
+=head1 AUTHOR
+
+Wakaba <wakaba@suikawiki.org>.
+
+=head1 LICENSE
+
+Copyright 2014 Wakaba <wakaba@suikawiki.org>.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

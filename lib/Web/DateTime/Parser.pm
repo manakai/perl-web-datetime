@@ -359,6 +359,32 @@ sub parse_date_string_with_optional_time ($$) {
   }
 } # parse_date_string_with_optional_time
 
+sub parse_date_string_with_optional_time_and_duration ($$) {
+  my ($self, $value) = @_;
+  my ($v1, $v2) = split m{/}, $value, 2;
+  if (defined $v2) {
+    my $dt1 = $self->parse_global_date_and_time_string ($v1) or return undef;
+    if ($v2 =~ /^[0-9]+-/) {
+      my $dt2 = $self->parse_global_date_and_time_string ($v2) or return undef;
+      if ($dt1->to_unix_number <= $dt2->to_unix_number) {
+        require Web::DateTime::Period;
+        return Web::DateTime::Period->new_from_datetimes ($dt1, $dt2);
+      } else {
+        $self->onerror->(type => 'period:not 1<=2',
+                         level => 'm');
+        return undef;
+      }
+    } else {
+      my $duration = $self->parse_vevent_duration_string ($v2) or return undef;
+      require Web::DateTime::Period;
+      return Web::DateTime::Period->new_from_datetime_and_duration
+          ($dt1, $duration);
+    }
+  } else {
+    return $self->parse_date_string_with_optional_time ($v1);
+  }
+} # parse_date_string_with_optional_time_and_duration
+
 sub parse_time_zone_offset_string ($$) {
   my ($self, $value) = @_;
   if ($value =~ /\A(?:

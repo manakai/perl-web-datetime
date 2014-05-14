@@ -15,8 +15,12 @@ test {
   is $tz->offset_hour, 0;
   is $tz->offset_minute, 0;
   is $tz->to_offset_string, 'Z';
+  ok not $tz->is_datetime;
+  ok not $tz->is_period;
+  ok $tz->is_time_zone;
+  ok not $tz->is_duration;
   done $c;
-} n => 6, name => 'new_utc';
+} n => 10, name => 'new_utc';
 
 test {
   my $c = shift;

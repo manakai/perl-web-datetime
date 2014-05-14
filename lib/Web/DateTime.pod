@@ -40,6 +40,16 @@ leap seconds, if the L<DateTime> object represents a leap second, the
 result C<Web::DateTime> object represents the second just after the
 leap second.
 
+=item true = $dt->is_datetime
+
+=item false = $dt->is_time_zone
+
+=item false = $dt->is_duration
+
+=item false = $dt->is_period
+
+Return whether the object is of the specified type or not.
+
 =item $string = $dt->to_year_string
 
 Serialize the year value represented by the object for HTML.  Note
@@ -204,6 +214,15 @@ discarded.  Note that the Unix C<time_t> value represents the time
 without associated time zone information.  If the object has no
 associated time zone, it is considered as a UTC timestamp for the
 purpose of conversion.
+
+=item $number = $dt->to_unix_time
+
+Return a Unix time value of the time represented by the object, with
+fractional part of the second, if any.  The value can be positive or
+negative, and might not be an integer.  Note that the Unix time value
+represents the time without associated time zone information.  If the
+object has no associated time zone, it is considered as a UTC
+timestamp for the purpose of conversion.
 
 =item $number = $dt->to_html_number
 

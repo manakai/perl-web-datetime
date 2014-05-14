@@ -145,6 +145,16 @@ Parse the argument as an XML Schema C<xs:yearMonthDuration> string
 [XSDT] and return a L<Web::DateTime::Duration> (or C<undef> if
 failed).  Any error is reported through the C<onerror> handler.
 
+=item $obj = $parser->parse_date_string_with_optional_time_and_duration ($string)
+
+Parse the argument as either a valid date string, a valid global date
+and time string, a pair of two valid global date and time strings, or
+a pair of a valid global date and time string and a valid vevent
+duration string, and return a L<Web::DateTime> or
+L<Web::DateTime::Period> (or C<undef> if failed).  Any error is
+reported through the C<onerror> handler.  This method can be used to
+parse the value of the vEvent microdata's C<rdate> item value [HTML].
+
 =back
 
 =head1 DEPENDENCY

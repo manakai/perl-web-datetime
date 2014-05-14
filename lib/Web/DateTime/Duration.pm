@@ -19,6 +19,11 @@ sub new_from_seconds_and_months_and_sign ($$$$) {
   return $self;
 } # new_from_seconds_and_months_and_sign
 
+sub is_datetime ($) { 0 }
+sub is_time_zone ($) { 0 }
+sub is_duration ($) { 1 }
+sub is_period ($) { 0 }
+
 sub seconds ($) {
   return $_[0]->{seconds};
 } # seconds

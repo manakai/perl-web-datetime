@@ -3,6 +3,7 @@ use warnings;
 use Path::Tiny;
 use lib glob path (__FILE__)->parent->parent->child ('t_deps', 'modules', '*', 'lib')->stringify;
 use Test::More;
+use Test::Differences;
 use Test::X1;
 use Web::DateTime;
 use Web::DateTime::Parser;
@@ -13,8 +14,12 @@ test {
   is $date->to_unix_integer, 0;
   is $date->second_fraction_string, '';
   is $date->time_zone->offset_as_seconds, 0;
+  ok $date->is_datetime;
+  ok not $date->is_period;
+  ok not $date->is_time_zone;
+  ok not $date->is_duration;
   done $c;
-} n => 3, name => 'new_from_unix_time 0';
+} n => 7, name => 'new_from_unix_time 0';
 
 test {
   my $c = shift;
@@ -311,6 +316,56 @@ for my $test (
     is $dt->to_yearless_date_string, $test->[1] || $test->[0];
     done $c;
   } n => 1, name => ['to_yearless_date_string', $test->[0]];
+}
+
+for my $test (
+  ['2013-01-03' => 'DateTime', '2013-01-03T00:00:00Z'],
+  ['2013-01-03T04:12:33Z' => 'DateTime', '2013-01-03T04:12:33Z'],
+  ['2013-01-03T04:12:33+12:33' => 'DateTime', '2013-01-02T15:39:33Z'],
+  ['2013-01-03T04:12:33Z/2013-01-03T04:12:33-01:00' => 'Period', '2013-01-03T04:12:33Z/PT3600S'],
+  ['2013-01-03T04:12:33Z/2013-01-03T03:12:33-01:00' => 'Period', '2013-01-03T04:12:33Z/PT0S'],
+  ['2013-01-03T04:12:33Z/PT31M' => 'Period', '2013-01-03T04:12:33Z/PT1860S'],
+  ['2013-01-03T04:12:33Z/PT31M1.32S' => 'Period', '2013-01-03T04:12:33Z/PT1861S',
+   [{type => 'datetime:fractional second', level => 'm'}]],
+  ['2013-01-03T04:12:33Z/PT1S31M' => 'Period', '2013-01-03T04:12:33Z/PT1861S',
+   [{type => 'duration:syntax error', value => 'PTSM', level => 'm'}]],
+  ['2013-01-03T04:12:33Z/' => 'Error', undef,
+   [{type => 'duration:syntax error', level => 'm'}]],
+  ['2013-01-03T04:12:33Z/PT31M/' => 'Error', undef,
+   [{type => 'duration:syntax error', level => 'm'}]],
+  ['2013-01-03T04:12:33/PT31M' => 'Error', undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2013-01-03/PT31M' => 'Error', undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2013-01-03T04:12:33Z/50S' => 'Period', '2013-01-03T04:12:33Z/PT50S',
+   [{type => 'duration:html duration', level => 'm'}]],
+  ['2013-01-03T04:12:33Z/2013-01-03T04:12:33' => 'Error', '',
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2013-01-03T04:12:33Z/2013-01-03T04:12:32Z' => 'Error', '',
+   [{type => 'period:not 1<=2', level => 'm'}]],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_date_string_with_optional_time_and_duration
+        ($test->[0]);
+    if ($test->[1] eq 'Period') {
+      isa_ok $dt, 'Web::DateTime::Period';
+      is $dt->to_datetime_and_duration_string, $test->[2];
+    } elsif ($test->[1] eq 'DateTime') {
+      isa_ok $dt, 'Web::DateTime';
+      is $dt->to_global_date_and_time_string, $test->[2];
+    } else {
+      is $dt, undef;
+      ok 1;
+    }
+    eq_or_diff \@error, $test->[3] || [];
+    done $c;
+  } n => 3, name => ['parse_date_string_with_optional_time_and_duration', $test->[0]];
 }
 
 run_tests;
