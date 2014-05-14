@@ -444,8 +444,40 @@ sub parse_vevent_duration_string ($$) {
   return shift->_parse_duration ($_[0], allow_w => 1);
 } # parse_vevent_duration_string
 
+sub parse_xs_duration_string ($$) {
+  return shift->_parse_duration
+      ($_[0],
+       allow_negative => 1,
+       allow_months => 1,
+       allow_second_fraction => 1,
+       allow_hs => 1);
+} # parse_xs_duration_string
+
+sub parse_xs_day_time_duration_string ($$) {
+  return shift->_parse_duration
+      ($_[0],
+       allow_negative => 1,
+       allow_months => 0,
+       allow_second_fraction => 1,
+       allow_hs => 1);
+} # parse_xs_day_time_duration_string
+
+sub parse_xs_year_month_duration_string ($$) {
+  return shift->_parse_duration
+      ($_[0],
+       allow_negative => 1,
+       allow_months => 1,
+       disallow_seconds => 1,
+       allow_second_fraction => 1,
+       allow_hs => 1);
+} # parse_xs_year_month_duration_string
+
 sub _parse_duration ($$%) {
   my ($self, $value, %args) = @_;
+  my $sign = +1;
+  if ($args{allow_negative} and $value =~ s/^-//) {
+    $sign = -1;
+  }
   if ($value =~ m{\A
     [\x09\x0A\x0C\x0D\x20]*
     P?
@@ -499,56 +531,71 @@ sub _parse_duration ($$%) {
       $self->onerror->(type => 'datetime:fractional second',
                        level => 'm');
     }
-    if ($months) {
-      $self->onerror->(type => 'duration:months',
-                       level => 'm');
-      return undef;
-    } else {
-      if ($value =~ /[PT]/) {
-        if ($value =~ /T/ and not $value =~ /P/) {
-          $self->onerror->(type => 'duration:syntax error',
-                           value => $suffix,
+
+    if ($value =~ /[PT]/) {
+      if ($value =~ /T/ and not $value =~ /P/) {
+        $self->onerror->(type => 'duration:syntax error',
+                         value => $suffix,
+                         level => 'm');
+      } else {
+        if ($suffix =~ /([a-z])/) {
+          $self->onerror->(type => 'duration:case',
+                           value => $1,
                            level => 'm');
-        } else {
-          if ($suffix =~ /([a-z])/) {
-            $self->onerror->(type => 'duration:case',
-                             value => $1,
-                             level => 'm');
-            $suffix = uc $suffix;
-          }
-          if ($args{allow_w} and $suffix =~ /\APW\z/) {
-            #
-          } elsif ($suffix =~ /\AP?(?:D|TH?M?S?|DTH?M?S?)\z/) {
-            if ($suffix =~ /T/) {
-              if ($suffix =~ /THS/) {
-                if ($args{allow_hs}) {
-                  #
-                } else {
-                  $self->onerror->(type => 'duration:syntax error',
-                                   value => $suffix,
-                                   level => 'm');
-                }
-              } elsif ($suffix =~ /THM?S?|TH?MS?|TH?M?S/) {
+          $suffix = uc $suffix;
+        }
+        if ($args{allow_w} and $suffix =~ /\APW\z/) {
+          #
+        } elsif ($suffix =~ /\AP?Y?M?(?:D|TH?M?S?|DTH?M?S?)\z/ and
+                 not $args{disallow_seconds}) {
+          if ($suffix =~ /T/) {
+            if ($suffix =~ /THS/) {
+              if ($args{allow_hs}) {
                 #
               } else {
                 $self->onerror->(type => 'duration:syntax error',
                                  value => $suffix,
                                  level => 'm');
               }
+            } elsif ($suffix =~ /THM?S?|TH?MS?|TH?M?S/) {
+              #
+            } else {
+              $self->onerror->(type => 'duration:syntax error',
+                               value => $suffix,
+                               level => 'm');
             }
-          } else {
-            $self->onerror->(type => 'duration:syntax error',
-                             value => $suffix,
-                             level => 'm');
           }
+        } elsif ($args{allow_months} and $suffix =~ /\AP(?:YM?D?|MD?|D)\z/) {
+          #
+        } else {
+          $self->onerror->(type => 'duration:syntax error',
+                           value => $suffix,
+                           level => 'm');
         }
-      } elsif (not $args{allow_html_duration}) {
+      }
+    } else {
+      if (not $args{allow_html_duration}) {
         $self->onerror->(type => 'duration:html duration',
                          level => 'm');
+      } elsif ($suffix =~ /[Yy]/) {
+        $self->onerror->(type => 'duration:syntax error',
+                         value => $suffix,
+                         level => 'm');
       }
-      require Web::DateTime::Duration;
-      return Web::DateTime::Duration->new_from_seconds ($seconds);
     }
+
+    if ($months) {
+      if ($args{allow_months}) {
+        #
+      } else {
+        $self->onerror->(type => 'duration:months',
+                         level => 'm');
+        return undef;
+      }
+    }
+    require Web::DateTime::Duration;
+    return Web::DateTime::Duration->new_from_seconds_and_months_and_sign
+        ($seconds, $months, $sign);
   } else {
     $self->onerror->(type => 'duration:syntax error',
                      level => 'm');

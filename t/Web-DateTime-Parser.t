@@ -105,74 +105,167 @@ for my $test (
 }
 
 for my $test (
-  ['', undef],
-  ['z', undef],
-  ['1000.0', undef],
-  ['-41s', undef],
-  ['-PT31H31M', undef],
-  ['41s' => 41, undef, [{type => 'duration:html duration', level => 'm'}]],
-  ["10m\t30s" => 10*60+30, undef,
+  ['', undef, undef, undef],
+  ['z', undef, undef, undef],
+  ['1000.0', undef, undef, undef],
+  ['-41s', 41, 0, -1,
+   undef,
+   undef,
    [{type => 'duration:html duration', level => 'm'}]],
-  ['420.400 s' => 420.4, undef,
+  ['-PT31H31M', 31*60*60+31*60, 0, -1,
+   undef,
+   undef,
+   undef,
+   undef,
+   [{type => 'duration:syntax error', value => 'PTHM', level => 'm'}]],
+  ['41s' => 41, 0, +1,
+   undef,
+   [{type => 'duration:html duration', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'}]],
+  ["10m\t30s" => 10*60+30, 0, +1,
+   undef,
+   [{type => 'duration:html duration', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'}]],
+  ['420.400 s' => 420.4, 0, +1,
+   undef,
    [{type => 'datetime:fractional second', level => 'm'},
-    {type => 'duration:html duration', level => 'm'}]],
-  [' PT132S', 132, [{type => 'duration:space', level => 'm'}]],
-  ['32w21d' => 32*7*24*60*60+21*24*60*60, undef,
+    {type => 'duration:html duration', level => 'm'}],
    [{type => 'duration:html duration', level => 'm'}]],
-  ['0h' => 0, undef, [{type => 'duration:html duration', level => 'm'}]],
-  ['42.44m' => undef],
-  ['332.000s' => 332, undef,
+  [' PT132S', 132, 0, +1,
+   [{type => 'duration:space', level => 'm'}],
+   undef,
+   undef,
+   undef,
+   [{type => 'duration:space', level => 'm'},
+    {type => 'duration:syntax error', value => 'PTS', level => 'm'}]],
+  ['32w21d' => 32*7*24*60*60+21*24*60*60, 0, +1,
+   undef,
+   [{type => 'duration:html duration', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'}]],
+  ['0h' => 0, 0, +1,
+   undef,
+   [{type => 'duration:html duration', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'}]],
+  ['42.44m' => undef, undef, undef],
+  ['332.000s' => 332, 0, +1,
+   undef,
    [{type => 'datetime:fractional second', level => 'm'},
-    {type => 'duration:html duration', level => 'm'}]],
-  ['32Y32M' => undef, [{type => 'duration:months', level => 'm'}]],
-  ['32M' => 32*60, undef, [{type => 'duration:html duration', level => 'm'}]],
-  ['T32M' => 32*60, [{type => 'duration:syntax error', level => 'm',
-                      value => 'TM'}]],
-  ['0Y32M' => undef, [{type => 'duration:months', level => 'm'}]],
-  ['P32M' => undef, [{type => 'duration:months', level => 'm'}]],
-  ['32M10M' => 42*60, undef,
+    {type => 'duration:html duration', level => 'm'}],
    [{type => 'duration:html duration', level => 'm'}]],
-  ['10s32M' => 32*60+10, undef,
+  ['32Y32M' => 0, 32*12+32, +1,
+   [{type => 'duration:syntax error', value => 'YM', level => 'm'},
+    {type => 'duration:months', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'},
+    {type => 'duration:months', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'},
+    {type => 'duration:months', level => 'm'}]],
+  ['32M' => 32*60, 0, +1,
+   undef,
+   [{type => 'duration:html duration', level => 'm'}],
    [{type => 'duration:html duration', level => 'm'}]],
-  ['P10s32M' => 32*60+10, [{type => 'duration:case', level => 'm',
-                            value => 's'},
-                           {type => 'duration:syntax error', level => 'm',
-                            value => 'PSM'}]],
-  ['10d32M' => 10*24*60*60+32*60, undef,
+  ['T32M' => 32*60, 0, +1,
+   [{type => 'duration:syntax error', level => 'm',
+     value => 'TM'}]],
+  ['0Y32M' => 0, 32, +1,
+   [{type => 'duration:syntax error', value => 'YM', level => 'm'},
+    {type => 'duration:months', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'},
+    {type => 'duration:months', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'},
+    {type => 'duration:months', level => 'm'}]],
+  ['0Y0M' => 0, 0, +1,
+   [{type => 'duration:syntax error', value => 'YM', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'}],
    [{type => 'duration:html duration', level => 'm'}]],
-  ['32MPT' => undef],
-  ['32MT' => 32*60, [{type => 'duration:syntax error', level => 'm',
-                      value => 'MT'}]],
-  ['10.3d' => undef],
-  ['PT42M31d' => 42*60+31*24*60*60, [{type => 'duration:case', level => 'm',
-                                      value => 'd'},
-                                     {type => 'duration:syntax error',
-                                      level => 'm',
-                                      value => 'PTMD'}]],
-  ['P10h2h' => 12*60*60, [{type => 'duration:case',
-                           value => 'h',
-                           level => 'm'},
-                          {type => 'duration:syntax error',
-                           value => 'PHH',
-                           level => 'm'}]],
-  ['31Y' => undef, [{type => 'duration:months', level => 'm'}]],
-  ['P21W' => 21*7*24*60*60, [{type => 'duration:syntax error',
-                              value => 'PW',
-                              level => 'm'}], []],
-  ['PT21D' => 21*24*60*60, [{type => 'duration:syntax error',
-                             value => 'PTD',
-                             level => 'm'}]],
-  ['P21WT31H' => 21*7*24*60*60+31*60*60,
-   [{type => 'duration:syntax error',
-     value => 'PWTH',
-     level => 'm'}]],
-  ['P21W31D' => 21*7*24*60*60+31*24*60*60,
-   [{type => 'duration:syntax error',
-     value => 'PWD',
-     level => 'm'}]],
-  ['PT12H3S' => 12*60*60+3, undef, [{type => 'duration:syntax error',
-                                     value => 'PTHS',
-                                     level => 'm'}]],
+  ['0Y' => 0, 0, +1,
+   [{type => 'duration:syntax error', value => 'Y', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'}]],
+  ['0M' => 0, 0, +1,
+   undef,
+   [{type => 'duration:html duration', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'}]],
+  ['P32M' => 0, 32, +1,
+   [{type => 'duration:syntax error', value => 'PM', level => 'm'},
+    {type => 'duration:months', level => 'm'}],
+   undef,
+   [],
+   [{type => 'duration:syntax error', value => 'PM', level => 'm'},
+    {type => 'duration:months', level => 'm'}]],
+  ['P0Y0M' => 0, 0, +1,
+   [{type => 'duration:syntax error', value => 'PYM', level => 'm'}],
+   undef,
+   [],
+   [{type => 'duration:syntax error', value => 'PYM', level => 'm'}]],
+  ['P0Y' => 0, 0, +1,
+   [{type => 'duration:syntax error', value => 'PY', level => 'm'}],
+   undef,
+   [],
+   [{type => 'duration:syntax error', value => 'PY', level => 'm'}]],
+  ['P0M' => 0, 0, +1,
+   [{type => 'duration:syntax error', value => 'PM', level => 'm'}],
+   undef,
+   [],
+   [{type => 'duration:syntax error', value => 'PM', level => 'm'}]],
+  ['32M10M' => 42*60, 0, +1,
+   undef,
+   [{type => 'duration:html duration', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'}]],
+  ['10s32M' => 32*60+10, 0, +1,
+   undef,
+   [{type => 'duration:html duration', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'}]],
+  ['P10s32M' => 32*60+10, 0, +1,
+   [{type => 'duration:case', level => 'm', value => 's'},
+    {type => 'duration:syntax error', level => 'm', value => 'PSM'}]],
+  ['10d32M' => 10*24*60*60+32*60, 0, +1,
+   undef,
+   [{type => 'duration:html duration', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'}]],
+  ['32MPT' => undef, undef, undef],
+  ['32MT' => 32*60, 0, +1,
+   [{type => 'duration:syntax error', level => 'm', value => 'MT'}]],
+  ['10.3d' => undef, undef, undef],
+  ['PT42M31d' => 42*60+31*24*60*60, 0, +1,
+   [{type => 'duration:case', level => 'm', value => 'd'},
+    {type => 'duration:syntax error', level => 'm', value => 'PTMD'}]],
+  ['P10h2h' => 12*60*60, 0, +1,
+   [{type => 'duration:case', value => 'h', level => 'm'},
+    {type => 'duration:syntax error', value => 'PHH', level => 'm'}]],
+  ['31Y' => 0, 31*12, +1,
+   [{type => 'duration:syntax error', value => 'Y', level => 'm'},
+    {type => 'duration:months', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'},
+    {type => 'duration:months', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'}],
+   [{type => 'duration:html duration', level => 'm'},
+    {type => 'duration:months', level => 'm'}]],
+  ['P21W' => 21*7*24*60*60, 0, +1,
+   [{type => 'duration:syntax error', value => 'PW', level => 'm'}], []],
+  ['PT21D' => 21*24*60*60, 0, +1,
+   [{type => 'duration:syntax error', value => 'PTD', level => 'm'}]],
+  ['P21WT31H' => 21*7*24*60*60+31*60*60, 0, +1,
+   [{type => 'duration:syntax error', value => 'PWTH', level => 'm'}]],
+  ['-P21WT31H' => 21*7*24*60*60+31*60*60, 0, -1,
+   [{type => 'duration:syntax error', level => 'm'}],
+   undef,
+   [{type => 'duration:syntax error', value => 'PWTH', level => 'm'}]],
+  ['P21W31D' => 21*7*24*60*60+31*24*60*60, 0, +1,
+   [{type => 'duration:syntax error', value => 'PWD', level => 'm'}]],
+  ['PT12H3S' => 12*60*60+3, 0, +1,
+   undef,
+   [{type => 'duration:syntax error', value => 'PTHS', level => 'm'}],
+   undef,
+   undef,
+   [{type => 'duration:syntax error', value => 'PTHS', level => 'm'}]],
+  ['-PT12H3S' => 12*60*60+3, 0, -1,
+   [{type => 'duration:syntax error', level => 'm'}],
+   undef,
+   [],
+   undef,
+   [{type => 'duration:syntax error', value => 'PTHS', level => 'm'}]],
 ) {
   test {
     my $c = shift;
@@ -182,19 +275,21 @@ for my $test (
       push @error, {@_};
     });
     my $duration = $parser->parse_duration_string ($test->[0]);
-    if (defined $test->[1]) {
+    if (defined $test->[1] and not $test->[2] and $test->[3] > 0) {
       isa_ok $duration, 'Web::DateTime::Duration';
-      is $duration && $duration->months, 0;
+      is $duration && $duration->sign, $test->[3];
+      is $duration && $duration->months, $test->[2];
       is $duration && $duration->seconds, $test->[1];
-      eq_or_diff \@error, $test->[2] || [];
+      eq_or_diff \@error, $test->[4] || [];
     } else {
       is $duration, undef;
       ok 1;
       ok 1;
-      eq_or_diff \@error, $test->[2] || [{type => 'duration:syntax error', level => 'm'}];
+      ok 1;
+      eq_or_diff \@error, $test->[4] || [{type => 'duration:syntax error', level => 'm'}];
     }
     done $c;
-  } n => 4, name => ['parse_duration_string', $test->[0]];
+  } n => 5, name => ['parse_duration_string', $test->[0]];
 
   test {
     my $c = shift;
@@ -204,19 +299,93 @@ for my $test (
       push @error, {@_};
     });
     my $duration = $parser->parse_vevent_duration_string ($test->[0]);
-    if (defined $test->[1]) {
+    if (defined $test->[1] and not $test->[2] and $test->[3] > 0) {
       isa_ok $duration, 'Web::DateTime::Duration';
-      is $duration && $duration->months, 0;
+      is $duration && $duration->sign, $test->[3];
+      is $duration && $duration->months, $test->[2];
       is $duration && $duration->seconds, $test->[1];
-      eq_or_diff \@error, $test->[3] || $test->[2] || [];
+      eq_or_diff \@error, $test->[5] || $test->[4] || [];
     } else {
       is $duration, undef;
       ok 1;
       ok 1;
-      eq_or_diff \@error, $test->[3] || $test->[2] || [{type => 'duration:syntax error', level => 'm'}];
+      ok 1;
+      eq_or_diff \@error, $test->[5] || $test->[4] || [{type => 'duration:syntax error', level => 'm'}];
     }
     done $c;
-  } n => 4, name => ['parse_vevent_duration_string', $test->[0]];
+  } n => 5, name => ['parse_vevent_duration_string', $test->[0]];
+
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $duration = $parser->parse_xs_duration_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $duration, 'Web::DateTime::Duration';
+      is $duration && $duration->sign, $test->[3];
+      is $duration && $duration->months, $test->[2];
+      is $duration && $duration->seconds, $test->[1];
+      eq_or_diff \@error, $test->[6] || $test->[4] || [];
+    } else {
+      is $duration, undef;
+      ok 1;
+      ok 1;
+      ok 1;
+      eq_or_diff \@error, $test->[6] || $test->[4] || [{type => 'duration:syntax error', level => 'm'}];
+    }
+    done $c;
+  } n => 5, name => ['parse_xs_duration_string', $test->[0]];
+
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $duration = $parser->parse_xs_day_time_duration_string ($test->[0]);
+    if (defined $test->[1] and not $test->[2]) {
+      isa_ok $duration, 'Web::DateTime::Duration';
+      is $duration && $duration->sign, $test->[3];
+      is $duration && $duration->months, $test->[2];
+      is $duration && $duration->seconds, $test->[1];
+      eq_or_diff \@error, $test->[7] || $test->[6] || $test->[4] || [];
+    } else {
+      is $duration, undef;
+      ok 1;
+      ok 1;
+      ok 1;
+      eq_or_diff \@error, $test->[7] || $test->[6] || $test->[4] || [{type => 'duration:syntax error', level => 'm'}];
+    }
+    done $c;
+  } n => 5, name => ['parse_xs_day_time_duration_string', $test->[0]];
+
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $duration = $parser->parse_xs_year_month_duration_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $duration, 'Web::DateTime::Duration';
+      is $duration && $duration->sign, $test->[3];
+      is $duration && $duration->months, $test->[2];
+      is $duration && $duration->seconds, $test->[1];
+      eq_or_diff \@error, $test->[8] || $test->[6] || $test->[4] || [];
+    } else {
+      is $duration, undef;
+      ok 1;
+      ok 1;
+      ok 1;
+      eq_or_diff \@error, $test->[8] || $test->[6] || $test->[4] || [{type => 'duration:syntax error', level => 'm'}];
+    }
+    done $c;
+  } n => 5, name => ['parse_xs_year_month_duration_string', $test->[0]];
 }
 
 run_tests;

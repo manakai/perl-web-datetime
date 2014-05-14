@@ -12,6 +12,13 @@ sub new_from_seconds ($$) {
   return $self;
 } # new_from_seconds
 
+sub new_from_seconds_and_months_and_sign ($$$$) {
+  my $self = bless {seconds => $_[1],
+                    months => $_[2]}, $_[0];
+  $self->{negative} = 1 if $_[3] < 0;
+  return $self;
+} # new_from_seconds_and_months_and_sign
+
 sub seconds ($) {
   return $_[0]->{seconds};
 } # seconds
@@ -20,8 +27,12 @@ sub months ($) {
   return $_[0]->{months} || 0;
 } # months
 
+sub sign ($) {
+  return $_[0]->{negative} ? -1 : +1;
+} # sign
+
 sub to_duration_string ($) {
-  return undef if $_[0]->{month};
+  return undef if $_[0]->months;
   my $s = sprintf 'PT%.10fS', $_[0]->seconds;
   $s =~ s/\.0+S\z/S/;
   $s =~ s/\.([0-9]*[1-9])0+S\z/.$1S/;
@@ -29,19 +40,25 @@ sub to_duration_string ($) {
 } # to_duration_string
 
 sub to_vevent_duration_string ($) {
-  return undef if $_[0]->{month};
+  return undef if $_[0]->months;
   my $s = sprintf 'PT%dS', $_[0]->seconds;
   return $s;
 } # to_vevent_duration_string
 
 sub to_xs_duration ($) {
+  my $self = $_[0];
   my $s = '';
-  $s .= '-' if $_[0]->{negative};
-  if ($_[0]->{month}) {
-    $s .= sprintf 'P%dMT%.10fS',
-        $_[0]->months, $_[0]->seconds;
+  $s .= '-' if $self->sign < 0;
+  my $m = $self->months;
+  my $sec = $self->seconds;
+  if ($m) {
+    if ($sec) {
+      $s .= sprintf 'P%dMT%.10fS', $m, $sec;
+    } else {
+      $s .= sprintf 'P%dM', $m;
+    }
   } else {
-    $s .= sprintf 'PT%.10fS', $_[0]->seconds;
+    $s .= sprintf 'PT%.10fS', $sec;
   }
   $s =~ s/\.0+S\z/S/;
   $s =~ s/\.([0-9]*[1-9])0+S\z/.$1S/;

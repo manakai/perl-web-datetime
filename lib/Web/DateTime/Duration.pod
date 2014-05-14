@@ -25,6 +25,14 @@ Number of months is set to zero.  The direction is set by the sign of
 the specified number.  The number of seconds can have a fractional
 part.
 
+=item $duration = Web::DateTime::Duration->new_from_seconds_and_months_and_sign ($number, $number, $sign)
+
+Create a new duration object.  The first argument must be the number
+of seconds (non-negative), which can have a fractional part.  The
+second argument must be the number of months, which is a non-negative
+integer.  The third argument must be the direction, which is one of
+number C<+1> (positive) or number C<-1> (negative).
+
 =item $number = $duration->seconds
 
 Return the number of seconds, which might have a fractional part.  The
@@ -34,6 +42,11 @@ value is always non-negative.
 
 Return the number of months.  The value is always a non-negative
 integer.
+
+=item $sign = $duration->sign
+
+Return the sign of the duration.  The returned value is either number
+C<+1> (positive) or C<-1> (negative).
 
 =item $string = $duration->to_duration_string
 

@@ -19,13 +19,54 @@ for my $test (
     my $duration = Web::DateTime::Duration->new_from_seconds ($test->[0]);
     is $duration->seconds, $test->[1] || $test->[0];
     is $duration->months, 0;
+    is $duration->sign, $test->[0] < 0 ? -1 : +1;
     is $duration->to_duration_string, 'PT' . ($test->[1] || $test->[0]) . 'S';
     is $duration->to_xs_duration,
         ($test->[0] < 0 ? '-' : '') . 'PT' . ($test->[1] || $test->[0]) . 'S';
     is $duration->to_vevent_duration_string,
         'PT' . int ($test->[1] || $test->[0]) . 'S';
     done $c;
-  } n => 5, name => ['new_from_seconds'];
+  } n => 6, name => ['new_from_seconds'];
+}
+
+for my $test (
+  [0, 0, +1],
+  [1251523, 0, +1],
+  [5213.55555, 0, +1],
+  [0.0004, 0, +1],
+  [40, 0, +1],
+  [0, 422, +1],
+  [0, 44, -1],
+  [44, 41100, +1],
+  [44, 41100, -1],
+  [0, 0, -1],
+) {
+  test {
+    my $c = shift;
+    my $duration = Web::DateTime::Duration->new_from_seconds_and_months_and_sign
+        ($test->[0], $test->[1], $test->[2]);
+    is $duration->seconds, $test->[0];
+    is $duration->months, $test->[1];
+    is $duration->sign, $test->[2];
+    if ($test->[1]) { # has months
+      is $duration->to_duration_string, undef;
+      is $duration->to_vevent_duration_string, undef;
+      if ($test->[0]) {
+        is $duration->to_xs_duration,
+            ($test->[2] < 0 ? '-' : '') . 'P' . ($test->[1]) . 'MT' . ($test->[0]) . 'S';
+      } else {
+        is $duration->to_xs_duration,
+            ($test->[2] < 0 ? '-' : '') . 'P' . ($test->[1]) . 'M';
+      }
+    } else {
+      is $duration->to_duration_string, 'PT' . ($test->[0]) . 'S';
+      is $duration->to_xs_duration,
+          ($test->[2] < 0 ? '-' : '') . 'PT' . ($test->[0]) . 'S';
+      is $duration->to_vevent_duration_string,
+          $test->[1] ? undef : 'PT' . int ($test->[0]) . 'S';
+    }
+    done $c;
+  } n => 6, name => ['new_from_seconds_and_months_and_sign'];
 }
 
 run_tests;

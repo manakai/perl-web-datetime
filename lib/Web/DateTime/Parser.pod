@@ -127,19 +127,42 @@ Parse the argument as an HTML vevent duration string [HTML] and return
 a L<Web::DateTime::Duration> (or C<undef> if failed).  Any error is
 reported through the C<onerror> handler.
 
+=item $duration = $parser->parse_xs_duration_string ($string)
+
+Parse the argument as an XML Schema C<xs:duration> string [XSDT] and
+return a L<Web::DateTime::Duration> (or C<undef> if failed).  Any
+error is reported through the C<onerror> handler.
+
+=item $duration = $parser->parse_xs_day_time_duration_string ($string)
+
+Parse the argument as an XML Schema C<xs:dayTimeDuration> string
+[XSDT] and return a L<Web::DateTime::Duration> (or C<undef> if
+failed).  Any error is reported through the C<onerror> handler.
+
+=item $duration = $parser->parse_xs_year_month_duration_string ($string)
+
+Parse the argument as an XML Schema C<xs:yearMonthDuration> string
+[XSDT] and return a L<Web::DateTime::Duration> (or C<undef> if
+failed).  Any error is reported through the C<onerror> handler.
+
 =back
 
 =head1 DEPENDENCY
 
 The module requires Perl 5.8 or later.
 
-=head1 SPECIFICATION
+=head1 SPECIFICATIONS
 
 =over 4
 
 =item HTML
 
 HTML Standard <http://www.whatwg.org/specs/web-apps/current-work/>.
+
+=item XSDT
+
+W3C XML Schema Definition Language (XSD) 1.1 Part 2: Datatypes
+<http://www.w3.org/TR/xmlschema11-2/>.
 
 =back
 
