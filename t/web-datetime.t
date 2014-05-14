@@ -368,6 +368,365 @@ for my $test (
   } n => 3, name => ['parse_date_string_with_optional_time_and_duration', $test->[0]];
 }
 
+for my $test (
+  ['2013-01-01T00:12:22Z' => '2013-01-01T00:12:22Z', 'Z'],
+  ['2013-01-01T00:12:22+12:00' => '2012-12-31T12:12:22Z', '+12:00'],
+  ['2013-01-01T00:12:22+14:00' => '2012-12-31T10:12:22Z', '+14:00'],
+  ['2013-01-01T00:12:22-14:00' => '2013-01-01T14:12:22Z', '-14:00'],
+  ['2013-01-01T00:12:22+14:01' => undef, undef,
+   [{type => 'datetime:bad timezone hour', value => '+14', level => 'm'}]],
+  ['2013-01-01T00:12:22-14:01' => undef, undef,
+   [{type => 'datetime:bad timezone hour', value => '-14', level => 'm'}]],
+  ['2014-01-01T00:12:33' => '2014-01-01T00:12:33Z', undef],
+  ['2014-01-01T00:12:33.000' => '2014-01-01T00:12:33Z', undef],
+  ['2014-01-01T00:12:33.123' => '2014-01-01T00:12:33.123Z', undef],
+  ['2014-01-01T00:12Z' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2014-01-01 00:12:33Z' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2013-01-01T24:00:00Z' => '2013-01-02T00:00:00Z', 'Z'],
+  ['2014-01-01T24:00:00.1Z' => undef, undef,
+   [{type => 'datetime:bad hour', value => 24, level => 'm'}]],
+  ['2014-01-01T24:00:01Z' => undef, undef,
+   [{type => 'datetime:bad hour', value => 24, level => 'm'}]],
+  ['01113-01-01T00:12:22+12:00' => '1112-12-31T12:12:22Z', '+12:00',
+   [{type => 'datetime:year leading 0', value => '01113', level => 'm'}]],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_xs_date_time_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $dt, 'Web::DateTime';
+      is $dt && $dt->to_global_date_and_time_string, $test->[1];
+      if (defined $test->[2]) {
+        is $dt && $dt->time_zone->to_offset_string, $test->[2];
+      } else {
+        is $dt->time_zone, undef;
+      }
+    } else {
+      is $dt, undef;
+      ok 1;
+      ok 1;
+    }
+    eq_or_diff \@error, $test->[3] || [];
+    done $c;
+  } n => 4, name => ['parse_xs_date_time_string', $test->[0]];
+}
+
+for my $test (
+  ['2013-01-01T00:12:22Z' => '2013-01-01T00:12:22Z', 'Z'],
+  ['2013-01-01T00:12:22+12:00' => '2012-12-31T12:12:22Z', '+12:00'],
+  ['2013-01-01T00:12:22+14:00' => '2012-12-31T10:12:22Z', '+14:00'],
+  ['2013-01-01T00:12:22-14:00' => '2013-01-01T14:12:22Z', '-14:00'],
+  ['2013-01-01T00:12:22+14:01' => undef, undef,
+   [{type => 'datetime:bad timezone hour', value => '+14', level => 'm'}]],
+  ['2013-01-01T00:12:22-14:01' => undef, undef,
+   [{type => 'datetime:bad timezone hour', value => '-14', level => 'm'}]],
+  ['2014-01-01T00:12Z' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2014-01-01T00:12:33' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2014-01-01 00:12:33Z' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2013-01-01T24:00:00Z' => '2013-01-02T00:00:00Z', 'Z'],
+  ['2014-01-01T24:00:00.1Z' => undef, undef,
+   [{type => 'datetime:bad hour', value => 24, level => 'm'}]],
+  ['2014-01-01T24:00:01Z' => undef, undef,
+   [{type => 'datetime:bad hour', value => 24, level => 'm'}]],
+  ['01113-01-01T00:12:22+12:00' => '1112-12-31T12:12:22Z', '+12:00',
+   [{type => 'datetime:year leading 0', value => '01113', level => 'm'}]],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_xs_date_time_stamp_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $dt, 'Web::DateTime';
+      is $dt && $dt->to_global_date_and_time_string, $test->[1];
+      is $dt && $dt->time_zone->to_offset_string, $test->[2];
+    } else {
+      is $dt, undef;
+      ok 1;
+      ok 1;
+    }
+    eq_or_diff \@error, $test->[3] || [];
+    done $c;
+  } n => 4, name => ['parse_xs_date_time_stamp_string', $test->[0]];
+}
+
+for my $test (
+  ['' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['12:44:11' => '1970-01-01T12:44:11Z', undef],
+  ['12:44:11Z' => '1970-01-01T12:44:11Z', 'Z'],
+  ['12:44:11-00:00' => '1970-01-01T12:44:11Z', 'Z'],
+  ['24:00:00' => '1970-01-02T00:00:00Z', undef],
+  ['12:44:11.134' => '1970-01-01T12:44:11.134Z', undef],
+  ['12:44:11+09:00' => '1970-01-01T03:44:11Z', '+09:00'],
+  ['12:44:11+14:00' => '1969-12-31T22:44:11Z', '+14:00'],
+  ['12:44:11+14:01' => undef, undef,
+   [{type => 'datetime:bad timezone hour', value => '+14', level => 'm'}]],
+  ['12:44:11-14:00' => '1970-01-02T02:44:11Z', '-14:00'],
+  ['12:44:11-14:01' => undef, undef,
+   [{type => 'datetime:bad timezone hour', value => '-14', level => 'm'}]],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_xs_time_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $dt, 'Web::DateTime';
+      is $dt && $dt->to_global_date_and_time_string, $test->[1];
+      if (defined $test->[2]) {
+        is $dt && $dt->time_zone->to_offset_string, $test->[2];
+      } else {
+        is $dt->time_zone, undef;
+      }
+    } else {
+      is $dt, undef;
+      ok 1;
+      ok 1;
+    }
+    eq_or_diff \@error, $test->[3] || [];
+    done $c;
+  } n => 4, name => ['parse_xs_time_string', $test->[0]];
+}
+
+for my $test (
+  ['' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-01-05' => '2012-01-05T00:00:00Z', undef],
+  ['2012-01-05Z' => '2012-01-05T00:00:00Z', 'Z'],
+  ['2012-01-05-12:33' => '2012-01-05T11:27:00Z', '-12:33'],
+  ['2012-04-05T00:12:33Z' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['02040-04-30' => '2040-04-30T00:00:00Z', undef,
+   [{type => 'datetime:year leading 0', value => '02040', level => 'm'}]],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_xs_date_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $dt, 'Web::DateTime';
+      is $dt && $dt->to_global_date_and_time_string, $test->[1];
+      if (defined $test->[2]) {
+        is $dt && $dt->time_zone->to_offset_string, $test->[2];
+      } else {
+        is $dt->time_zone, undef;
+      }
+    } else {
+      is $dt, undef;
+      ok 1;
+      ok 1;
+    }
+    eq_or_diff \@error, $test->[3] || [];
+    done $c;
+  } n => 4, name => ['parse_xs_date_string', $test->[0]];
+}
+
+for my $test (
+  ['' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-01' => '2012-01-01T00:00:00Z', undef],
+  ['2012-01Z' => '2012-01-01T00:00:00Z', 'Z'],
+  ['2012-01-12:33' => '2012-01-01T11:27:00Z', '-12:33'],
+  ['2012-04T00:12:33Z' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['02040-04' => '2040-04-01T00:00:00Z', undef,
+   [{type => 'datetime:year leading 0', value => '02040', level => 'm'}]],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_xs_g_year_month_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $dt, 'Web::DateTime';
+      is $dt && $dt->to_global_date_and_time_string, $test->[1];
+      if (defined $test->[2]) {
+        is $dt && $dt->time_zone->to_offset_string, $test->[2];
+      } else {
+        is $dt->time_zone, undef;
+      }
+    } else {
+      is $dt, undef;
+      ok 1;
+      ok 1;
+    }
+    eq_or_diff \@error, $test->[3] || [];
+    done $c;
+  } n => 4, name => ['parse_xs_g_year_month_string', $test->[0]];
+}
+
+for my $test (
+  ['' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012' => '2012-01-01T00:00:00Z', undef],
+  ['2012Z' => '2012-01-01T00:00:00Z', 'Z'],
+  ['2012-12:33' => '2012-01-01T11:27:00Z', '-12:33'],
+  ['2012T00:12:33Z' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['02040' => '2040-01-01T00:00:00Z', undef,
+   [{type => 'datetime:year leading 0', value => '02040', level => 'm'}]],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_xs_g_year_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $dt, 'Web::DateTime';
+      is $dt && $dt->to_global_date_and_time_string, $test->[1];
+      if (defined $test->[2]) {
+        is $dt && $dt->time_zone->to_offset_string, $test->[2];
+      } else {
+        is $dt->time_zone, undef;
+      }
+    } else {
+      is $dt, undef;
+      ok 1;
+      ok 1;
+    }
+    eq_or_diff \@error, $test->[3] || [];
+    done $c;
+  } n => 4, name => ['parse_xs_g_year_string', $test->[0]];
+}
+
+for my $test (
+  ['' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['--02-12' => '2000-02-12T00:00:00Z', undef],
+  ['--02-29Z' => '2000-02-29T00:00:00Z', 'Z'],
+  ['--02-29-12:33' => '2000-02-29T11:27:00Z', '-12:33'],
+  ['--02-29T00:12:33Z' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['--02-30' => undef, undef,
+   [{type => 'datetime:bad day', value => '30', level => 'm'}]],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_xs_g_month_day_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $dt, 'Web::DateTime';
+      is $dt && $dt->to_global_date_and_time_string, $test->[1];
+      if (defined $test->[2]) {
+        is $dt && $dt->time_zone->to_offset_string, $test->[2];
+      } else {
+        is $dt->time_zone, undef;
+      }
+    } else {
+      is $dt, undef;
+      ok 1;
+      ok 1;
+    }
+    eq_or_diff \@error, $test->[3] || [];
+    done $c;
+  } n => 4, name => ['parse_xs_g_month_day_string', $test->[0]];
+}
+
+for my $test (
+  ['' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['--02' => '2000-02-01T00:00:00Z', undef],
+  ['--02Z' => '2000-02-01T00:00:00Z', 'Z'],
+  ['--02-12:33' => '2000-02-01T11:27:00Z', '-12:33'],
+  ['--02T00:12:33Z' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['--13' => undef, undef,
+   [{type => 'datetime:bad month', value => '13', level => 'm'}]],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_xs_g_month_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $dt, 'Web::DateTime';
+      is $dt && $dt->to_global_date_and_time_string, $test->[1];
+      if (defined $test->[2]) {
+        is $dt && $dt->time_zone->to_offset_string, $test->[2];
+      } else {
+        is $dt->time_zone, undef;
+      }
+    } else {
+      is $dt, undef;
+      ok 1;
+      ok 1;
+    }
+    eq_or_diff \@error, $test->[3] || [];
+    done $c;
+  } n => 4, name => ['parse_xs_g_month_string', $test->[0]];
+}
+
+for my $test (
+  ['' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['---31' => '2000-01-31T00:00:00Z', undef],
+  ['---29Z' => '2000-01-29T00:00:00Z', 'Z'],
+  ['---29-12:33' => '2000-01-29T11:27:00Z', '-12:33'],
+  ['---29T00:12:33Z' => undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['---32' => undef, undef,
+   [{type => 'datetime:bad day', value => '32', level => 'm'}]],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_xs_g_day_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $dt, 'Web::DateTime';
+      is $dt && $dt->to_global_date_and_time_string, $test->[1];
+      if (defined $test->[2]) {
+        is $dt && $dt->time_zone->to_offset_string, $test->[2];
+      } else {
+        is $dt->time_zone, undef;
+      }
+    } else {
+      is $dt, undef;
+      ok 1;
+      ok 1;
+    }
+    eq_or_diff \@error, $test->[3] || [];
+    done $c;
+  } n => 4, name => ['parse_xs_g_day_string', $test->[0]];
+}
+
 run_tests;
 
 =head1 LICENSE

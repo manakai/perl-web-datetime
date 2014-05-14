@@ -45,6 +45,11 @@ sub parse_time_string ($$) {
   }
 } # parse_time_string
 
+sub parse_xs_time_string ($$) {
+  my ($self, $value) = @_;
+  return $self->parse_xs_date_time_string ('1970-01-01T' . $value);
+} # parse_xs_time_string
+
 sub parse_week_string ($$) {
   my ($self, $value) = @_;
   if ($value =~ /\A([0-9]{4,})-W([0-9]{2})\z/x) {
@@ -84,6 +89,16 @@ sub parse_year_string ($$) {
   }
 } # parse_year_string
 
+sub parse_xs_g_year_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ s/^(-?[0-9]+)//) {
+    return $self->parse_xs_date_time_string ($1 . '-01-01T00:00:00' . $value);
+  } else {
+    ## Syntax error
+    return $self->parse_xs_date_time_string ($value . '-01-01T00:00:00');
+  }
+} # parse_xs_g_year_string
+
 sub parse_month_string ($$) {
   my ($self, $value) = @_;
   if ($value =~ /\A([0-9]{4,})-([0-9]{2})\z/) {
@@ -111,6 +126,16 @@ sub parse_month_string ($$) {
     return undef;
   }
 } # parse_month_string
+
+sub parse_xs_g_year_month_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ s/^(-?[0-9]+-[0-9]+)//) {
+    return $self->parse_xs_date_time_string ($1 . '-01T00:00:00' . $value);
+  } else {
+    ## Syntax error
+    return $self->parse_xs_date_time_string ($value . '-01T00:00:00');
+  }
+} # parse_xs_g_year_month_string
 
 sub parse_date_string ($$) {
   my ($self, $value) = @_;
@@ -144,6 +169,16 @@ sub parse_date_string ($$) {
   }
 } # parse_date_string
 
+sub parse_xs_date_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ s/^(-?[0-9]+-[0-9]+-[0-9]+)//) {
+    return $self->parse_xs_date_time_string ($1 . 'T00:00:00' . $value);
+  } else {
+    ## Syntax error
+    return $self->parse_xs_date_time_string ($value . 'T00:00:00');
+  }
+} # parse_xs_date_string
+
 sub parse_yearless_date_string ($$) {
   my ($self, $value) = @_;
   if ($value =~ /\A(?:--|)([0-9]{2})-([0-9]{2})\z/x) {
@@ -167,6 +202,36 @@ sub parse_yearless_date_string ($$) {
     return undef;
   }
 } # parse_yearless_date_string
+
+sub parse_xs_g_month_day_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ s/^--([0-9]+-[0-9]+)//) {
+    return $self->parse_xs_date_time_string ('2000-' . $1 . 'T00:00:00' . $value);
+  } else {
+    ## Syntax error
+    return $self->parse_xs_date_time_string ('2000-' . $value . 'T00:00:00');
+  }
+} # parse_xs_g_month_day_string
+
+sub parse_xs_g_month_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ s/^--([0-9]+)//) {
+    return $self->parse_xs_date_time_string ('2000-' . $1 . '-01T00:00:00' . $value);
+  } else {
+    ## Syntax error
+    return $self->parse_xs_date_time_string ('2000-' . $value . '-01T00:00:00');
+  }
+} # parse_xs_g_month_string
+
+sub parse_xs_g_day_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ s/^---([0-9]+)//) {
+    return $self->parse_xs_date_time_string ('2000-01-' . $1 . 'T00:00:00' . $value);
+  } else {
+    ## Syntax error
+    return $self->parse_xs_date_time_string ('2000-01-' . $value . 'T00:00:00');
+  }
+} # parse_xs_g_day_string
 
 sub parse_local_date_and_time_string ($$) {
   my ($self, $value) = @_;
@@ -281,6 +346,156 @@ sub parse_global_date_and_time_string ($$) {
     return undef;
   }
 } # parse_global_date_and_time_string
+
+sub parse_xs_date_time_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ /\A
+    (-?[0-9]{4,})-([0-9]{2})-([0-9]{2})
+    [T]
+    ([0-9]{2}):([0-9]{2})(?>:([0-9]{2})(?>(\.[0-9]+))?)
+    (Z|([+-][0-9]{2}):([0-9]{2}))?
+  \z/x) {
+    my ($y, $M, $d, $h, $m, $s, $sf, $has_zone, $zh, $zm)
+        = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+    $self->onerror->(type => 'datetime:negative year',
+                     value => $y,
+                     level => 'w')
+        if $y <= 0;
+    if (0 < $M and $M < 13) {
+      $self->onerror->(type => 'datetime:bad day',
+                       value => $d,
+                       level => 'm'), return undef
+          if $d < 1 or
+             $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$M];
+      $self->onerror->(type => 'datetime:bad day',
+                       value => $d,
+                       level => 'm'), return undef
+          if $M == 2 and $d == 29 and not Web::DateTime::_is_leap_year ($y);
+    } else {
+      $self->onerror->(type => 'datetime:bad month',
+                       value => $M,
+                       level => 'm');
+      return undef;
+    }
+    $self->onerror->(type => 'datetime:year leading 0',
+                     value => $y,
+                     level => 'm')
+        if $y =~ /^-?0[0-9]*[0-9]{4}$/;
+    $s ||= 0;
+    $sf = defined $sf ? $sf : '';
+    if ($h == 24 and $m == 0 and $s == 0 and ($sf eq '' or $sf =~ /^\.0+$/)) {
+      #
+    } else {
+      $self->onerror->(type => 'datetime:bad hour',
+                       value => $h,
+                       level => 'm'), return undef if $h > 23;
+      $self->onerror->(type => 'datetime:bad minute',
+                       value => $m,
+                       level => 'm'), return undef if $m > 59;
+      $self->onerror->(type => 'datetime:bad second',
+                       value => $s,
+                       level => 'm'), return undef if $s > 59;
+    }
+    if (not $has_zone) {
+      #
+    } elsif (defined $zh) {
+      if (($zh == 14 or $zh == -14) and $zm == 0) {
+        #
+      } else {
+        $self->onerror->(type => 'datetime:bad timezone hour',
+                         value => $zh,
+                         level => 'm'), return undef
+            if $zh > 13 or $zh < -13;
+        $self->onerror->(type => 'datetime:bad timezone minute',
+                         value => $zm,
+                         level => 'm'), return undef
+            if $zm > 59;
+      }
+    } else {
+      $zh = 0;
+      $zm = 0;
+    }
+    return $self->_create ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
+  } else {
+    $self->onerror->(type => 'datetime:syntax error',
+                     level => 'm');
+    return undef;
+  }
+} # parse_xs_date_time_string
+
+sub parse_xs_date_time_stamp_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ /\A
+    (-?[0-9]{4,})-([0-9]{2})-([0-9]{2})
+    [T]
+    ([0-9]{2}):([0-9]{2})(?>:([0-9]{2})(?>(\.[0-9]+))?)
+    (?>Z|([+-][0-9]{2}):([0-9]{2}))
+  \z/x) {
+    my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm)
+        = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+    $self->onerror->(type => 'datetime:negative year',
+                     value => $y,
+                     level => 'w')
+        if $y <= 0;
+    if (0 < $M and $M < 13) {
+      $self->onerror->(type => 'datetime:bad day',
+                       value => $d,
+                       level => 'm'), return undef
+          if $d < 1 or
+             $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$M];
+      $self->onerror->(type => 'datetime:bad day',
+                       value => $d,
+                       level => 'm'), return undef
+          if $M == 2 and $d == 29 and not Web::DateTime::_is_leap_year ($y);
+    } else {
+      $self->onerror->(type => 'datetime:bad month',
+                       value => $M,
+                       level => 'm');
+      return undef;
+    }
+    $self->onerror->(type => 'datetime:year leading 0',
+                     value => $y,
+                     level => 'm')
+        if $y =~ /^-?0[0-9]*[0-9]{4}$/;
+    $s ||= 0;
+    $sf = defined $sf ? $sf : '';
+    if ($h == 24 and $m == 0 and $s == 0 and ($sf eq '' or $sf =~ /^\.0+$/)) {
+      #
+    } else {
+      $self->onerror->(type => 'datetime:bad hour',
+                       value => $h,
+                       level => 'm'), return undef if $h > 23;
+      $self->onerror->(type => 'datetime:bad minute',
+                       value => $m,
+                       level => 'm'), return undef if $m > 59;
+      $self->onerror->(type => 'datetime:bad second',
+                       value => $s,
+                       level => 'm'), return undef if $s > 59;
+    }
+    if (defined $zh) {
+      if (($zh == 14 or $zh == -14) and $zm == 0) {
+        #
+      } else {
+        $self->onerror->(type => 'datetime:bad timezone hour',
+                         value => $zh,
+                         level => 'm'), return undef
+            if $zh > 13 or $zh < -13;
+        $self->onerror->(type => 'datetime:bad timezone minute',
+                         value => $zm,
+                         level => 'm'), return undef
+            if $zm > 59;
+      }
+    } else {
+      $zh = 0;
+      $zm = 0;
+    }
+    return $self->_create ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
+  } else {
+    $self->onerror->(type => 'datetime:syntax error',
+                     level => 'm');
+    return undef;
+  }
+} # parse_xs_date_time_stamp_string
 
 ## Parse a date or time string
 ## <http://www.whatwg.org/specs/web-apps/current-work/#parse-a-date-or-time-string>
@@ -426,19 +641,21 @@ sub _create {
   my $dt = Web::DateTime->_create ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff);
 
   unless ($diff) { # XXX
-  if ($dt->year != $y or
-      $dt->month != $M or
-      $dt->day != $d or
-      $dt->hour != $h or
-      $dt->minute != $m) {
+  unless ($h == 24) { # XXX
+  if ($dt->year != $y and not ($dt->year + 1 == $y or $dt->year - 1 == $y) #or
+      #$dt->month != $M or
+      #$dt->day != $d or
+      #$dt->hour != $h or
+      #$dt->minute != $m
+  ) {
     ## Too large or small
     #warn $dt->to_global_date_and_time_string;
     $self->onerror->(type => 'date value not supported',
-                     value => join (", ", map { defined $_ ? $_ : '' } $y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff),
+                     value => join (", ", map { defined $_ ? $_ : '' } $y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff, $dt->to_global_date_and_time_string),
                      level => 'u');
     # XXX 0001-0999
     return undef;
-  }}
+  }}}
 
   return $dt;
 } # _create
