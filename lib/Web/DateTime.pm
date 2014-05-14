@@ -2,7 +2,47 @@ package Web::DateTime;
 use strict;
 use warnings;
 our $VERSION = '5.0';
+use Carp qw(croak);
 use Time::Local;
+
+sub new_from_unix_time ($$) {
+  my $self = bless {value => 0+$_[1]}, $_[0];
+  if ($self->{value} != int $self->{value}) {
+    if ($self->{value} >= 0) {
+      $self->{second_fraction} = $self->{value} - int $self->{value};
+      $self->{value} = int $self->{value};
+    } else {
+      $self->{second_fraction} = $self->{value} - (-(int abs $self->{value}) - 1);
+      $self->{value} = -(int abs $self->{value}) - 1;
+    }
+  }
+  require Web::DateTime::TimeZone;
+  $self->{tz} = Web::DateTime::TimeZone->new_from_offset (0);
+  return $self;
+} # new_from_unix_time
+
+sub new_from_object ($$) {
+  if (UNIVERSAL::isa ($_[1], 'DateTime')) {
+    my $self = bless {value => $_[1]->epoch}, $_[0];
+    my $f = $_[1]->fractional_second - $_[1]->second;
+    if ($f) {
+      $self->{second_fraction} = $f;
+    }
+    unless ($_[1]->time_zone->is_floating) {
+      require Web::DateTime::TimeZone;
+      $self->{tz} = Web::DateTime::TimeZone->new_from_offset ($_[1]->offset);
+    }
+    return $self;
+  } elsif (UNIVERSAL::isa ($_[1], 'Time::Piece')) {
+    my $self = bless {value => $_[1]->epoch}, $_[0];
+    require Web::DateTime::TimeZone;
+    $self->{tz} = Web::DateTime::TimeZone->new_from_offset
+        ($_[1]->tzoffset->seconds);
+    return $self;
+  } else {
+    croak "Can't create |Web::DateTime| from a |" . (ref $_[1]) . "|";
+  }
+} # new_from_object
 
 sub _is_leap_year ($) {
   return ($_[0] % 400 == 0 or ($_[0] % 4 == 0 and $_[0] % 100 != 0));
@@ -313,17 +353,28 @@ sub to_datetime ($) {
        time_zone => defined $self->{tz} ? $self->{tz}->to_offset_string : 'floating');
 } # to_datetime
 
-# XXX to_time_piece
+sub to_time_piece_gm ($) {
+  my $self = $_[0];
+  require Time::Piece;
+  return Time::Piece::gmtime ($self->to_unix_integer);
+} # to_time_piece_gm
 
-# XXX from_datetime
-# XXX from_time_piece
+sub to_time_piece_local ($) {
+  my $self = $_[0];
+  require Time::Piece;
+  return Time::Piece::localtime ($self->to_unix_integer);
+} # to_time_piece_local
 
 # XXX normalized serializer
+# XXX duration formats
+# XXX period formats
 # XXX XML Schema datatypes
+# XXX microdata vocab datetime
 # XXX OGP datetime
 # XXX RFC 3339 date-time
 # XXX document.lastModified
 # XXX HTTP datetime
+# XXX MySQL datetime
 
 # XXX JavaScript timestamp parser/serializer
 

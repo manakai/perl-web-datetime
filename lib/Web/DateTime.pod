@@ -13,13 +13,32 @@ Web::DateTime - Date and time for Web
 
 The C<Web::DateTime> class represents a date and/or time with accessor
 and serializer methods for Web.  To create an instance of the
-C<Web::DateTime> class, use L<Web::DateTime::Parser> module.
+C<Web::DateTime> class from various date and/or time formatted
+strings, use L<Web::DateTime::Parser> module.
 
 =head1 METHODS
 
 Following methods are available:
 
 =over 4
+
+=item $dt = Web::DateTime->new_from_unix_time ($time)
+
+Create a new instance of C<Web::DateTime> from the specified number,
+representing a Unix time (i.e. number of seconds from January 1, 1970,
+00:00:00 UTC).  The number can contain fractional part and can be
+negative.
+
+=item $dt = Web::DateTime->new_from_object ($obj)
+
+Create a new instance of C<Web::DateTime> from the specified date/time
+object.  The argument must be an instance of L<DateTime> or
+L<Time::Piece>.  (More classes might be supported in future.)
+
+As the C<Web::DateTime> (and most Web date/time formats) can't handle
+leap seconds, if the L<DateTime> object represents a leap second, the
+result C<Web::DateTime> object represents the second just after the
+leap second.
 
 =item $string = $dt->to_date_string
 
@@ -125,6 +144,24 @@ that operations on Web date and time values and L<DateTime> objects
 might obtain different results.
 
 This method requires the L<DateTime> module.
+
+=item $timepiece = $dt->to_time_piece_gm
+
+Return a new L<Time::Piece> object which represents the time
+represented by the object, in UTC.  If the object is not associated
+with any time zone, it is handled as if it were associated with UTC.
+
+This method requires the L<Time::Piece> module.
+
+=item $timepiece = $dt->to_time_piece_local
+
+Return a new L<Time::Piece> object which represents the time
+represented by the object, in local time zone (i.e. Perl's
+C<localtime>'s time zone).  If the object is not associated with any
+time zone, it is handled as if it were associated with UTC and then
+converted as appropriate.
+
+This method requires the L<Time::Piece> module.
 
 =item $number = $dt->to_unix_integer
 
@@ -233,7 +270,8 @@ C<undef>.
 The module requires Perl 5.8 or later and the L<Time::Local> module
 (which is a core module).
 
-The C<to_datetime> method requires more module.
+Methods C<to_datetime>, C<to_time_piece_gm>, and
+C<to_time_piece_local> require more modules.
 
 =head1 SPECIFICATIONS
 

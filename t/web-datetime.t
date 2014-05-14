@@ -9,6 +9,78 @@ use Web::DateTime::Parser;
 
 test {
   my $c = shift;
+  my $date = Web::DateTime->new_from_unix_time (0);
+  is $date->to_unix_integer, 0;
+  is $date->second_fraction_string, '';
+  is $date->time_zone->offset_as_seconds, 0;
+  done $c;
+} n => 3, name => 'new_from_unix_time 0';
+
+test {
+  my $c = shift;
+  my $date = Web::DateTime->new_from_unix_time (535153344);
+  is $date->to_unix_integer, 535153344;
+  is $date->second_fraction_string, '';
+  is $date->time_zone->offset_as_seconds, 0;
+  done $c;
+} n => 3, name => 'new_from_unix_time positive';
+
+test {
+  my $c = shift;
+  my $date = Web::DateTime->new_from_unix_time (-535153344);
+  is $date->to_unix_integer, -535153344;
+  is $date->second_fraction_string, '';
+  is $date->time_zone->offset_as_seconds, 0;
+  done $c;
+} n => 3, name => 'new_from_unix_time negative';
+
+test {
+  my $c = shift;
+  my $date = Web::DateTime->new_from_unix_time (535153344.3331111004);
+  is $date->to_unix_integer, 535153344;
+  like $date->second_fraction_string, qr/^\.333111/;
+  is $date->time_zone->offset_as_seconds, 0;
+  done $c;
+} n => 3, name => 'new_from_unix_time positive fractional';
+
+test {
+  my $c = shift;
+  my $date = Web::DateTime->new_from_unix_time (-535153344.3331111004);
+  is $date->to_unix_integer, -535153345;
+  like $date->second_fraction_string, qr/^\.6668/;
+  is $date->time_zone->offset_as_seconds, 0;
+  done $c;
+} n => 3, name => 'new_from_unix_time negative fractional';
+
+test {
+  my $c = shift;
+  my $date = Web::DateTime->new_from_unix_time (0.00000000000000001111004);
+  is $date->to_unix_integer, 0;
+  like $date->second_fraction_string, qr/^\.00000/;
+  is $date->time_zone->offset_as_seconds, 0;
+  done $c;
+} n => 3, name => 'new_from_unix_time positive fractional small';
+
+test {
+  my $c = shift;
+  my $date = Web::DateTime->new_from_unix_time (-0.00000000000000001111004);
+  is $date->to_unix_integer, -1;
+  like $date->second_fraction_string, qr/(?:^\.00000|^$)/;
+  is $date->time_zone->offset_as_seconds, 0;
+  done $c;
+} n => 3, name => 'new_from_unix_time negative fractional small';
+
+test {
+  my $c = shift;
+  eval {
+    Web::DateTime->new_from_object (-0.00000000000000001111004);
+  };
+  like $@, qr{^\QCan't create |Web::DateTime| from a ||\E};
+  done $c;
+} n => 1, name => 'new_from_object not object';
+
+test {
+  my $c = shift;
   my $date = Web::DateTime::Parser->new->parse_global_date_and_time_string
       ('2010-12-13 01:02:03-01:00');
   is $date->utc_year, 2010;
