@@ -55,6 +55,55 @@ for my $test (
   } n => 2;
 }
 
+for my $test (
+  [''],
+  ['z'],
+  ['1000.0'],
+  ['0000', [{type => 'datetime:bad year', level => 'm', value => '0000'}]],
+  ['2010-01'],
+  ['H20'],
+  ['20.01'],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $tz = $parser->parse_year_string ($test->[0]);
+    is $tz, undef;
+    eq_or_diff \@error, $test->[1] || [{type => 'year:syntax error', level => 'm'}];
+    done $c;
+  } n => 2;
+}
+
+for my $test (
+  [''],
+  ['z'],
+  ['1000.0'],
+  ['2010-01'],
+  ['01-00', [{type => 'datetime:bad day', level => 'm', value => '00'}]],
+  ['01-32', [{type => 'datetime:bad day', level => 'm', value => '32'}]],
+  ['02-30', [{type => 'datetime:bad day', level => 'm', value => '30'}]],
+  ['00-30', [{type => 'datetime:bad month', level => 'm', value => '00'}]],
+  ['13-30', [{type => 'datetime:bad month', level => 'm', value => '13'}]],
+  ['001-30'],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $tz = $parser->parse_yearless_date_string ($test->[0]);
+    is $tz, undef;
+    eq_or_diff \@error, $test->[1] || [{type => 'date:syntax error', level => 'm'}];
+    done $c;
+  } n => 2;
+}
+
 run_tests;
 
 =head1 LICENSE

@@ -221,6 +221,98 @@ test {
   done $c;
 } n => 10, name => 'parse_date_string_with_optional_time';
 
+for my $test (
+  ['00:00:00' => '00:00'],
+  ['00:00:00.0000' => '00:00'],
+  ['00:00:00.000000000001' => '00:00:00.000000000001'],
+  ['00:00:01' => '00:00:01'],
+  ['00:00:30.0000' => '00:00:30'],
+  ['00:00:03.000000000001' => '00:00:03.000000000001'],
+  ['00:03' => '00:03'],
+  ['00:03:00.44440014440000' => '00:03:00.4444001444'],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my $dt = $parser->parse_time_string ($test->[0]);
+    is $dt->to_shortest_time_string, $test->[1];
+    done $c;
+  } n => 1, name => ['to_shortest_time_string', $test->[0]];
+
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my $dt = $parser->parse_local_date_and_time_string
+        ('2013-01-04T' . $test->[0]);
+    is $dt->to_normalized_local_date_and_time_string,
+        '2013-01-04T' . $test->[1];
+    done $c;
+  } n => 1, name => ['to_normalized_local_date_and_time_string', $test->[0]];
+
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my $dt = $parser->parse_global_date_and_time_string
+        ('2013-01-04T' . $test->[0] . 'Z');
+    is $dt->to_normalized_forced_utc_global_date_and_time_string,
+        '2013-01-04T' . $test->[1] . 'Z';
+    done $c;
+  } n => 1, name => ['to_normalized_forced_utc_global_date_and_time_string', $test->[0]];
+}
+
+for my $test (
+  ['00:00:00' => '17:30'],
+  ['00:00:00.0000' => '17:30'],
+  ['00:00:00.000000000001' => '17:30:00.000000000001'],
+  ['00:00:01' => '17:30:01'],
+  ['00:00:30.0000' => '17:30:30'],
+  ['00:00:03.000000000001' => '17:30:03.000000000001'],
+  ['00:03' => '17:33'],
+  ['00:03:00.44440014440000' => '17:33:00.4444001444'],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my $dt = $parser->parse_global_date_and_time_string
+        ('2013-01-04T' . $test->[0] . '+06:30');
+    is $dt->to_normalized_forced_utc_global_date_and_time_string,
+        '2013-01-03T' . $test->[1] . 'Z';
+    done $c;
+  } n => 1, name => ['to_normalized_forced_utc_global_date_and_time_string', $test->[0]];
+}
+
+for my $test (
+  ['1001'],
+  ['1002'],
+  ['2010'],
+  ['03002', '3002'],
+  ['10002'],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my $dt = $parser->parse_year_string ($test->[0]);
+    is $dt->to_year_string, $test->[1] || $test->[0];
+    done $c;
+  } n => 1, name => ['to_year_string', $test->[0]];
+}
+
+for my $test (
+  ['12-21' => '--12-21'],
+  ['01-01' => '--01-01'],
+  ['--10-30'],
+  ['--02-29'],
+  ['--11-01'],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my $dt = $parser->parse_yearless_date_string ($test->[0]);
+    is $dt->to_yearless_date_string, $test->[1] || $test->[0];
+    done $c;
+  } n => 1, name => ['to_yearless_date_string', $test->[0]];
+}
+
 run_tests;
 
 =head1 LICENSE

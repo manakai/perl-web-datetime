@@ -40,6 +40,13 @@ leap seconds, if the L<DateTime> object represents a leap second, the
 result C<Web::DateTime> object represents the second just after the
 leap second.
 
+=item $string = $dt->to_year_string
+
+Serialize the year value represented by the object for HTML.  Note
+that month, day, time, and time zone are ignored.
+
+This method is suitable for values for HTML C<time> elements.
+
 =item $string = $dt->to_date_string
 
 Serialize the date value represented by the object as an HTML valid
@@ -100,6 +107,23 @@ month string [HTML].  Note that day, time, and time zone are ignored.
 This method is suitable for values for HTML C<< <input type=month> >>
 and C<time> elements.
 
+=item $string = $dt->to_normalized_forced_utc_global_date_and_time_string
+
+Serialize the date value represented by the object as an HTML valid
+normalized forced-UTC global date and time string [HTML].
+
+=item $string = $dt->to_normalized_local_date_and_time_string
+
+Serialize the date value represented by the object as an HTML valid
+normalized local date and time string [HTML].  Note that time zone is
+ignored.
+
+=item $string = $dt->to_shortest_time_string
+
+Serialize the time value represented by the object as an HTML valid
+time string [HTML], using shortest possible form.  Note that date and
+time zone are ignored.
+
 =item $string = $dt->to_time_string
 
 Serialize the time value represented by the object as an HTML valid
@@ -123,6 +147,14 @@ timestamp.
 This method is suitable for values for HTML C<< <input type=datetime>
 >>, C<time> elements, and C<< <ins datetime=""> >> and C<< <del
 datetime=""> >> attributes.
+
+=item $string = $dt->to_yearless_date_string
+
+Serialize the date value represented by the object as an HTML valid
+yearless date string [HTML].  Note that year, time, and time zone are
+ignored.
+
+This method is suitable for values for HTML C<time> elements.
 
 =item $string = $dt->to_week_string
 

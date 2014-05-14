@@ -71,6 +71,14 @@ sub to_time_string ($) {
       $self->utc_second, $self->second_fraction_string;
 } # to_time_string
 
+sub to_shortest_time_string ($) {
+  my $s = $_[0]->to_time_string;
+  $s =~ s/\.0+\z//;
+  $s =~ s/(\.[0-9]*[1-9])0+\z/$1/;
+  $s =~ s/:00\z//;
+  return $s;
+} # to_shortest_time_string
+
 sub to_week_string ($) {
   my $self = shift;
   return sprintf '%04d-W%02d', $self->utc_week_year, $self->utc_week;
@@ -81,11 +89,21 @@ sub to_month_string ($) {
   return sprintf '%04d-%02d', $self->utc_year, $self->utc_month;
 } # to_month_string
 
+sub to_year_string ($) {
+  return sprintf '%04d', $_[0]->utc_year;
+} # to_year_string
+
 sub to_date_string ($) {
   my $self = shift;
   return sprintf '%04d-%02d-%02d',
       $self->utc_year, $self->utc_month, $self->utc_day;
 } # to_date_string
+
+sub to_yearless_date_string ($) {
+  my $self = shift;
+  return sprintf '--%02d-%02d',
+      $self->utc_month, $self->utc_day;
+} # to_yearless_date_string
 
 sub to_local_date_and_time_string ($) {
   my $self = shift;
@@ -93,6 +111,12 @@ sub to_local_date_and_time_string ($) {
       $self->year, $self->month, $self->day,
       $self->hour, $self->minute, $self->second, $self->second_fraction_string;
 } # to_local_date_and_time_string
+
+sub to_normalized_local_date_and_time_string ($) {
+  my $self = shift;
+  return sprintf '%04d-%02d-%02dT%s',
+      $self->year, $self->month, $self->day, $self->to_shortest_time_string;
+} # to_normalized_local_date_and_time_string
 
 sub to_global_date_and_time_string ($) {
   my $self = shift;
@@ -102,6 +126,13 @@ sub to_global_date_and_time_string ($) {
       $self->utc_hour, $self->utc_minute,
       $self->utc_second, $self->second_fraction_string;
 } # to_global_date_and_time_string
+
+sub to_normalized_forced_utc_global_date_and_time_string ($) {
+  my $self = shift;
+  return sprintf '%04d-%02d-%02dT%sZ',
+      $self->utc_year, $self->utc_month, $self->utc_day,
+      $self->to_shortest_time_string;
+} # to_normalized_forced_utc_global_date_and_time_string
 
 sub to_time_zoned_global_date_and_time_string ($) {
   my $self = shift;
@@ -365,7 +396,6 @@ sub to_time_piece_local ($) {
   return Time::Piece::localtime ($self->to_unix_integer);
 } # to_time_piece_local
 
-# XXX normalized serializer
 # XXX duration formats
 # XXX period formats
 # XXX XML Schema datatypes
@@ -374,7 +404,6 @@ sub to_time_piece_local ($) {
 # XXX RFC 3339 date-time
 # XXX document.lastModified
 # XXX HTTP datetime
-# XXX MySQL datetime
 
 # XXX JavaScript timestamp parser/serializer
 

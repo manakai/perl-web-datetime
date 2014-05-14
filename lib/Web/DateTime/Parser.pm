@@ -65,6 +65,25 @@ sub parse_week_string ($$) {
   }
 } # parse_week_string
 
+sub parse_year_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ /\A([0-9]{4,})\z/) {
+    my ($y) = ($1);
+    if ($y == 0) {
+      $self->onerror->(type => 'datetime:bad year',
+                       value => $y,
+                       level => 'm');
+      return undef;
+    }
+
+    return $self->_create ($y, 1, 1, 0, 0, 0, '', undef, undef);
+  } else {
+    $self->onerror->(type => 'year:syntax error',
+                     level => 'm');
+    return undef;
+  }
+} # parse_year_string
+
 sub parse_month_string ($$) {
   my ($self, $value) = @_;
   if ($value =~ /\A([0-9]{4,})-([0-9]{2})\z/) {
@@ -98,11 +117,11 @@ sub parse_date_string ($$) {
   if ($value =~ /\A([0-9]{4,})-([0-9]{2})-([0-9]{2})\z/x) {
     my ($y, $M, $d) = ($1, $2, $3);
     $self->onerror->(type => 'datetime:bad year',
-                     year => $y,
+                     value => $y,
                      level => 'm'), return undef if $y == 0;
     if (0 < $M and $M < 13) {
       $self->onerror->(type => 'datetime:bad day',
-                       year => $d,
+                       value => $d,
                        level => 'm'), return undef
           if $d < 1 or
               $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$M];
@@ -124,6 +143,30 @@ sub parse_date_string ($$) {
     return undef;
   }
 } # parse_date_string
+
+sub parse_yearless_date_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ /\A(?:--|)([0-9]{2})-([0-9]{2})\z/x) {
+    my ($M, $d) = ($1, $2);
+    if (0 < $M and $M < 13) {
+      $self->onerror->(type => 'datetime:bad day',
+                       value => $d,
+                       level => 'm'), return undef
+          if $d < 1 or
+             $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$M];
+    } else {
+      $self->onerror->(type => 'datetime:bad month',
+                       value => $M,
+                       level => 'm');
+      return undef;
+    }
+    return $self->_create (2000, $M, $d, 0, 0, 0, '', undef, undef);
+  } else {
+    $self->onerror->(type => 'date:syntax error',
+                     level => 'm');
+    return undef;
+  }
+} # parse_yearless_date_string
 
 sub parse_local_date_and_time_string ($$) {
   my ($self, $value) = @_;
@@ -367,11 +410,14 @@ sub _create {
     $self->onerror->(type => 'date value not supported',
                      value => join (", ", map { defined $_ ? $_ : '' } $y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff),
                      level => 'u');
+    # XXX 0001-0999
     return undef;
   }}
 
   return $dt;
 } # _create
+
+# XXX parser for HTML <time> value
 
 1;
 

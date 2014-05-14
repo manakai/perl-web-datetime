@@ -71,6 +71,12 @@ error is reported through the C<onerror> handler.
 This method is suitable for values from HTML C<< <input
 type=datetime-local> >>.
 
+=item $dt = $parser->parse_year_string ($string)
+
+Parse the specified argument as a year string in HTML and return a
+L<Web::DateTime> (or C<undef> if failed).  Any error is reported
+through the C<onerror> handler.
+
 =item $dt = $parser->parse_month_string ($string)
 
 Parse the specified argument as an HTML month string [HTML] and return
@@ -87,6 +93,13 @@ a L<Web::DateTime> (or C<undef> if failed).  Any error is reported
 through the C<onerror> handler.
 
 This method is suitable for values from HTML C<< <input type=time> >>.
+
+=item $dt = $parser->parse_yearless_date_string ($string)
+
+Parse the specified argument as an HTML yearless date string [HTML]
+and return a L<Web::DateTime> (or C<undef> if failed).  Year of the
+returned object is set to 2000.  Any error is reported through the
+C<onerror> handler.
 
 =item $dt = $parser->parse_week_string ($string)
 
