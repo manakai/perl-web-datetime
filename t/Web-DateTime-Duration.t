@@ -25,8 +25,8 @@ for my $test (
         ($test->[0] < 0 ? '-' : '') . 'PT' . ($test->[1] || $test->[0]) . 'S';
     is $duration->to_vevent_duration_string,
         'PT' . int ($test->[1] || $test->[0]) . 'S';
-    ok not $duration->is_datetime;
-    ok not $duration->is_period;
+    ok not $duration->is_date_time;
+    ok not $duration->is_interval;
     ok not $duration->is_time_zone;
     ok $duration->is_duration;
     done $c;

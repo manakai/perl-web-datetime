@@ -1,31 +1,31 @@
-package Web::DateTime::Period;
+package Web::DateTime::Interval;
 use strict;
 use warnings;
 our $VERSION = '1.0';
 
-sub new_from_datetimes ($$$) {
+sub new_from_date_times ($$$) {
   return bless {start_datetime => $_[1], end_datetime => $_[2]}, $_[0];
-} # new_from_datetimes
+} # new_from_date_times
 
-sub new_from_datetime_and_duration ($$$) {
+sub new_from_date_time_and_duration ($$$) {
   return bless {start_datetime => $_[1], duration => $_[2]}, $_[0];
-} # new_from_datetime_and_duration
+} # new_from_date_time_and_duration
 
-sub is_datetime ($) { 0 }
+sub is_date_time ($) { 0 }
 sub is_time_zone ($) { 0 }
 sub is_duration ($) { 0 }
-sub is_period ($) { 1 }
+sub is_interval ($) { 1 }
 
-sub start_datetime ($) {
+sub start_date_time ($) {
   return $_[0]->{start_datetime};
-} # start_datetime
+} # start_date_time
 
-sub end_datetime ($) {
+sub end_date_time ($) {
   my $self = $_[0];
   return $self->{end_datetime} ||= do {
     (ref $self->{start_datetime})->new_from_unix_time ($self->{start_datetime}->to_unix_number + $self->{duration}->seconds);
   };
-} # end_datetime
+} # end_date_time
 
 sub duration ($) {
   my $self = $_[0];
@@ -35,21 +35,21 @@ sub duration ($) {
   };
 } # duration
 
-sub to_datetimes_string ($) {
+sub to_date_times_string ($) {
   my $self = $_[0];
   return
-      $self->start_datetime->to_global_date_and_time_string .
+      $self->start_date_time->to_global_date_and_time_string .
       '/' .
-      $self->end_datetime->to_global_date_and_time_string;
-} # to_datetimes_string
+      $self->end_date_time->to_global_date_and_time_string;
+} # to_date_times_string
 
-sub to_datetime_and_duration_string ($) {
+sub to_date_time_and_duration_string ($) {
   my $self = $_[0];
   return
-      $self->start_datetime->to_global_date_and_time_string .
+      $self->start_date_time->to_global_date_and_time_string .
       '/' .
       $self->duration->to_vevent_duration_string;
-} # to_datetime_and_duration_string
+} # to_date_time_and_duration_string
 
 1;
 

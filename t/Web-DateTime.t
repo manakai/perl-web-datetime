@@ -14,8 +14,8 @@ test {
   is $date->to_unix_integer, 0;
   is $date->second_fraction_string, '';
   is $date->time_zone->offset_as_seconds, 0;
-  ok $date->is_datetime;
-  ok not $date->is_period;
+  ok $date->is_date_time;
+  ok not $date->is_interval;
   ok not $date->is_time_zone;
   ok not $date->is_duration;
   done $c;
@@ -322,12 +322,12 @@ for my $test (
   ['2013-01-03' => 'DateTime', '2013-01-03T00:00:00Z'],
   ['2013-01-03T04:12:33Z' => 'DateTime', '2013-01-03T04:12:33Z'],
   ['2013-01-03T04:12:33+12:33' => 'DateTime', '2013-01-02T15:39:33Z'],
-  ['2013-01-03T04:12:33Z/2013-01-03T04:12:33-01:00' => 'Period', '2013-01-03T04:12:33Z/PT3600S'],
-  ['2013-01-03T04:12:33Z/2013-01-03T03:12:33-01:00' => 'Period', '2013-01-03T04:12:33Z/PT0S'],
-  ['2013-01-03T04:12:33Z/PT31M' => 'Period', '2013-01-03T04:12:33Z/PT1860S'],
-  ['2013-01-03T04:12:33Z/PT31M1.32S' => 'Period', '2013-01-03T04:12:33Z/PT1861S',
+  ['2013-01-03T04:12:33Z/2013-01-03T04:12:33-01:00' => 'Interval', '2013-01-03T04:12:33Z/PT3600S'],
+  ['2013-01-03T04:12:33Z/2013-01-03T03:12:33-01:00' => 'Interval', '2013-01-03T04:12:33Z/PT0S'],
+  ['2013-01-03T04:12:33Z/PT31M' => 'Interval', '2013-01-03T04:12:33Z/PT1860S'],
+  ['2013-01-03T04:12:33Z/PT31M1.32S' => 'Interval', '2013-01-03T04:12:33Z/PT1861S',
    [{type => 'datetime:fractional second', level => 'm'}]],
-  ['2013-01-03T04:12:33Z/PT1S31M' => 'Period', '2013-01-03T04:12:33Z/PT1861S',
+  ['2013-01-03T04:12:33Z/PT1S31M' => 'Interval', '2013-01-03T04:12:33Z/PT1861S',
    [{type => 'duration:syntax error', value => 'PTSM', level => 'm'}]],
   ['2013-01-03T04:12:33Z/' => 'Error', undef,
    [{type => 'duration:syntax error', level => 'm'}]],
@@ -337,12 +337,12 @@ for my $test (
    [{type => 'datetime:syntax error', level => 'm'}]],
   ['2013-01-03/PT31M' => 'Error', undef,
    [{type => 'datetime:syntax error', level => 'm'}]],
-  ['2013-01-03T04:12:33Z/50S' => 'Period', '2013-01-03T04:12:33Z/PT50S',
+  ['2013-01-03T04:12:33Z/50S' => 'Interval', '2013-01-03T04:12:33Z/PT50S',
    [{type => 'duration:html duration', level => 'm'}]],
   ['2013-01-03T04:12:33Z/2013-01-03T04:12:33' => 'Error', '',
    [{type => 'datetime:syntax error', level => 'm'}]],
   ['2013-01-03T04:12:33Z/2013-01-03T04:12:32Z' => 'Error', '',
-   [{type => 'period:not 1<=2', level => 'm'}]],
+   [{type => 'interval:not 1<=2', level => 'm'}]],
 ) {
   test {
     my $c = shift;
@@ -353,9 +353,9 @@ for my $test (
     });
     my $dt = $parser->parse_date_string_with_optional_time_and_duration
         ($test->[0]);
-    if ($test->[1] eq 'Period') {
-      isa_ok $dt, 'Web::DateTime::Period';
-      is $dt->to_datetime_and_duration_string, $test->[2];
+    if ($test->[1] eq 'Interval') {
+      isa_ok $dt, 'Web::DateTime::Interval';
+      is $dt->to_date_time_and_duration_string, $test->[2];
     } elsif ($test->[1] eq 'DateTime') {
       isa_ok $dt, 'Web::DateTime';
       is $dt->to_global_date_and_time_string, $test->[2];

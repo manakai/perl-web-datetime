@@ -33,13 +33,13 @@ second argument must be the number of months, which is a non-negative
 integer.  The third argument must be the direction, which is one of
 number C<+1> (positive) or number C<-1> (negative).
 
-=item false = $duration->is_datetime
+=item false = $duration->is_date_time
 
 =item false = $duration->is_time_zone
 
 =item true = $duration->is_duration
 
-=item false = $duration->is_period
+=item false = $duration->is_interval
 
 Return whether the object is of the specified type or not.
 

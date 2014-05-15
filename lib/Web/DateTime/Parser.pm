@@ -582,17 +582,17 @@ sub parse_date_string_with_optional_time_and_duration ($$) {
     if ($v2 =~ /^[0-9]+-/) {
       my $dt2 = $self->parse_global_date_and_time_string ($v2) or return undef;
       if ($dt1->to_unix_number <= $dt2->to_unix_number) {
-        require Web::DateTime::Period;
-        return Web::DateTime::Period->new_from_datetimes ($dt1, $dt2);
+        require Web::DateTime::Interval;
+        return Web::DateTime::Interval->new_from_date_times ($dt1, $dt2);
       } else {
-        $self->onerror->(type => 'period:not 1<=2',
+        $self->onerror->(type => 'interval:not 1<=2',
                          level => 'm');
         return undef;
       }
     } else {
       my $duration = $self->parse_vevent_duration_string ($v2) or return undef;
-      require Web::DateTime::Period;
-      return Web::DateTime::Period->new_from_datetime_and_duration
+      require Web::DateTime::Interval;
+      return Web::DateTime::Interval->new_from_date_time_and_duration
           ($dt1, $duration);
     }
   } else {

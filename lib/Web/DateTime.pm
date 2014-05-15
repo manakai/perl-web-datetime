@@ -44,10 +44,10 @@ sub new_from_object ($$) {
   }
 } # new_from_object
 
-sub is_datetime ($) { 1 }
+sub is_date_time ($) { 1 }
 sub is_time_zone ($) { 0 }
 sub is_duration ($) { 0 }
-sub is_period ($) { 0 }
+sub is_interval ($) { 0 }
 
 sub _is_leap_year ($) {
   return ($_[0] % 400 == 0 or ($_[0] % 4 == 0 and $_[0] % 100 != 0));
@@ -386,13 +386,13 @@ sub to_unix_number ($) {
   return (($self->{value} . $self->second_fraction_string) - $unix_epoch);
 } # to_unix_number
 
-sub to_datetime ($) {
+sub to_date_time ($) {
   my $self = shift;
   require DateTime;
   return DateTime->from_epoch
       (epoch => $self->to_unix_integer,
        time_zone => defined $self->{tz} ? $self->{tz}->to_offset_string : 'floating');
-} # to_datetime
+} # to_date_time
 
 sub to_time_piece_gm ($) {
   my $self = $_[0];
@@ -406,7 +406,6 @@ sub to_time_piece_local ($) {
   return Time::Piece::localtime ($self->to_unix_integer);
 } # to_time_piece_local
 
-# XXX XML Schema datetime datatypes
 # XXX microdata vocab datetime
 # XXX OGP datetime
 # XXX RFC 3339 date-time

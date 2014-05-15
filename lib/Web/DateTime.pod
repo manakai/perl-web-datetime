@@ -40,13 +40,13 @@ leap seconds, if the L<DateTime> object represents a leap second, the
 result C<Web::DateTime> object represents the second just after the
 leap second.
 
-=item true = $dt->is_datetime
+=item true = $dt->is_date_time
 
 =item false = $dt->is_time_zone
 
 =item false = $dt->is_duration
 
-=item false = $dt->is_period
+=item false = $dt->is_interval
 
 Return whether the object is of the specified type or not.
 
@@ -175,7 +175,7 @@ ignored.
 This method is suitable for values for HTML C<< <input type=week> >>
 and C<time> elements.
 
-=item $datetime = $dt->to_datetime
+=item $datetime = $dt->to_date_time
 
 Return a new L<DateTime> object which represents the time represented
 by the object.  If the object has associated time zone, the returned
@@ -321,7 +321,7 @@ C<undef>.
 The module requires Perl 5.8 or later and the L<Time::Local> module
 (which is a core module).
 
-Methods C<to_datetime>, C<to_time_piece_gm>, and
+Methods C<to_date_time>, C<to_time_piece_gm>, and
 C<to_time_piece_local> require more modules.
 
 =head1 SPECIFICATIONS

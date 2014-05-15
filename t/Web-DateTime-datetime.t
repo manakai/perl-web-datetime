@@ -12,58 +12,58 @@ test {
   my $c = shift;
   my $date = Web::DateTime::Parser->new->parse_global_date_and_time_string
       ('2010-12-13T01:02:03Z');
-  my $dt = $date->to_datetime;
+  my $dt = $date->to_date_time;
   isa_ok $dt, 'DateTime';
   is $dt . '', '2010-12-13T01:02:03';
   is $dt->time_zone->name, 'UTC';
   done $c;
-} n => 3, name => 'to_datetime';
+} n => 3, name => 'to_date_time';
 
 test {
   my $c = shift;
   my $date = Web::DateTime::Parser->new->parse_global_date_and_time_string
       ('2010-12-13T01:02:03-00:00');
-  my $dt = $date->to_datetime;
+  my $dt = $date->to_date_time;
   isa_ok $dt, 'DateTime';
   is $dt . '', '2010-12-13T01:02:03';
   is $dt->time_zone->name, 'floating';
   done $c;
-} n => 3, name => 'to_datetime, -00:00';
+} n => 3, name => 'to_date_time, -00:00';
 
 test {
   my $c = shift;
   my $date = Web::DateTime::Parser->new->parse_global_date_and_time_string
       ('2010-12-13T01:02:03+21:44');
-  my $dt = $date->to_datetime;
+  my $dt = $date->to_date_time;
   isa_ok $dt, 'DateTime';
   is $dt . '', '2010-12-13T01:02:03';
   is $dt->time_zone->name, '+2144';
   is $dt->epoch, $date->to_unix_integer;
   done $c;
-} n => 4, name => 'to_datetime, tz';
+} n => 4, name => 'to_date_time, tz';
 
 test {
   my $c = shift;
   my $date = Web::DateTime::Parser->new->parse_local_date_and_time_string
       ('2010-12-13T01:02:03');
-  my $dt = $date->to_datetime;
+  my $dt = $date->to_date_time;
   isa_ok $dt, 'DateTime';
   is $dt . '', '2010-12-13T01:02:03';
   is $dt->time_zone->name, 'floating';
   is $dt->epoch, $date->to_unix_integer;
   done $c;
-} n => 4, name => 'to_datetime, floating';
+} n => 4, name => 'to_date_time, floating';
 
 test {
   my $c = shift;
   my $date = Web::DateTime::Parser->new->parse_date_string ('2010-12-13');
-  my $dt = $date->to_datetime;
+  my $dt = $date->to_date_time;
   isa_ok $dt, 'DateTime';
   is $dt . '', '2010-12-13T00:00:00';
   is $dt->time_zone->name, 'floating';
   is $dt->epoch, $date->to_unix_integer;
   done $c;
-} n => 4, name => 'to_datetime, date';
+} n => 4, name => 'to_date_time, date';
 
 test {
   my $c = shift;

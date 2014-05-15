@@ -1,16 +1,16 @@
 =head1 NAME
 
-Web::DateTime::Period - Period between dates for Web
+Web::DateTime::Interval - Interval between dates for Web
 
 =head1 SYNOPSIS
 
-  use Web::DateTime::Period;
-  $period = Web::DateTime::Period->new_from_datetimes ($dt1, $dt2);
-  warn $period->to_datetimes_string;
+  use Web::DateTime::Interval;
+  $interval = Web::DateTime::Interval->new_from_date_times ($dt1, $dt2);
+  warn $interval->to_date_times_string;
 
 =head1 DESCRIPTION
 
-The C<Web::DateTime::Period> class represents a time period between
+The C<Web::DateTime::Interval> class represents a time interval between
 two dates and times.
 
 =head1 METHODS
@@ -19,52 +19,52 @@ Following methods are available:
 
 =over 4
 
-=item $period = Web::DateTime::Period->new_from_datetimes ($dt1, $dt2)
+=item $interval = Web::DateTime::Interval->new_from_date_times ($dt1, $dt2)
 
-Create a new period object from start and end L<Web::DateTime>
+Create a new interval object from start and end L<Web::DateTime>
 objects.  The first date/time must be less than or equal to the second
 date/time.
 
-=item $period = Web::DateTime::Period->new_from_datetime_and_duration ($dt, $duration)
+=item $interval = Web::DateTime::Interval->new_from_date_time_and_duration ($dt, $duration)
 
-Create a new period object from start L<Web::DateTime> object and
+Create a new interval object from start L<Web::DateTime> object and
 L<Web::DateTime::Duration> object.  The duration must be positive and
 must not have non-zero months.
 
-=item false = $period->is_datetime
+=item false = $interval->is_date_time
 
-=item false = $period->is_time_zone
+=item false = $interval->is_time_zone
 
-=item false = $period->is_duration
+=item false = $interval->is_duration
 
-=item true = $period->is_period
+=item true = $interval->is_interval
 
 Return whether the object is of the specified type or not.
 
-=item $dt = $period->start_datetime
+=item $dt = $interval->start_date_time
 
 Return the L<Web::DateTime> object representing the start date and
-time of the period.
+time of the interval.
 
-=item $dt = $period->end_datetime
+=item $dt = $interval->end_date_time
 
 Return the L<Web::DateTime> object representing the end date and time
-of the period.
+of the interval.
 
-=item $duration = $period->duration
+=item $duration = $interval->duration
 
 Return the L<Web::DateTime::Duration> object representing the duration
 between the start and end dates and times.
 
-=item $string = $period->to_datetimes_string
+=item $string = $interval->to_date_times_string
 
-Return the string representing the period, using the format of two
+Return the string representing the interval, using the format of two
 valid global date and time strings, which is appropriate for vEvent
 microdata [HTML].
 
-=item $string = $period->to_datetime_and_duration_string
+=item $string = $interval->to_date_time_and_duration_string
 
-Return the string representing the period, using the format of a valid
+Return the string representing the interval, using the format of a valid
 global date and time string and an vevent duration string, which is
 appropriate for vEvent microdata [HTML].
 
