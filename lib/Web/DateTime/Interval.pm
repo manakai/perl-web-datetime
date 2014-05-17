@@ -3,13 +3,13 @@ use strict;
 use warnings;
 our $VERSION = '1.0';
 
-sub new_from_date_times ($$$) {
+sub new_from_start_and_end ($$$) {
   return bless {start_datetime => $_[1], end_datetime => $_[2]}, $_[0];
-} # new_from_date_times
+} # new_from_start_and_end
 
-sub new_from_date_time_and_duration ($$$) {
+sub new_from_start_and_duration ($$$) {
   return bless {start_datetime => $_[1], duration => $_[2]}, $_[0];
-} # new_from_date_time_and_duration
+} # new_from_start_and_duration
 
 sub is_date_time ($) { 0 }
 sub is_time_zone ($) { 0 }
@@ -35,21 +35,21 @@ sub duration ($) {
   };
 } # duration
 
-sub to_date_times_string ($) {
+sub to_start_and_end_string ($) {
   my $self = $_[0];
   return
       $self->start_date_time->to_global_date_and_time_string .
       '/' .
       $self->end_date_time->to_global_date_and_time_string;
-} # to_date_times_string
+} # to_start_and_end_string
 
-sub to_date_time_and_duration_string ($) {
+sub to_start_and_duration_string ($) {
   my $self = $_[0];
   return
       $self->start_date_time->to_global_date_and_time_string .
       '/' .
       $self->duration->to_vevent_duration_string;
-} # to_date_time_and_duration_string
+} # to_start_and_duration_string
 
 1;
 

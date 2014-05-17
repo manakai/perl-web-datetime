@@ -5,8 +5,8 @@ Web::DateTime::Interval - Interval between dates for Web
 =head1 SYNOPSIS
 
   use Web::DateTime::Interval;
-  $interval = Web::DateTime::Interval->new_from_date_times ($dt1, $dt2);
-  warn $interval->to_date_times_string;
+  $interval = Web::DateTime::Interval->new_from_start_and_end ($dt1, $dt2);
+  warn $interval->to_start_and_end_string;
 
 =head1 DESCRIPTION
 
@@ -19,13 +19,13 @@ Following methods are available:
 
 =over 4
 
-=item $interval = Web::DateTime::Interval->new_from_date_times ($dt1, $dt2)
+=item $interval = Web::DateTime::Interval->new_from_start_and_end ($dt1, $dt2)
 
 Create a new interval object from start and end L<Web::DateTime>
 objects.  The first date/time must be less than or equal to the second
 date/time.
 
-=item $interval = Web::DateTime::Interval->new_from_date_time_and_duration ($dt, $duration)
+=item $interval = Web::DateTime::Interval->new_from_start_and_duration ($dt, $duration)
 
 Create a new interval object from start L<Web::DateTime> object and
 L<Web::DateTime::Duration> object.  The duration must be positive and
@@ -56,17 +56,23 @@ of the interval.
 Return the L<Web::DateTime::Duration> object representing the duration
 between the start and end dates and times.
 
-=item $string = $interval->to_date_times_string
+=item $string = $interval->to_start_and_end_string
 
 Return the string representing the interval, using the format of two
 valid global date and time strings, which is appropriate for vEvent
 microdata [HTML].
 
-=item $string = $interval->to_date_time_and_duration_string
+This can also be used as an ISO 8601 time interval representation in
+most cases.
+
+=item $string = $interval->to_start_and_duration_string
 
 Return the string representing the interval, using the format of a valid
 global date and time string and an vevent duration string, which is
 appropriate for vEvent microdata [HTML].
+
+This can also be used as an ISO 8601 time interval representation in
+most cases.
 
 =back
 

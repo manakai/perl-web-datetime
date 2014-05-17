@@ -355,7 +355,7 @@ for my $test (
         ($test->[0]);
     if ($test->[1] eq 'Interval') {
       isa_ok $dt, 'Web::DateTime::Interval';
-      is $dt->to_date_time_and_duration_string, $test->[2];
+      is $dt->to_start_and_duration_string, $test->[2];
     } elsif ($test->[1] eq 'DateTime') {
       isa_ok $dt, 'Web::DateTime';
       is $dt->to_global_date_and_time_string, $test->[2];
