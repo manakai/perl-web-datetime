@@ -36,29 +36,6 @@ for details of error handling.
 The value should not be set while the parser is running.  If the value
 is changed, the result is undefined.
 
-=item $dt = $parser->parse_date_string ($string)
-
-Parse the argument as an HTML date string [HTML] and return
-a L<Web::DateTime> (or C<undef> if failed).  Any error is reported
-through the C<onerror> handler.
-
-This method is suitable for values from HTML C<< <input type=date> >>.
-
-=item $dt = $parser->parse_xs_date_string ($string)
-
-Parse the argument as an XML Schema C<xs:date> string [XSDT] and
-return a L<Web::DateTime> (or C<undef> if failed).  Any error is
-reported through the C<onerror> handler.
-
-=item $dt = $parser->parse_date_string_with_optional_time ($string)
-
-Parse the argument as an HTML date string with optional time
-[HTML] and return a L<Web::DateTime> (or C<undef> if failed).  Any
-error is reported through the C<onerror> handler.
-
-This method is suitable for values in HTML C<< <ins datetime=""> >>
-and C<< <del datetime="" >> attributes.
-
 =item $dt = $parser->parse_global_date_and_time_string ($string)
 
 Parse the argument as an HTML global date and time string
@@ -89,6 +66,29 @@ Parse the argument as an XML Schema C<xs:dateTime> string [XSDT] and
 return a L<Web::DateTime> (or C<undef> if failed).  Any error is
 reported through the C<onerror> handler.
 
+=item $dt = $parser->parse_date_string ($string)
+
+Parse the argument as an HTML date string [HTML] and return
+a L<Web::DateTime> (or C<undef> if failed).  Any error is reported
+through the C<onerror> handler.
+
+This method is suitable for values from HTML C<< <input type=date> >>.
+
+=item $dt = $parser->parse_xs_date_string ($string)
+
+Parse the argument as an XML Schema C<xs:date> string [XSDT] and
+return a L<Web::DateTime> (or C<undef> if failed).  Any error is
+reported through the C<onerror> handler.
+
+=item $dt = $parser->parse_date_string_with_optional_time ($string)
+
+Parse the argument as an HTML date string with optional time
+[HTML] and return a L<Web::DateTime> (or C<undef> if failed).  Any
+error is reported through the C<onerror> handler.
+
+This method is suitable for values in HTML C<< <ins datetime=""> >>
+and C<< <del datetime="" >> attributes.
+
 =item $dt = $parser->parse_year_string ($string)
 
 Parse the argument as a year string in HTML and return a
@@ -113,20 +113,6 @@ This method is suitable for values from HTML C<< <input type=month>
 =item $dt = $parser->parse_xs_g_year_month_string ($string)
 
 Parse the argument as an XML Schema C<xs:gYearMonth> string [XSDT] and
-return a L<Web::DateTime> (or C<undef> if failed).  Any error is
-reported through the C<onerror> handler.
-
-=item $dt = $parser->parse_time_string ($string)
-
-Parse the argument as an HTML time string [HTML] and return
-a L<Web::DateTime> (or C<undef> if failed).  Any error is reported
-through the C<onerror> handler.
-
-This method is suitable for values from HTML C<< <input type=time> >>.
-
-=item $dt = $parser->parse_xs_time_string ($string)
-
-Parse the argument as an XML Schema C<xs:time> string [XSDT] and
 return a L<Web::DateTime> (or C<undef> if failed).  Any error is
 reported through the C<onerror> handler.
 
@@ -165,6 +151,20 @@ a L<Web::DateTime> (or C<undef> if failed).  Any error is reported
 through the C<onerror> handler.
 
 This method is suitable for values from HTML C<< <input type=week> >>.
+
+=item $dt = $parser->parse_time_string ($string)
+
+Parse the argument as an HTML time string [HTML] and return
+a L<Web::DateTime> (or C<undef> if failed).  Any error is reported
+through the C<onerror> handler.
+
+This method is suitable for values from HTML C<< <input type=time> >>.
+
+=item $dt = $parser->parse_xs_time_string ($string)
+
+Parse the argument as an XML Schema C<xs:time> string [XSDT] and
+return a L<Web::DateTime> (or C<undef> if failed).  Any error is
+reported through the C<onerror> handler.
 
 =item $tz = $parser->parse_time_zone_offset_string ($string)
 

@@ -20,6 +20,8 @@ sub onerror ($;$) {
   };
 } # onerror
 
+## ------ Time ------
+
 sub parse_time_string ($$) {
   my ($self, $value) = @_;
   if ($value =~ /\A
@@ -50,6 +52,8 @@ sub parse_xs_time_string ($$) {
   return $self->parse_xs_date_time_string ('1970-01-01T' . $value);
 } # parse_xs_time_string
 
+## ------ Week ------
+
 sub parse_week_string ($$) {
   my ($self, $value) = @_;
   if ($value =~ /\A([0-9]{4,})-W([0-9]{2})\z/x) {
@@ -69,6 +73,8 @@ sub parse_week_string ($$) {
     return undef;
   }
 } # parse_week_string
+
+## ------ Year ------
 
 sub parse_year_string ($$) {
   my ($self, $value) = @_;
@@ -98,6 +104,8 @@ sub parse_xs_g_year_string ($$) {
     return $self->parse_xs_date_time_string ($value . '-01-01T00:00:00');
   }
 } # parse_xs_g_year_string
+
+## ------ Month ------
 
 sub parse_month_string ($$) {
   my ($self, $value) = @_;
@@ -136,6 +144,8 @@ sub parse_xs_g_year_month_string ($$) {
     return $self->parse_xs_date_time_string ($value . '-01T00:00:00');
   }
 } # parse_xs_g_year_month_string
+
+## ------ Date ------
 
 sub parse_date_string ($$) {
   my ($self, $value) = @_;
@@ -179,6 +189,8 @@ sub parse_xs_date_string ($$) {
   }
 } # parse_xs_date_string
 
+## ------ Yearless date ------
+
 sub parse_yearless_date_string ($$) {
   my ($self, $value) = @_;
   if ($value =~ /\A(?:--|)([0-9]{2})-([0-9]{2})\z/x) {
@@ -213,6 +225,8 @@ sub parse_xs_g_month_day_string ($$) {
   }
 } # parse_xs_g_month_day_string
 
+## ------ Month only ------
+
 sub parse_xs_g_month_string ($$) {
   my ($self, $value) = @_;
   if ($value =~ s/^--([0-9]+)//) {
@@ -223,6 +237,8 @@ sub parse_xs_g_month_string ($$) {
   }
 } # parse_xs_g_month_string
 
+## ------ Day only ------
+
 sub parse_xs_g_day_string ($$) {
   my ($self, $value) = @_;
   if ($value =~ s/^---([0-9]+)//) {
@@ -232,6 +248,8 @@ sub parse_xs_g_day_string ($$) {
     return $self->parse_xs_date_time_string ('2000-01-' . $value . 'T00:00:00');
   }
 } # parse_xs_g_day_string
+
+## ------ Date and time ------
 
 sub parse_local_date_and_time_string ($$) {
   my ($self, $value) = @_;
@@ -600,6 +618,8 @@ sub parse_date_string_with_optional_time_and_duration ($$) {
   }
 } # parse_date_string_with_optional_time_and_duration
 
+## ------ Time zone ------
+
 sub parse_time_zone_offset_string ($$) {
   my ($self, $value) = @_;
   if ($value =~ /\A(?:
@@ -661,6 +681,8 @@ sub _create {
 } # _create
 
 # XXX parser for HTML <time> value
+
+## ------ Duration ------
 
 my $DurationScale = {
   W => 604800,
