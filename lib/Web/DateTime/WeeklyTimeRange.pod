@@ -1,0 +1,55 @@
+=head1 NAME
+
+Web::DateTime::WeeklyTimeRange - Weekly time ranges
+
+=head1 SYNOPSIS
+
+  use Web::DateTime::WeeklyTimeRange;
+  $interval = Web::DateTime::WeeklyTimeRange->new_from_weekdays_and_time_ranges
+      ([0, 0, 1, 1, 1, 0, 0], [[120 => 240], [360 => 1200]]);
+  warn $interval->to_weekly_time_range_string;
+
+=head1 DESCRIPTION
+
+The C<Web::DateTime::WeeklyTimeRange> class represents a weekly time
+range.
+
+=head1 METHODS
+
+Following methods are available:
+
+=over 4
+
+=item $wr = Web::DateTime::WeeklyTimeRange->new_from_weekdays_and_time_ranges ($weekdays, $ranges)
+
+Create a new weekly time range object from two hash references used as
+internal data structures.
+
+=item $string = $interval->to_weekly_time_range_string
+
+Return the string representing the weekly time range [SCHEMAORG].
+
+=back
+
+=head1 SPECIFICATION
+
+=over 4
+
+=item SCHEMAORG
+
+Schema.org <http://schema.org/>.
+
+=back
+
+=head1 AUTHOR
+
+Wakaba <wakaba@suikawiki.org>.
+
+=head1 LICENSE
+
+Copyright 2014 Wakaba <wakaba@suikawiki.org>.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

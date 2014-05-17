@@ -255,6 +255,12 @@ L<Web::DateTime::Interval> (or C<undef> if failed).  Any error is
 reported through the C<onerror> handler.  This method can be used to
 parse the value of the vEvent microdata's C<rdate> item value [HTML].
 
+=item $wr = $parser->parse_weekly_time_range_string ($string)
+
+Parse the argument as a weekly time range string [SCHEMAORG] and
+return a L<Web::DateTime::WeeklyTimeRange> (or C<undef> if failed).
+Any error is reported through the C<onerror> handler.
+
 =back
 
 =head1 DEPENDENCY

@@ -1473,6 +1473,51 @@ sub parse_iso_8601_duration_string ($$) {
       ($seconds, $months, +1);
 } # parse_iso_8601_duration_string
 
+## ------ Time ranges ------
+
+my %WdayNum = (Su => 0, Mo => 1, Tu => 2, We => 3, Th => 4, Fr => 5, Sa => 6);
+
+sub parse_weekly_time_range_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ /\A
+    (?:Su|Mo|Tu|We|Th|Fr|Sa)(?:-(?:Su|Mo|Tu|We|Th|Fr|Sa))?
+    (?:,(?:Su|Mo|Tu|We|Th|Fr|Sa)(?:-(?:Su|Mo|Tu|We|Th|Fr|Sa))?)*
+    (?:
+      \x20
+      (?:[01][0-9]|2[0-3]):[0-5][0-9]-(?:[01][0-9]|2[0-3]):[0-5][0-9]
+      (?:,(?:[01][0-9]|2[0-3]):[0-5][0-9]-(?:[01][0-9]|2[0-3]):[0-5][0-9])*
+    )?
+  \z/x) {
+    my ($days, $times) = split / /, $value;
+    my $wdays = [];
+    for (split /,/, $days) {
+      if (/^([A-Za-z]+)-([A-Za-z]+)$/) {
+        my $start = $WdayNum{$1};
+        my $end = $WdayNum{$2};
+        if ($start <= $end) {
+          $wdays->[$_] = 1 for $start..$end
+        } else {
+          $wdays->[$_ % 7] = 1 for $start..($end + 7);
+        }
+      } else {
+        $wdays->[$WdayNum{$_}] = 1;
+      }
+    }
+    my $ranges = [];
+    for (split /,/, $times || '') {
+      /^([0-9]+):([0-9]+)-([0-9]+):([0-9]+)$/;
+      push @$ranges, [$1*60+$2 => $3*60+$4];
+    }
+    require Web::DateTime::WeeklyTimeRange;
+    return Web::DateTime::WeeklyTimeRange->new_from_weekdays_and_time_ranges
+        ($wdays, $ranges);
+  } else {
+    $self->onerror->(type => 'datetime:syntax error',
+                     level => 'm');
+    return undef;
+  }
+} # parse_weekly_time_range_string
+
 1;
 
 =head1 LICENSE

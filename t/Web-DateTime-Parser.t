@@ -763,6 +763,49 @@ for my $test (
   } n => 5, name => ['parse_iso_8601_duration_string', $test->[0]];
 }
 
+for my $test (
+  ['Mo' => 'Mo'],
+  ['Mo-Su' => 'Su,Mo,Tu,We,Th,Fr,Sa'],
+  ['Su,Mo,Tu,We,Th,Fr,Sa' => 'Su,Mo,Tu,We,Th,Fr,Sa'],
+  ['We-Tu' => 'Su,Mo,Tu,We,Th,Fr,Sa'],
+  ['Mo-We,Fr-Sa' => 'Mo,Tu,We,Fr,Sa'],
+  ['We,Fr 03:33-05:50' => 'We,Fr 03:33-05:50'],
+  ['Sa' => 'Sa'],
+  ['sa' => undef],
+  ['Ho' => undef],
+  ['Mo-Gr' => undef],
+  ['Sa  Fr' => undef],
+  ['Tu 23:44-12:00' => 'Tu 23:44-12:00'],
+  ['Tu 23:44-12:00,13:00-21:00' => 'Tu 23:44-12:00,13:00-21:00'],
+  ['21:33-22:00' => undef],
+  ['Tu 12:00' => undef],
+  ['Tue 21:33-22:00' => undef],
+  ['Sa 24:01-24:30' => undef],
+  ['Sa 23:60-23:61' => undef],
+  ['Tu 22:00-22:00' => 'Tu 22:00-22:00'],
+  ['Tu,We-Th 22:00-22:00' => 'Tu,We,Th 22:00-22:00'],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $r = $parser->parse_weekly_time_range_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $r, 'Web::DateTime::WeeklyTimeRange';
+      is $r && $r->to_weekly_time_range_string, $test->[1];
+      eq_or_diff \@error, [];
+    } else {
+      is $r, undef;
+      ok 1;
+      eq_or_diff \@error, [{type => 'datetime:syntax error', level => 'm'}];
+    }
+    done $c;
+  } n => 3, name => ['parse_weekly_time_range_string', $test->[0]];
+}
+
 run_tests;
 
 =head1 LICENSE
