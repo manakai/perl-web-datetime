@@ -26,7 +26,7 @@ test {
   my $dt = $date->to_date_time;
   isa_ok $dt, 'DateTime';
   is $dt . '', '2010-12-13T01:02:03';
-  is $dt->time_zone->name, 'floating';
+  is $dt->time_zone->name, 'UTC';
   done $c;
 } n => 3, name => 'to_date_time, -00:00';
 
