@@ -214,12 +214,13 @@ sub _create ($$$$$$$$$$;$) {
   my $self = bless {}, shift;
   my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff) = @_;
   
+  $zm *= -1 if defined $zh and $zh =~ /^-/;
   $self->{value} = Time::Local::timegm_nocheck
-      ($s, $m - ($zm || 0), $h - ($zh|| 0), $d, $M-1, $y);
+      ($s, $m - ($zm || 0), $h - ($zh || 0), $d, $M-1, $y);
   if (defined $zh) {
     require Web::DateTime::TimeZone;
     $self->{tz} = Web::DateTime::TimeZone->new_from_offset
-        (($zh >= 0 ? +1 : -1) * ((abs $zh) * 60 * 60 + $zm * 60));
+        (($zh =~ /^-/ ? -1 : +1) * ((abs $zh) * 60 * 60 + (abs $zm) * 60));
   }
   
   if ($diff) {
@@ -405,12 +406,6 @@ sub to_time_piece_local ($) {
   require Time::Piece;
   return Time::Piece::localtime ($self->to_unix_integer);
 } # to_time_piece_local
-
-# XXX microdata vocab datetime
-# XXX OGP datetime
-# XXX RFC 3339 date-time
-# XXX document.lastModified
-# XXX HTTP datetime
 
 # XXX JavaScript timestamp parser/serializer
 

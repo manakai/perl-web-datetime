@@ -66,6 +66,18 @@ Parse the argument as an XML Schema C<xs:dateTime> string [XSDT] and
 return a L<Web::DateTime> (or C<undef> if failed).  Any error is
 reported through the C<onerror> handler.
 
+=item $dt = $parser->parse_schema_org_date_time_string ($string)
+
+Parse the argument as an C<http://schema.org/DateTime> string
+[SCHEMAORG] and return a L<Web::DateTime> (or C<undef> if failed).
+Any error is reported through the C<onerror> handler.
+
+=item $dt = $parser->parse_ogp_date_time_string ($string)
+
+Parse the argument as an OGP DateTime string [OGP] and return a
+L<Web::DateTime> (or C<undef> if failed).  Any error is reported
+through the C<onerror> handler.
+
 =item $dt = $parser->parse_date_string ($string)
 
 Parse the argument as an HTML date string [HTML] and return
@@ -79,6 +91,16 @@ This method is suitable for values from HTML C<< <input type=date> >>.
 Parse the argument as an XML Schema C<xs:date> string [XSDT] and
 return a L<Web::DateTime> (or C<undef> if failed).  Any error is
 reported through the C<onerror> handler.
+
+=item $dt = $parser->parse_iso_8601_date_string ($string)
+
+Parse the argument as an ISO 8601:2004 date representation [ISO8601]
+and return a L<Web::DateTime> (or C<undef> if failed).  Any error is
+reported through the C<onerror> handler.
+
+This method is suitable for microdata C<http://schema.org/Date> item
+values and date item values in data-vocabulary.org microdata
+vocabulary.
 
 =item $dt = $parser->parse_date_string_with_optional_time ($string)
 
@@ -166,6 +188,9 @@ Parse the argument as an XML Schema C<xs:time> string [XSDT] and
 return a L<Web::DateTime> (or C<undef> if failed).  Any error is
 reported through the C<onerror> handler.
 
+This method is suitable for microdata C<http://schema.org/Time> item
+value.
+
 =item $tz = $parser->parse_time_zone_offset_string ($string)
 
 Parse the argument as an HTML time-zone offset string [HTML]
@@ -202,6 +227,24 @@ Parse the argument as an XML Schema C<xs:yearMonthDuration> string
 [XSDT] and return a L<Web::DateTime::Duration> (or C<undef> if
 failed).  Any error is reported through the C<onerror> handler.
 
+=item $duration = $parser->parse_iso_8601_duration_string ($string)
+
+Parse the argument as an ISO 8601:2004 duration string [ISO8601] and
+return a L<Web::DateTime::Duration> (or C<undef> if failed).  Any
+error is reported through the C<onerror> handler.
+
+Strictly speaking, ISO 8601 has different semantics for durations from
+those of L<Web::DateTime::Duration>.  The method returns a duration
+object which consist of numbers of months and seconds by assuming that
+C<P1Y> is equal to C<P12M>; C<P1W> is equal to C<P7D>, C<P1D> is equal
+to C<PT24H>, C<PT1H> is equal to C<PT60M>, and C<PT1M> is equal to
+C<PT60S>; and a duration in alternative format equals to number of
+seconds represented by it.
+
+This method is suitable for microdata C<http://schema.org/Duration>
+item values and date item values in data-vocabulary.org microdata
+vocabulary.
+
 =item $obj = $parser->parse_date_string_with_optional_time_and_duration ($string)
 
 Parse the argument as either a valid date string, a valid global date
@@ -230,6 +273,19 @@ HTML Standard <http://www.whatwg.org/specs/web-apps/current-work/>.
 
 W3C XML Schema Definition Language (XSD) 1.1 Part 2: Datatypes
 <http://www.w3.org/TR/xmlschema11-2/>.
+
+=item SCHEMAORG
+
+Schema.org <http://schema.org/>.
+
+=item OGP
+
+The Open Graph protocol <http://ogp.me/>.
+
+=item ISO8601
+
+ISO 8601:2004, Data elements and interchange formats -- Information
+interchange -- Representation of dates and times.
 
 =back
 

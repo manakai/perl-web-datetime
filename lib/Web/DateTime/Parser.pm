@@ -189,6 +189,132 @@ sub parse_xs_date_string ($$) {
   }
 } # parse_xs_date_string
 
+sub parse_iso_8601_date_string ($$) {
+  my ($self, $value) = @_;
+
+  if ($value =~ /\x{2010}/) {
+    $self->onerror->(type => 'datetime:hyphen',
+                     level => 'w');
+  }
+  if ($value =~ /\x{2212}/) {
+    $self->onerror->(type => 'datetime:minus sign',
+                     level => 'w');
+  }
+  if ($value =~ /w/) {
+    $self->onerror->(type => 'datetime:lowercase designator',
+                     value => 'w',
+                     level => 'w');
+  }
+
+  my $y;
+  my $M;
+  my $w;
+  my $d;
+
+  if ($value =~ /\A([0-9]{4}|[+-][0-9]{4,})[-\x{2010}]([0-9]{2})[-\x{2010}]([0-9]{2})\z/) {
+    $y = $1;
+    $M = $2;
+    $d = $3;
+  } elsif ($value =~ /\A([0-9]{4}|[+\x{2212}-][0-9]{4,})[-\x{2010}]([0-9]{3})\z/) {
+    $y = $1;
+    $d = $2;
+  } elsif ($value =~ /\A([0-9]{4}|[+\x{2212}-][0-9]{4,})[-\x{2010}][Ww]([0-9]{2})[-\x{2010}]([0-9])\z/) {
+    $y = $1;
+    $w = $2;
+    $d = $3;
+  } elsif ($value =~ /\A([0-9]{4}|[+\x{2212}-][0-9]{4,})[-\x{2010}]([0-9]{2})\z/) {
+    $y = $1;
+    $M = $2;
+    $d = 1;
+  } elsif ($value =~ /\A([0-9]{4}|[+\x{2212}-][0-9]{4,})[-\x{2010}][Ww]([0-9]{2})\z/) {
+    $y = $1;
+    $w = $2;
+    $d = 1;
+  } elsif ($value =~ /\A([0-9]{4}|[+-][0-9]{4,})([0-9]{2})([0-9]{2})\z/) {
+    $y = $1;
+    $M = $2;
+    $d = $3;
+  } elsif ($value =~ /\A([0-9]{4}|[+\x{2212}-][0-9]{4,})([0-9]{3})\z/) {
+    $y = $1;
+    $d = $2;
+  } elsif ($value =~ /\A([0-9]{4}|[+\x{2212}-][0-9]{4,})[Ww]([0-9]{2})([0-9])\z/) {
+    $y = $1;
+    $w = $2;
+    $d = $3;
+  } elsif ($value =~ /\A([0-9]{4}|[+\x{2212}-][0-9]{4,})([0-9]{2})\z/) {
+    $y = $1;
+    $M = $2;
+    $d = 1;
+  } elsif ($value =~ /\A([0-9]{4}|[+\x{2212}-][0-9]{4,})[Ww]([0-9]{2})\z/) {
+    $y = $1;
+    $w = $2;
+    $d = 1;
+  } elsif ($value =~ /\A([0-9]{4}|[+\x{2212}-][0-9]{4,})\z/) {
+    $y = $1;
+    $M = 1;
+    $d = 1;
+  } elsif ($value =~ /\A([0-9]{2}|[+\x{2212}-][0-9]{2,})\z/) {
+    $y = $1 . '00';
+    $M = 1;
+    $d = 1;
+  } else {
+    $self->onerror->(type => 'date:syntax error',
+                     level => 'm');
+    return undef;
+  }
+
+  $y =~ s/\x{2212}/-/g;
+  if ($y =~ /^[+-]/) {
+    $self->onerror->(type => 'datetime:expanded year',
+                     value => $y,
+                     level => 'w');
+  }
+  if ($y <= 1582) {
+    $self->onerror->(type => 'datetime:pre-gregorio year',
+                     value => $y,
+                     level => 'w');
+  }
+
+  if (defined $w) { ## Y, W, D
+    $self->onerror->(type => 'week:bad week',
+                     value => $w,
+                     level => 'm'), return undef
+        if $w > Web::DateTime::_last_week_number ($y) || $w == 0;
+    $self->onerror->(type => 'datetime:bad day',
+                     value => $d,
+                     level => 'm'), return undef
+        if $d < 1 or $d > 7;
+    my $day = ($w - 1) * 7 - Web::DateTime::_week_year_diff ($y);
+    $day += $d - 1;
+    return $self->_create ($y, 1, 1, 0, 0, 0, '', undef, undef, $day * 24 * 3600 * 1000);
+  } elsif (not defined $M) { ## Y, D
+    $self->onerror->(type => 'datetime:bad day',
+                     value => $d,
+                     level => 'm'), return undef
+        if $d < 1 or $d > 366 or
+           ($d == 366 and not Web::DateTime::_is_leap_year ($y));
+    return $self->_create ($y, 1, 1, 0, 0, 0, '', undef, undef, ($d - 1) * 24 * 3600 * 1000);
+  } else { ## Y, M, D
+    if (0 < $M and $M < 13) {
+      $self->onerror->(type => 'datetime:bad day',
+                       value => $d,
+                       level => 'm'), return undef
+          if $d < 1 or
+             $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$M];
+      $self->onerror->(type => 'datetime:bad day',
+                       value => $d,
+                       level => 'm'), return undef
+          if $M == 2 and $d == 29 and not Web::DateTime::_is_leap_year ($y);
+      return $self->_create ($y, $M, $d, 0, 0, 0, '', undef, undef);
+    } else {
+      $self->onerror->(type => 'datetime:bad month',
+                       value => $M,
+                       level => 'm');
+      return undef;
+    }
+  }
+} # parse_iso_8601_date_string
+
 ## ------ Yearless date ------
 
 sub parse_yearless_date_string ($$) {
@@ -354,10 +480,8 @@ sub parse_global_date_and_time_string ($$) {
     if ($zh eq '-00' and $zm eq '00') {
       $self->onerror->(type => 'datetime:-00:00',
                        level => 'm'); # don't return
-      return $self->_create ($y, $M, $d, $h, $m, $s, $sf, undef, undef);
-    } else {
-      return $self->_create ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
     }
+    return $self->_create ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
   } else {
     $self->onerror->(type => 'datetime:syntax error',
                      level => 'm');
@@ -514,6 +638,151 @@ sub parse_xs_date_time_stamp_string ($$) {
     return undef;
   }
 } # parse_xs_date_time_stamp_string
+
+sub parse_schema_org_date_time_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ /\A
+    (-?[0-9]{4})-([0-9]{2})-([0-9]{2})
+    T
+    ([0-9]{2}):([0-9]{2}):([0-9]{2})
+    (
+      Z |
+      ([+-][0-9]{2}):([0-9]{2})
+    )?
+  \z/x) {
+    my ($y, $M, $d, $h, $m, $s, $z, $zh, $zm)
+        = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+    if (0 < $M and $M < 13) {
+      $self->onerror->(type => 'datetime:bad day',
+                       value => $d,
+                       level => 'm'), return undef
+          if $d < 1 or
+             $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$M];
+      $self->onerror->(type => 'datetime:bad day',
+                       value => $d,
+                       level => 'm'), return undef
+          if $M == 2 and $d == 29 and not Web::DateTime::_is_leap_year ($y);
+    } else {
+      $self->onerror->(type => 'datetime:bad month',
+                       value => $M,
+                       level => 'm');
+      return undef;
+    }
+    if ($y =~ /^[+-]/) {
+      $self->onerror->(type => 'datetime:expanded year',
+                       value => $y,
+                       level => 'w');
+    }
+    if ($y <= 1582) {
+      $self->onerror->(type => 'datetime:pre-gregorio year',
+                       value => $y,
+                       level => 'w');
+    }
+    $self->onerror->(type => 'datetime:bad hour',
+                     value => $h,
+                     level => 'm'), return undef if $h > 23;
+    $self->onerror->(type => 'datetime:bad minute',
+                     value => $m,
+                     level => 'm'), return undef if $m > 59;
+    $self->onerror->(type => 'datetime:bad second',
+                     value => $s,
+                     level => 'm'), return undef if $s > 59;
+    # XXX allow leap seconds
+    if (not defined $z) {
+      #
+    } elsif (defined $zh) {
+      $self->onerror->(type => 'datetime:bad timezone hour',
+                       value => $zh,
+                       level => 'm'), return undef
+          if $zh > +24 or $zh < -24;
+      $self->onerror->(type => 'datetime:bad timezone minute',
+                       value => $zm,
+                       level => 'm'), return undef
+          if $zm > 59 or (($zh == +24 or $zh == -24) and $zm != 0);
+    } else {
+      $zh = 0;
+      $zm = 0;
+    }
+
+    if (defined $zh and $zh eq '-00' and $zm eq '00') {
+      $self->onerror->(type => 'datetime:-00:00',
+                       level => 'm'); # don't return
+    }
+    return $self->_create ($y, $M, $d, $h, $m, $s, '', $zh, $zm);
+  } else {
+    $self->onerror->(type => 'datetime:syntax error',
+                     level => 'm');
+    return undef;
+  }
+} # parse_schema_org_date_time_string
+
+sub parse_ogp_date_time_string ($$) {
+  my ($self, $value) = @_;
+  
+  if ($value =~ s/([a-z])/uc $1/ge) {
+    $self->onerror->(type => 'datetime:lowercase designator',
+                     value => $1,
+                     level => 'w');
+  }
+
+  if ($value =~ /\x{2010}/) {
+    $self->onerror->(type => 'datetime:hyphen',
+                     level => 'w');
+  }
+  if ($value =~ /\x{2212}/) {
+    $self->onerror->(type => 'datetime:minus sign',
+                     level => 'w');
+  }
+
+  if ($value =~ /\A(?:
+    ([0-9]{4}|[+\x{2212}-][0-9]{4,})[-\x{2010}]([0-9]{2})[-\x{2010}]([0-9]{2})
+    (?:T? ([0-9]{2}):([0-9]{2}) )?
+  |
+    ([0-9]{4}|[+\x{2212}-][0-9]{4,})([0-9]{2})([0-9]{2})
+    (?:T? ([0-9]{2})([0-9]{2}) )?
+  )\z/x) {
+    my ($y, $M, $d, $h, $m) = ($1, $2 || $7 || 0, $3 || $8 || 0, $4 || $9 || 0, $5 || $10 || 0);
+    $y = $6 if not defined $y;
+    $y =~ s/\x{2212}/-/g;
+    if (0 < $M and $M < 13) {
+      $self->onerror->(type => 'datetime:bad day',
+                       value => $d,
+                       level => 'm'), return undef
+          if $d < 1 or
+             $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$M];
+      $self->onerror->(type => 'datetime:bad day',
+                       value => $d,
+                       level => 'm'), return undef
+          if $M == 2 and $d == 29 and not Web::DateTime::_is_leap_year ($y);
+    } else {
+      $self->onerror->(type => 'datetime:bad month',
+                       value => $M,
+                       level => 'm');
+      return undef;
+    }
+    if ($y =~ /^[+-]/) {
+      $self->onerror->(type => 'datetime:expanded year',
+                       value => $y,
+                       level => 'w');
+    }
+    if ($y <= 1582) {
+      $self->onerror->(type => 'datetime:pre-gregorio year',
+                       value => $y,
+                       level => 'w');
+    }
+    $self->onerror->(type => 'datetime:bad hour',
+                     value => $h,
+                     level => 'm'), return undef if $h > 23;
+    $self->onerror->(type => 'datetime:bad minute',
+                     value => $m,
+                     level => 'm'), return undef if $m > 59;
+    return $self->_create ($y, $M, $d, $h, $m, 0, '', undef, undef);
+  } else {
+    $self->onerror->(type => 'datetime:syntax error',
+                     level => 'm');
+    return undef;
+  }
+} # parse_ogp_date_time_string
 
 ## Parse a date or time string
 ## <http://www.whatwg.org/specs/web-apps/current-work/#parse-a-date-or-time-string>
@@ -867,6 +1136,342 @@ sub _parse_duration ($$%) {
     return undef;
   }
 } # _parse_duration
+
+sub parse_iso_8601_duration_string ($$) {
+  my ($self, $value) = @_;
+
+  if ($value =~ /\./) {
+    $self->onerror->(type => 'decimal sign:period',
+                     level => 'w');
+  }
+  $value =~ s/,/./g;
+  if ($value =~ /\./) {
+    $self->onerror->(type => 'duration:fraction',
+                     level => 'w');
+  }
+
+  if ($value =~ s/([a-z])/uc $1/ge) {
+    $self->onerror->(type => 'datetime:lowercase designator',
+                     value => $1,
+                     level => 'w');
+  }
+
+  if ($value =~ /\x{2010}/) {
+    $self->onerror->(type => 'datetime:hyphen',
+                     level => 'w');
+  }
+  if ($value =~ /\x{2212}/) {
+    $self->onerror->(type => 'datetime:minus sign',
+                     level => 'w');
+  }
+
+
+  if ($value =~ /^P([+-][0-9]+)/) {
+    $self->onerror->(type => 'datetime:expanded year',
+                     value => $1,
+                     level => 'w');
+  }
+
+  my $months = 0;
+  my $seconds = 0;
+  if ($value =~ /\A
+    P
+    (?:([0-9]+)Y)?
+    (?:([0-9]+)M)?
+    (?:([0-9]+)D)?
+    (?:T
+      (?:([0-9]+)H)?
+      (?:([0-9]+)M)?
+      (?:([0-9]+(?:[.][0-9]+|))S)
+    )
+  \z/x) {
+    $months += $1 * 12 if defined $1;
+    $months += $2 if defined $2;
+    $seconds += $3 * $DurationScale->{D} if defined $3;
+    $seconds += $4 * $DurationScale->{H} if defined $4;
+    $seconds += $5 * $DurationScale->{M} if defined $5;
+    $seconds += $6 * $DurationScale->{S} if defined $6;
+  } elsif ($value =~ /\AP([0-9]+(?:[.][0-9]+|))W\z/) {
+    $seconds += $1 * $DurationScale->{W};
+  } elsif ($value =~ /\A
+    P
+    (?:([0-9]+)Y)?
+    (?:([0-9]+)M)?
+    (?:([0-9]+)D)?
+    (?:T
+      (?:([0-9]+)H)?
+      (?:([0-9]+(?:[.][0-9]+|))M)
+    )
+  \z/x) {
+    $months += $1 * 12 if defined $1;
+    $months += $2 if defined $2;
+    $seconds += $3 * $DurationScale->{D} if defined $3;
+    $seconds += $4 * $DurationScale->{H} if defined $4;
+    $seconds += $5 * $DurationScale->{M} if defined $5;
+  } elsif ($value =~ /\A
+    P
+    (?:([0-9]+)Y)?
+    (?:([0-9]+)M)?
+    (?:([0-9]+)D)?
+    (?:T
+      (?:([0-9]+(?:[.][0-9]+|))H)
+    )
+  \z/x) {
+    $months += $1 * 12 if defined $1;
+    $months += $2 if defined $2;
+    $seconds += $3 * $DurationScale->{D} if defined $3;
+    $seconds += $4 * $DurationScale->{H} if defined $4;
+  } elsif ($value =~ /\A
+    P
+    (?:([0-9]+)Y)?
+    (?:([0-9]+)M)?
+    (?:([0-9]+(?:[.][0-9]+|))D)
+  \z/x) {
+    $months += $1 * 12 if defined $1;
+    $months += $2 if defined $2;
+    $seconds += $3 * $DurationScale->{D} if defined $3;
+  } elsif ($value =~ /\A
+    P
+    (?:([0-9]+)Y)?
+    (?:([0-9]+(?:[.][0-9]+|))M)
+  \z/x) {
+    $months += $1 * 12 if defined $1;
+    $months += $2 if defined $2;
+  } elsif ($value =~ /\A
+    P
+    (?:([0-9]+(?:[.][0-9]+|))Y)
+  \z/x) {
+    $months += $1 * 12 if defined $1;
+  } elsif ($value =~ /\AP([0-9]+(?:[.][0-9]+|))W\z/) {
+    $seconds += $1 * $DurationScale->{W};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})[-\x{2010}](0[0-9]|1[01])[-\x{2010}]([0-2][0-9])
+    T?([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9](?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * 30 * $DurationScale->{D}
+              + $3 * $DurationScale->{D}
+              + $4 * $DurationScale->{H}
+              + $5 * $DurationScale->{M}
+              + $6 * $DurationScale->{S};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})[-\x{2010}]([0-2][0-9][0-9]|3[0-5][0-9]|36[0-4])
+    T?([01][0-9]|2[0-3]):([01][0-9]|2[0-3]):([0-5][0-9](?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * $DurationScale->{D}
+              + $3 * $DurationScale->{H}
+              + $4 * $DurationScale->{M}
+              + $5 * $DurationScale->{S};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})[-\x{2010}](0[0-9]|1[01])[-\x{2010}]([0-2][0-9])
+    T?([01][0-9]|2[0-3]):([0-5][0-9](?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * 30 * $DurationScale->{D}
+              + $3 * $DurationScale->{D}
+              + $4 * $DurationScale->{H}
+              + $5 * $DurationScale->{M};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})[-\x{2010}]([0-2][0-9][0-9]|3[0-5][0-9]|36[0-4])
+    T?([01][0-9]|2[0-3]):([0-5][0-9](?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * $DurationScale->{D}
+              + $3 * $DurationScale->{H}
+              + $4 * $DurationScale->{M};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})[-\x{2010}](0[0-9]|1[01])[-\x{2010}]([0-2][0-9])
+    T?((?:[01][0-9]|2[0-3])(?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * 30 * $DurationScale->{D}
+              + $3 * $DurationScale->{D}
+              + $4 * $DurationScale->{H};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})[-\x{2010}]([0-2][0-9][0-9]|3[0-5][0-9]|36[0-4])
+    T?((?:[01][0-9]|2[0-3])(?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * $DurationScale->{D}
+              + $3 * $DurationScale->{H};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})[-\x{2010}](0[0-9]|1[01])[-\x{2010}]([0-2][0-9])
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * 30 * $DurationScale->{D}
+              + $3 * $DurationScale->{D};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})[-\x{2010}]([0-2][0-9][0-9]|3[0-5][0-9]|36[0-4])
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * $DurationScale->{D};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})[-\x{2010}](0[0-9]|1[01])
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * 30 * $DurationScale->{D};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})(0[0-9]|1[01])([0-2][0-9])
+    T?([01][0-9]|2[0-3])([0-5][0-9])([0-5][0-9](?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * 30 * $DurationScale->{D}
+              + $3 * $DurationScale->{D}
+              + $4 * $DurationScale->{H}
+              + $5 * $DurationScale->{M}
+              + $6 * $DurationScale->{S};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})([0-2][0-9][0-9]|3[0-5][0-9]|36[0-4])
+    T?([01][0-9]|2[0-3])([01][0-9]|2[0-3])([0-5][0-9](?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * $DurationScale->{D}
+              + $3 * $DurationScale->{H}
+              + $4 * $DurationScale->{M}
+              + $5 * $DurationScale->{S};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})(0[0-9]|1[01])([0-2][0-9])
+    T?([01][0-9]|2[0-3])([0-5][0-9](?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * 30 * $DurationScale->{D}
+              + $3 * $DurationScale->{D}
+              + $4 * $DurationScale->{H}
+              + $5 * $DurationScale->{M};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})([0-2][0-9][0-9]|3[0-5][0-9]|36[0-4])
+    T?([01][0-9]|2[0-3])([0-5][0-9](?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * $DurationScale->{D}
+              + $3 * $DurationScale->{H}
+              + $4 * $DurationScale->{M};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})(0[0-9]|1[01])([0-2][0-9])
+    T?((?:[01][0-9]|2[0-3])(?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * 30 * $DurationScale->{D}
+              + $3 * $DurationScale->{D}
+              + $4 * $DurationScale->{H};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})([0-2][0-9][0-9]|3[0-5][0-9]|36[0-4])
+    T?((?:[01][0-9]|2[0-3])(?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * $DurationScale->{D}
+              + $3 * $DurationScale->{H};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})(0[0-9]|1[01])([0-2][0-9])
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * 30 * $DurationScale->{D}
+              + $3 * $DurationScale->{D};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})([0-2][0-9][0-9]|3[0-5][0-9]|36[0-4])
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * $DurationScale->{D};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})(0[0-9]|1[01])
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D}
+              + $2 * 30 * $DurationScale->{D};
+  } elsif ($value =~ /\A
+    P([0-9]{4}|\+[0-9]{4,})
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 12 * 30 * $DurationScale->{D};
+  } elsif ($value =~ /\A
+    P([0-9]{2}|\+[0-9]{2,})
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * 100 * 12 * 30 * $DurationScale->{D};
+  } elsif ($value =~ /\A
+    PT([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9](?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * $DurationScale->{H}
+              + $2 * $DurationScale->{M}
+              + $3 * $DurationScale->{S};
+  } elsif ($value =~ /\A
+    PT([01][0-9]|2[0-3]):([0-5][0-9](?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * $DurationScale->{H}
+              + $2 * $DurationScale->{M};
+  } elsif ($value =~ /\A
+    PT((?:[01][0-9]|2[0-3])(?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * $DurationScale->{H};
+  } elsif ($value =~ /\A
+    PT([01][0-9]|2[0-3])([0-5][0-9])([0-5][0-9](?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * $DurationScale->{H}
+              + $2 * $DurationScale->{M}
+              + $3 * $DurationScale->{S};
+  } elsif ($value =~ /\A
+    PT([01][0-9]|2[0-3])([0-5][0-9](?:\.[0-9]+|))
+  \z/x) {
+    $self->onerror->(type => 'duration:alternative',
+                     level => 'w');
+    $seconds += $1 * $DurationScale->{H}
+              + $2 * $DurationScale->{M};
+  } else {
+    $self->onerror->(type => 'duration:syntax error',
+                     level => 'm');
+    return undef;
+  }
+
+  require Web::DateTime::Duration;
+  return Web::DateTime::Duration->new_from_seconds_and_months_and_sign
+      ($seconds, $months, +1);
+} # parse_iso_8601_duration_string
 
 1;
 

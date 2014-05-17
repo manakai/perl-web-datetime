@@ -78,6 +78,9 @@ encode the number of months.
 Return an XML Schema C<xs:duration> string [XSDT] representing the
 duration of the object.
 
+The return value is, in most cases, a valid
+C<http://schema.org/Duration> item value.
+
 =back
 
 =head1 SPECIFICATIONS

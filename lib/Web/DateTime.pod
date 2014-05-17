@@ -173,9 +173,11 @@ associated with any time zone, it is interpreted as UTC timestamp
 Use C<to_time_zoned_global_date_and_time_string> method to preserve
 time zone.
 
-The value might not be a normalized date and time string.  It is, in
-most cases, also a valid XML Schema C<xs:dateTime> and
-C<xs:dateTimeStamp> value and a valid RFC 3339 C<date-time> value.
+The value might not be a normalized date and time string.
+
+The value is, in most cases, also a valid XML Schema C<xs:dateTime> or
+C<xs:dateTimeStamp> value, a valid RFC 3339 C<date-time> value, and a
+valid C<http://schema.org/DateTime> value.
 
 This method is suitable for values for HTML C<< <input type=datetime>
 >>, C<time> elements, and C<< <ins datetime=""> >> and C<< <del
@@ -225,8 +227,8 @@ Serialize the date value represented by the object as an HTML valid
 date string [HTML].  Note that time and time zone are ignored.
 
 This method is suitable for values for HTML C<< <input type=date> >>,
-C<time> elements, and C<< <ins datetime=""> >> and C<< <del
-datetime=""> >> attributes.
+C<time> elements, C<< <ins datetime=""> >> and C<< <del datetime="">
+>> attributes, and microdata C<http://schema.org/Date> item values.
 
 =item $string = $dt->to_date_string_with_optional_time
 
@@ -275,8 +277,8 @@ and C<time> elements.
 Serialize the time value represented by the object as an HTML valid
 time string [HTML].  Note that date and time zone are ignored.
 
-This method is suitable for values for HTML C<< <input type=time> >>
-and C<time> elements.
+This method is suitable for values for HTML C<< <input type=time> >>,
+C<time> elements, and microdata C<http://schema.org/Time> item values.
 
 =item $string = $dt->to_shortest_time_string
 
