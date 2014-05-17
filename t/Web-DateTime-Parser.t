@@ -97,7 +97,7 @@ for my $test (
     $parser->onerror (sub {
       push @error, {@_};
     });
-    my $dt = $parser->parse_iso_8601_date_string ($test->[0]);
+    my $dt = $parser->parse_iso8601_date_string ($test->[0]);
     if (defined $test->[1]) {
       isa_ok $dt, 'Web::DateTime';
       is $dt && $dt->to_date_string, $test->[1];
@@ -109,7 +109,7 @@ for my $test (
     }
     eq_or_diff \@error, $test->[2] || [];
     done $c;
-  } n => 4, name => ['parse_iso_8601_date_string'];
+  } n => 4, name => ['parse_iso8601_date_string'];
 }
 
 for my $test (
@@ -207,6 +207,203 @@ for my $test (
     eq_or_diff \@error, $test->[1] || [{type => 'date:syntax error', level => 'm'}];
     done $c;
   } n => 2;
+}
+
+for my $test (
+  ['2012-03-02T00:12:00', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-03-02T00:12:00Z', '2012-03-02T00:12:00Z', 'Z'],
+  ['2012-03-02T00:12:00+04:00', '2012-03-01T20:12:00Z', '+04:00'],
+  ['', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2021-02-03', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-03-01T12:00Z', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-04-01 00:23:11Z', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-04-01T01:23:12.1222', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-04-01T01:23:12.1222Z', '2012-04-01T01:23:12.1222Z', 'Z'],
+  ['2012-03-04T00:12:44-00', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-05-04T00:12:01-00:00', '2012-05-04T00:12:01Z', undef],
+  ['2012-05-04T00:12:01-00:30', '2012-05-04T00:42:01Z', '-00:30'],
+  ['02012-04-01T00:23:11', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['12012-04-01T00:23:11', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['+02012-04-01T00:23:11', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['-02012-04-01T00:23:11', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-04-01T00:23:60Z', undef, undef,
+   [{type => 'datetime:bad second', value => '60', level => 'm'}]],
+  ['2012-04-01T00:60:23Z', undef, undef,
+   [{type => 'datetime:bad minute', value => '60', level => 'm'}]],
+  ['2012-04-01T60:23:00Z', undef, undef,
+   [{type => 'datetime:bad hour', value => '60', level => 'm'}]],
+  ['2012-04-00T00:23:00Z', undef, undef,
+   [{type => 'datetime:bad day', value => '00', level => 'm'}]],
+  ['2012-04-31T00:23:00Z', undef, undef,
+   [{type => 'datetime:bad day', value => '31', level => 'm'}]],
+  ['2012-00-01T00:23:00Z', undef, undef,
+   [{type => 'datetime:bad month', value => '00', level => 'm'}]],
+  ['2012-02-29T00:23:00Z', '2012-02-29T00:23:00Z', 'Z'],
+  ['2011-02-29T00:23:00Z', undef, undef,
+   [{type => 'datetime:bad day', value => '29', level => 'm'}]],
+  ['2012-02-29t00:23:00Z', '2012-02-29T00:23:00Z', 'Z',
+   [{type => 'datetime:lowercase designator', value => 't', level => 's'}],
+   [{type => 'datetime:lowercase designator', value => 't', level => 'm'}]],
+  ['2012-02-29T00:23:00z', '2012-02-29T00:23:00Z', 'Z',
+   [{type => 'datetime:lowercase designator', value => 'z', level => 's'}],
+   [{type => 'datetime:lowercase designator', value => 'z', level => 'm'}]],
+  ['2012-02-29T00:23:00+13:59', '2012-02-28T10:24:00Z', '+13:59'],
+  ['2012-02-29T00:23:00+14:00', '2012-02-28T10:23:00Z', '+14:00'],
+  ['2012-02-29T00:23:00+14:01', '2012-02-28T10:22:00Z', '+14:01',
+   [],
+   [{type => 'datetime:bad timezone hour', value => '+14', level => 'm'}]],
+  ['2012-02-29T00:23:00-13:59', '2012-02-29T14:22:00Z', '-13:59'],
+  ['2012-02-29T00:23:00-14:00', '2012-02-29T14:23:00Z', '-14:00'],
+  ['2012-02-29T00:23:00-14:01', '2012-02-29T14:24:00Z', '-14:01',
+   [],
+   [{type => 'datetime:bad timezone hour', value => '-14', level => 'm'}]],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_rfc3339_date_time_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $dt, 'Web::DateTime';
+      is $dt && $dt->to_global_date_and_time_string, $test->[1];
+      if (defined $test->[2]) {
+        is $dt && $dt->time_zone && $dt->time_zone->to_offset_string, $test->[2];
+      } else {
+        is $dt && $dt->time_zone, undef;
+      }
+    } else {
+      is $dt, undef;
+      ok 1;
+      ok 1;
+    }
+    eq_or_diff \@error, $test->[3] || [];
+    done $c;
+  } n => 4, name => ['parse_rfc3339_date_time_string', $test->[0]];
+
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_rfc3339_xs_date_time_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $dt, 'Web::DateTime';
+      is $dt && $dt->to_global_date_and_time_string, $test->[1];
+      if (defined $test->[2]) {
+        is $dt && $dt->time_zone && $dt->time_zone->to_offset_string, $test->[2];
+      } else {
+        is $dt && $dt->time_zone, undef;
+      }
+    } else {
+      is $dt, undef;
+      ok 1;
+      ok 1;
+    }
+    eq_or_diff \@error, $test->[4] || $test->[3] || [];
+    done $c;
+  } n => 4, name => ['parse_rfc3339_xs_date_time_string', $test->[0]];
+}
+
+for my $test (
+  ['2012-03-02T00:12:00', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-03-02T00:12:00Z', '2012-03-02T00:12:00Z', 'Z'],
+  ['2012-03-02T00:12:00+04:00', '2012-03-01T20:12:00Z', '+04:00'],
+  ['', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-03-03T12', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-03-03T12Z', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-03Z', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2021', '2021-01-01T00:00:00Z', 'Z'],
+  ['2021-02', '2021-02-01T00:00:00Z', 'Z'],
+  ['2021-02-03', '2021-02-03T00:00:00Z', 'Z'],
+  ['2012-03-01T12:00Z', '2012-03-01T12:00:00Z', 'Z'],
+  ['2012-04-01 00:23:11Z', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-04-01T01:23:12.1222', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-04-01T01:23:12.1222Z', '2012-04-01T01:23:12.1222Z', 'Z'],
+  ['2012-03-04T00:12:44-00', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-05-04T00:12:01-00:00', '2012-05-04T00:12:01Z', 'Z'],
+  ['2012-05-04T00:12:01-00:30', '2012-05-04T00:42:01Z', '-00:30'],
+  ['02012-04-01T00:23:11', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['12012-04-01T00:23:11', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['+02012-04-01T00:23:11', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['-02012-04-01T00:23:11', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-04-01T00:23:60Z', undef, undef,
+   [{type => 'datetime:bad second', value => '60', level => 'm'}]],
+  ['2012-04-01T00:60:23Z', undef, undef,
+   [{type => 'datetime:bad minute', value => '60', level => 'm'}]],
+  ['2012-04-01T60:23:00Z', undef, undef,
+   [{type => 'datetime:bad hour', value => '60', level => 'm'}]],
+  ['2012-04-00T00:23:00Z', undef, undef,
+   [{type => 'datetime:bad day', value => '00', level => 'm'}]],
+  ['2012-04-31T00:23:00Z', undef, undef,
+   [{type => 'datetime:bad day', value => '31', level => 'm'}]],
+  ['2012-00-01T00:23:00Z', undef, undef,
+   [{type => 'datetime:bad month', value => '00', level => 'm'}]],
+  ['2012-02-29T00:23:00Z', '2012-02-29T00:23:00Z', 'Z'],
+  ['2011-02-29T00:23:00Z', undef, undef,
+   [{type => 'datetime:bad day', value => '29', level => 'm'}]],
+  ['2012-02-29t00:23:00Z', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-02-29T00:23:00z', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['2012-02-29T00:23:00+13:59', '2012-02-28T10:24:00Z', '+13:59'],
+  ['2012-02-29T00:23:00+14:00', '2012-02-28T10:23:00Z', '+14:00'],
+  ['2012-02-29T00:23:00+14:01', '2012-02-28T10:22:00Z', '+14:01'],
+  ['2012-02-29T00:23:00-13:59', '2012-02-29T14:22:00Z', '-13:59'],
+  ['2012-02-29T00:23:00-14:00', '2012-02-29T14:23:00Z', '-14:00'],
+  ['2012-02-29T00:23:00-14:01', '2012-02-29T14:24:00Z', '-14:01'],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_w3c_dtf_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $dt, 'Web::DateTime';
+      is $dt && $dt->to_global_date_and_time_string, $test->[1];
+      if (defined $test->[2]) {
+        is $dt && $dt->time_zone && $dt->time_zone->to_offset_string, $test->[2];
+      } else {
+        is $dt && $dt->time_zone, undef;
+      }
+    } else {
+      is $dt, undef;
+      ok 1;
+      ok 1;
+    }
+    eq_or_diff \@error, $test->[3] || [];
+    done $c;
+  } n => 4, name => ['parse_w3c_dtf_string', $test->[0]];
 }
 
 for my $test (
@@ -745,7 +942,7 @@ for my $test (
     $parser->onerror (sub {
       push @error, {@_};
     });
-    my $duration = $parser->parse_iso_8601_duration_string ($test->[0]);
+    my $duration = $parser->parse_iso8601_duration_string ($test->[0]);
     if (defined $test->[1]) {
       isa_ok $duration, 'Web::DateTime::Duration';
       is $duration && $duration->sign, +1;
@@ -760,7 +957,7 @@ for my $test (
       eq_or_diff \@error, $test->[3] || [{type => 'duration:syntax error', level => 'm'}];
     }
     done $c;
-  } n => 5, name => ['parse_iso_8601_duration_string', $test->[0]];
+  } n => 5, name => ['parse_iso8601_duration_string', $test->[0]];
 }
 
 for my $test (

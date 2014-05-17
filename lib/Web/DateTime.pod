@@ -176,8 +176,9 @@ time zone.
 The value might not be a normalized date and time string.
 
 The value is, in most cases, also a valid XML Schema C<xs:dateTime> or
-C<xs:dateTimeStamp> value, a valid RFC 3339 C<date-time> value, and a
-valid C<http://schema.org/DateTime> value.
+C<xs:dateTimeStamp> value, a valid RFC 3339 C<date-time> value, a
+valid Atom 1.0 Date construct's content, and a valid
+C<http://schema.org/DateTime> value.
 
 This method is suitable for values for HTML C<< <input type=datetime>
 >>, C<time> elements, and C<< <ins datetime=""> >> and C<< <del
