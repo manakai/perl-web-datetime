@@ -810,6 +810,155 @@ sub parse_schema_org_date_time_string ($$) {
   }
 } # parse_schema_org_date_time_string
 
+## RFC 6265 Section 5.1.1. with a bug fix: "(non-digit *OCTET)" in
+## grammer can be omitted.
+sub parse_http_date_string ($$) {
+  my ($self, $value) = @_;
+
+  unless ($value =~ /\A
+    (?:[Mm][Oo][Nn]|[Tt][Uu][Ee]|[Ww][Ee][Dd]|
+       [Tt][Hh][Uu]|[Ff][Rr][Ii]|[Ss][Aa][Tt]|[Ss][Uu][Nn])
+    ,\x20
+    [0-9]{2}
+    \x20
+    [A-Za-z]+
+    \x20
+    [0-9]{4}
+    \x20
+    [0-9]{2}:[0-9]{2}:[0-9]{2}
+    \x20
+    [Gg][Mm][Tt]
+  \z/x) {
+    $self->onerror->(type => 'datetime:syntax error',
+                     level => 'm');
+  }
+  my $dow;
+  $dow = $1
+      if $value =~ /\A(
+          [Mm][Oo][Nn]|[Tt][Uu][Ee]|[Ww][Ee][Dd]|
+          [Tt][Hh][Uu]|[Ff][Rr][Ii]|[Ss][Aa][Tt]|[Ss][Uu][Nn]
+      )/x;
+
+  ## Step 1.
+  my @token = split /([\x09\x20-\x2F\x3B-\x40\x5B-\x60\x7B-\x7E])/, $value, -1;
+  
+  ## Step 2.
+  my $hour_value;
+  my $minute_value;
+  my $second_value;
+  my $day_of_month_value;
+  my $month_value;
+  my $year_value;
+  for my $token (@token) {
+    ## Step 2.1.
+    if (not defined $hour_value and
+        $token =~ /\A([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2})(?:[^0-9].*|)\z/s) {
+      $hour_value = $1;
+      $minute_value = $2;
+      $second_value = $3;
+      next;
+    }
+
+    ## Step 2.2.
+    if (not defined $day_of_month_value and 
+        $token =~ /\A([0-9]{1,2})(?:[^0-9].*|)\z/s) {
+      $day_of_month_value = $1;
+      next;
+    }
+    
+    ## Step 2.3.
+    if (not defined $month_value and
+        $token =~ /\A([Jj][Aa][Nn]|[Ff][Ee][Bb]|[Mm][Aa][Rr]|[Aa][Pp][Rr]|[Mm][Aa][Yy]|[Jj][Uu][Nn]|[Jj][Uu][Ll]|[Aa][Uu][Gg]|[Ss][Ee][Pp]|[Oo][Cc][Tt]|[Nn][Oo][Vv]|[Dd][Ee][Cc])(.*)\z/s) {
+      $month_value = {qw(jan 1 feb 2 mar 3 apr 4 may 5 jun 6 jul 7
+                         aug 8 sep 9 oct 10 nov 11 dec 12)}->{lc $1};
+      if (length $2) {
+        $self->onerror->(type => 'datetime:bad month',
+                         value => $token,
+                         level => 'm');
+      }
+      next;
+    }
+
+    if (not defined $year_value and
+        $token =~ /\A([0-9]{2,4})(?:[^0-9].*|)\z/s) {
+      $year_value = $1;
+      next;
+    }
+  } # @token
+
+  ## Step 5.
+  return undef if 
+      not defined $day_of_month_value or
+      not defined $month_value or
+      not defined $year_value or
+      not defined $hour_value;
+
+  ## Step 3.
+  if ($year_value >= 70 and $year_value <= 99) {
+    $year_value += 1900;
+  }
+
+  ## Step 4.
+  if ($year_value >= 0 and $year_value <= 69) {
+    $year_value += 2000;
+  }
+
+  ## Step 5.
+  if ($year_value < 1601) {
+    $self->onerror->(type => 'datetime:bad year',
+                     value => $year_value,
+                     level => 'w');
+    return undef;
+  }
+  if ($hour_value > 23) {
+    $self->onerror->(type => 'datetime:bad hour',
+                     value => $hour_value,
+                     level => 'm');
+    return undef;
+  }
+  if ($minute_value > 59) {
+    $self->onerror->(type => 'datetime:bad minute',
+                     value => $minute_value,
+                     level => 'm');
+    return undef;
+  }
+  if ($second_value > 59) {
+    $self->onerror->(type => 'datetime:bad second',
+                     value => $second_value,
+                     level => 'm');
+    return undef;
+  }
+
+  ## Step 6., Step 7.
+  $self->onerror->(type => 'datetime:bad day',
+                   value => $day_of_month_value,
+                   level => 'm'), return undef
+      if $day_of_month_value < 1 or
+         $day_of_month_value > [0,
+                                31, 29, 31, 30, 31, 30,
+                                31, 31, 30, 31, 30, 31]->[$month_value];
+  $self->onerror->(type => 'datetime:bad day',
+                   value => $day_of_month_value,
+                   level => 'm'), return undef
+    if $month_value == 2 and $day_of_month_value == 29 and
+       not Web::DateTime::_is_leap_year ($year_value);
+  my $dt = $self->_create
+      ($year_value, $month_value, $day_of_month_value,
+       $hour_value, $minute_value, $second_value, '', 0, 0)
+      or return undef;
+  if (defined $dow) {
+    my $dow_n = {sun => 0, mon => 1, tue => 2, wed => 3,
+                 thu => 4, fri => 5, sat => 6}->{lc $dow};
+    unless ($dt->day_of_week == $dow_n) {
+      $self->onerror->(type => 'datetime:bad weekday',
+                       text => [qw[Sun Mon Tue Wed Thu Fri Sat]]->[$dt->day_of_week],
+                       value => $dow,
+                       level => 'm');
+    }
+  }
+  return $dt;
+} # parse_http_date_string
+
 sub parse_ogp_date_time_string ($$) {
   my ($self, $value) = @_;
   

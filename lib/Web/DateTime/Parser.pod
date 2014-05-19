@@ -93,6 +93,17 @@ reported through the C<onerror> handler.
 
 This method is suitable for values in Atom 1.0 Date construct.
 
+=item $dt = $parser->parse_http_date_string ($string)
+
+Parse the argument as an C<HTTP-date> string [HTTP], using the parsing
+rules in RFC 6265 [COOKIES], and
+return a L<Web::DateTime> (or C<undef> if failed).  Any error is
+reported through the C<onerror> handler.
+
+This method is suitable for values in HTTP C<Expires>,
+C<Last-Modified>, and C<Date> headers, as well as in C<Expires>
+attribute in Cookies.
+
 =item $dt = $parser->parse_date_string ($string)
 
 Parse the argument as an HTML date string [HTML] and return
@@ -132,7 +143,8 @@ Parse the argument as a so-called W3C-DTF string [W3CDTF] and return a
 L<Web::DateTime> (or C<undef> if failed).  Any error is reported
 through the C<onerror> handler.
 
-This method is suitable for values in Atom 0.3 Date construct.
+This method is suitable for values in Atom 0.3 Date construct and RSS
+1.0 C<dc:date> elements.
 
 =item $dt = $parser->parse_year_string ($string)
 
@@ -320,6 +332,19 @@ The Open Graph protocol <http://ogp.me/>.
 
 ISO 8601:2004, Data elements and interchange formats -- Information
 interchange -- Representation of dates and times.
+
+=item HTTP
+
+RFC 1945, Hypertext Transfer Protocol -- HTTP/1.0
+<http://tools.ietf.org/html/rfc1945>.
+
+RFC 2616, Hypertext Transfer Protocol -- HTTP/1.1
+<http://tools.ietf.org/html/rfc2616>.
+
+=item COOKIES
+
+RFC 6265, HTTP State Management Mechanism
+<http://tools.ietf.org/html/rfc6265>.
 
 =item W3CDTF
 

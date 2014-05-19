@@ -127,6 +127,12 @@ including fractional part if any, as a number.
 Return the associated L<Web::DateTime::TimeZone> object, if any, or
 C<undef>.
 
+=item $dt->set_time_zone ($tz)
+
+Associate a L<Web::DateTime::TimeZone> object to the object.  Any
+existing time zone object is disassociated.  If the argument is
+C<undef>, no new time zone is associated with the object.
+
 =item $number = $dt->to_unix_integer
 
 Return a Unix time value (C<time_t> integer) [POSIX.1] of the time
@@ -161,8 +167,8 @@ January 1970) [HTML].
 
 =item $string = $dt->to_global_date_and_time_string
 
-Serialize the date value represented by the object as an HTML valid
-global date and time string [HTML].
+Serialize the date and time value represented by the object as an HTML
+valid global date and time string [HTML].
 
 The serialized value always uses the UTC time zone.  The time zone of
 the object is ignored (it does affect the value but the time zone
@@ -177,8 +183,8 @@ The value might not be a normalized date and time string.
 
 The value is, in most cases, also a valid XML Schema C<xs:dateTime> or
 C<xs:dateTimeStamp> value, a valid RFC 3339 C<date-time> value, a
-valid Atom 1.0 Date construct's content, and a valid
-C<http://schema.org/DateTime> value.
+valid Atom 1.0 Date construct's content, a valid RSS 1.0 C<dc:date>
+element content, and a valid C<http://schema.org/DateTime> value.
 
 This method is suitable for values for HTML C<< <input type=datetime>
 >>, C<time> elements, and C<< <ins datetime=""> >> and C<< <del
@@ -186,13 +192,13 @@ datetime=""> >> attributes.
 
 =item $string = $dt->to_normalized_forced_utc_global_date_and_time_string
 
-Serialize the date value represented by the object as an HTML valid
-normalized forced-UTC global date and time string [HTML].
+Serialize the date and time value represented by the object as an HTML
+valid normalized forced-UTC global date and time string [HTML].
 
 =item $string = $dt->to_time_zoned_global_date_and_time_string
 
-Serialize the date value represented by the object as an HTML valid
-global date and time string [HTML].
+Serialize the date and time value represented by the object as an HTML
+valid global date and time string [HTML].
 
 If a time zone is associated with the object, it is used to serialize
 the time value.  If the object is not associated with any time zone,
@@ -205,10 +211,27 @@ This method is suitable for values for HTML C<< <input type=datetime>
 >>, C<time> elements, and C<< <ins datetime=""> >> and C<< <del
 datetime=""> >> attributes.
 
+=item $string = $dt->to_http_date_string
+
+Serialize the date and time value represented by the object as an HTTP
+valid C<HTTP-date> (C<rfc1123-date>) string [HTTP].  Any fraction part
+of seconds is discarded.
+
+This method is suitable for values for HTTP C<Last-Modified>,
+C<Expires>, and C<Date> headers, as well as C<Expires> attribute in
+HTTP Cookies.
+
+=item $string = $dt->to_rss2_date_time_string
+
+Serialize the date and time value represented by the object as a valid
+RSS 2.0 date and time string [RSS2] [RSS2BP].  Any fraction part of
+seconds is discarded.
+
 =item $string = $dt->to_local_date_and_time_string
 
-Serialize the date value represented by the object as an HTML valid
-local date and time string [HTML].  Note that time zone is ignored.
+Serialize the date and time value represented by the object as an HTML
+valid local date and time string [HTML].  Note that time zone is
+ignored.
 
 The value might not be a normalized local date and time string.  It
 is, in most cases, also a valid XML Schema C<xs:dateTime> value.
@@ -218,9 +241,17 @@ type=datetime-local> >> and C<time> elements.
 
 =item $string = $dt->to_normalized_local_date_and_time_string
 
-Serialize the date value represented by the object as an HTML valid
-normalized local date and time string [HTML].  Note that time zone is
-ignored.
+Serialize the date and time value represented by the object as an HTML
+valid normalized local date and time string [HTML].  Note that time
+zone is ignored.
+
+=item $string = $dt->to_document_last_modified_string
+
+Serialize the date and time value represented by the object in the
+format of C<document.lastModified> IDL attribute [HTML].  Any fraction
+part of seconds is discarded.  The time zone of the object, if any, or
+UTC, is used to serialize the value, but the time zone offset is not
+included in this format.
 
 =item $string = $dt->to_date_string
 
@@ -339,6 +370,23 @@ HTML Standard <http://www.whatwg.org/specs/web-apps/current-work/>.
 
 POSIX.1-2008
 <http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html#tag_04_15>.
+
+=item HTTP
+
+RFC 1945, Hypertext Transfer Protocol -- HTTP/1.0
+<http://tools.ietf.org/html/rfc1945>.
+
+RFC 2616, Hypertext Transfer Protocol -- HTTP/1.1
+<http://tools.ietf.org/html/rfc2616>.
+
+=item RSS2
+
+RSS 2.0 Specification <http://www.rssboard.org/rss-specification>.
+
+=item RSS2BP
+
+Really Simple Syndication Best Practices Profile
+<http://www.rssboard.org/rss-profile>.
 
 =back
 

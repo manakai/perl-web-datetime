@@ -155,9 +155,41 @@ sub to_date_string_with_optional_time ($) {
   }
 } # to_date_string_with_optional_time
 
+sub to_http_date_string ($) {
+  my $self = $_[0];
+  return sprintf '%s, %02d %s %04d %02d:%02d:%02d GMT',
+      [qw(Sun Mon Tue Wed Thu Fri Sat Sun)]->[$self->utc_day_of_week],
+      $self->utc_day,
+      [qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)]->[$self->utc_month - 1],
+      $self->utc_year,
+      $self->utc_hour, $self->utc_minute, $self->utc_second;
+} # to_http_date_string
+
+sub to_rss2_date_time_string ($) {
+  my $self = $_[0];
+  return sprintf '%s, %02d %s %04d %02d:%02d:%02d +0000',
+      [qw(Sun Mon Tue Wed Thu Fri Sat Sun)]->[$self->utc_day_of_week],
+      $self->utc_day,
+      [qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)]->[$self->utc_month - 1],
+      $self->utc_year,
+      $self->utc_hour, $self->utc_minute, $self->utc_second;
+} # to_rss2_date_time_string
+
+sub to_document_last_modified_string ($) {
+  my $self = $_[0];
+  return sprintf '%02d/%02d/%04d %02d:%02d:%02d',
+      $self->month, $self->day, $self->year,
+      $self->hour, $self->minute, $self->second;
+} # to_document_last_modified_string
+
 sub time_zone ($) {
   return $_[0]->{tz}; # or undef
 } # time_zone
+
+sub set_time_zone ($$) {
+  delete $_[0]->{cache};
+  $_[0]->{tz} = $_[1];
+} # set_time_zone
 
 sub utc_week ($) {
   my $self = shift;
@@ -406,8 +438,6 @@ sub to_time_piece_local ($) {
   require Time::Piece;
   return Time::Piece::localtime ($self->to_unix_integer);
 } # to_time_piece_local
-
-# XXX JavaScript timestamp parser/serializer
 
 1;
 

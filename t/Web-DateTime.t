@@ -727,6 +727,63 @@ for my $test (
   } n => 4, name => ['parse_xs_g_day_string', $test->[0]];
 }
 
+for my $test (
+  ['2012-05-01T00:12:01.444Z' => 'Tue, 01 May 2012 00:12:01 GMT'],
+  ['2212-05-01T00:12:01.444+04:10' => 'Thu, 30 Apr 2212 20:02:01 GMT'],
+  ['1970-01-01T00:00:00Z' => 'Thu, 01 Jan 1970 00:00:00 GMT'],
+  ['2012-02-29T00:12:31Z' => 'Wed, 29 Feb 2012 00:12:31 GMT'],
+  ['2012-02-29T00:12:31-00:00' => 'Wed, 29 Feb 2012 00:12:31 GMT'],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my $dt = $parser->parse_rfc3339_date_time_string ($test->[0]);
+    is $dt->to_http_date_string, $test->[1];
+    done $c;
+  } n => 1, name => ['to_http_date_string', $test->[0]];
+
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my $dt = $parser->parse_rfc3339_date_time_string ($test->[0]);
+    my $expected = $test->[1];
+    $expected =~ s/ GMT$/ +0000/;
+    is $dt->to_rss2_date_time_string, $expected;
+    done $c;
+  } n => 1, name => ['to_rss2_date_time_string', $test->[0]];
+}
+
+for my $test (
+  ['2012-05-01T00:12:01.444Z' => '05/01/2012 00:12:01'],
+  ['2212-05-01T00:12:01.444+04:10' => '05/01/2212 00:12:01'],
+  ['1970-01-01T00:00:00Z' => '01/01/1970 00:00:00'],
+  ['2012-02-29T00:12:31Z' => '02/29/2012 00:12:31'],
+  ['2012-02-29T00:12:31-00:00' => '02/29/2012 00:12:31'],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my $dt = $parser->parse_rfc3339_date_time_string ($test->[0]);
+    is $dt->to_document_last_modified_string, $test->[1];
+    done $c;
+  } n => 1, name => ['to_document_last_modified_string', $test->[0]];
+}
+
+test {
+  my $c = shift;
+  my $dt = Web::DateTime->new_from_unix_time (414345555);
+  is $dt->to_document_last_modified_string, '02/17/1983 15:59:15';
+  $dt->set_time_zone
+      (Web::DateTime::Parser->parse_time_zone_offset_string ('+09:00'));
+  is $dt->to_document_last_modified_string, '02/18/1983 00:59:15';
+  $dt->set_time_zone
+      (Web::DateTime::Parser->parse_time_zone_offset_string ('-04:30'));
+  is $dt->to_document_last_modified_string, '02/17/1983 11:29:15';
+  $dt->set_time_zone (undef);
+  is $dt->to_document_last_modified_string, '02/17/1983 15:59:15';
+  done $c;
+} n => 4, name => ['set_time_zone'];
+
 run_tests;
 
 =head1 LICENSE
