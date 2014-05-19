@@ -82,6 +82,11 @@ Parse the argument as an C<http://schema.org/DateTime> string
 [SCHEMAORG] and return a L<Web::DateTime> (or C<undef> if failed).
 Any error is reported through the C<onerror> handler.
 
+The format might support leap seconds, but the L<Web::DateTime> module
+does not support leap seconds.  If a leap second is specified, a
+L<Web::DateTime> object representing the second just before the leap
+second is returned.
+
 =item $dt = $parser->parse_ogp_date_time_string ($string)
 
 Parse the argument as an OGP DateTime string [OGP] and return a
