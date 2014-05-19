@@ -404,6 +404,141 @@ for my $test (
 }
 
 for my $test (
+  ['Mon, 19 May 2014 02:12:01 GMT', '2014-05-19T02:12:01Z', 'Z'],
+  ['moN, 19 mAY 2014 02:12:01 gmt', '2014-05-19T02:12:01Z', 'Z',
+   [{type => 'datetime:month:bad case', value => 'mAY', level => 's'},
+    {type => 'datetime:tz:bad case', value => 'gmt', level => 's'},
+    {type => 'datetime:weekday:bad case', value => 'moN', level => 's'}]],
+  ['Mon, 19 May 2014 02:12:01', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['Mon, 19 May 14 02:12:01 GMT', '2014-05-19T02:12:01Z', 'Z',
+   [{type => 'datetime:bad year', value => '14', level => 's'}]],
+  ['Thu, 19 May 94 02:12:01 GMT', '1994-05-19T02:12:01Z', 'Z',
+   [{type => 'datetime:bad year', value => '94', level => 's'}]],
+  ['Wed, 19 May 49 02:12:01 GMT', '2049-05-19T02:12:01Z', 'Z',
+   [{type => 'datetime:bad year', value => '49', level => 's'}]],
+  ['Fri, 19 May 50 02:12:01 GMT', '1950-05-19T02:12:01Z', 'Z',
+   [{type => 'datetime:bad year', value => '50', level => 's'}]],
+  ['Sat, 19 May 101 02:12:01 GMT', '2001-05-19T02:12:01Z', 'Z',
+   [{type => 'datetime:bad year', value => '101', level => 'm'}]],
+  ['Sun, 19 May 19101 02:12:01 GMT', '19101-05-19T02:12:01Z', 'Z',
+   [{type => 'datetime:bad year', value => '19101', level => 'm'}]],
+  ['Fri, 9 May 2014 02:12:01 GMT', '2014-05-09T02:12:01Z', 'Z'],
+  ['Fri, 009 May 2014 02:12:01 GMT', '2014-05-09T02:12:01Z', 'Z',
+   [{type => 'datetime:bad day', value => '009', level => 'm'}]],
+  ['Fri, 9 May 02014 02:12:01 GMT', '2014-05-09T02:12:01Z', 'Z',
+   [{type => 'datetime:bad year', value => '02014', level => 'm'}]],
+  ['Tue, 09 May 1600 02:12:01 GMT', '1600-05-09T02:12:01Z', 'Z'],
+  ['Fri,  09 May 2014 02:12:01 GMT', '2014-05-09T02:12:01Z', 'Z',
+   [{type => 'datetime:bad CFWS', value => '  ', level => 's'}]],
+  ['Fri,09 May 2014 02:12:01 GMT', '2014-05-09T02:12:01Z', 'Z'],
+  ['09 May 2014 02:12:01 GMT', '2014-05-09T02:12:01Z', 'Z'],
+  ['Fri, 09 May 2014 02:12:01 +0000', '2014-05-09T02:12:01Z', 'Z'],
+  ['Fri, 09 May 2014 02:12:01 -0000', '2014-05-09T02:12:01Z', 'Z'],
+  ['Fri, 09May 2014 02:12:01 GMT', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['Fri, 09-May-2014 02:12:01 GMT', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['9-May-14 02:12:01 GMT', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['Fri, 09 May 2014 02:12:01 GMT?', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['  Mon, 09 May 2014 02:12:01 GMT', '2014-05-09T02:12:01Z', 'Z',
+   [{type => 'datetime:bad CFWS', value => '  ', level => 's'},
+    {type => 'datetime:bad weekday', value => 'Mon', text => 'Fri',
+     level => 'm'}]],
+  ['Sun, 09 March 2014 02:12:01 GMT', undef, undef,
+   [{type => 'datetime:bad month', value => 'March', level => 'm'}]],
+  ['Mon, 09 nov 1801 02:12:01 GMT', '1801-11-09T02:12:01Z', 'Z',
+   [{type => 'datetime:month:bad case', value => 'nov', level => 's'}]],
+  ['Wed, 09 DEC 3801 02:12:01 GMT', '3801-12-09T02:12:01Z', 'Z',
+   [{type => 'datetime:month:bad case', value => 'DEC', level => 's'}]],
+  ['Mon, 29 Feb 2013 02:12:01 GMT', undef, undef,
+   [{type => 'datetime:bad day', value => 29, level => 'm'}]],
+  ['Tue, 29 Feb 2000 02:12:01 GMT', '2000-02-29T02:12:01Z', 'Z'],
+  ['Tue, 29 Feb 2013 02:12:01 GMT', undef, undef,
+   [{type => 'datetime:bad day', value => 29, level => 'm'}]],
+  ['Mon, 00 Feb 2013 02:12:01 GMT', undef, undef,
+   [{type => 'datetime:bad day', value => '00', level => 'm'}]],
+  ['Mon, 01 Feb 2013 24:00:00 GMT', undef, undef,
+   [{type => 'datetime:bad hour', value => '24', level => 'm'}]],
+  ['Mon, 01 Feb 2013 00:60:00 GMT', undef, undef,
+   [{type => 'datetime:bad minute', value => '60', level => 'm'}]],
+  ['Mon, 01 Feb 2013 00:00:60 GMT', undef, undef,
+   [{type => 'datetime:bad second', value => '60', level => 'm'}]],
+  ['Sat, 09 May 2014 02:12:01 GMT', '2014-05-09T02:12:01Z', 'Z',
+   [{type => 'datetime:bad weekday', value => 'Sat',
+     text => 'Fri', level => 'm'}]],
+  ['Sat, 31 Jan 2014 02:12:01 GMT', '2014-01-31T02:12:01Z', 'Z',
+   [{type => 'datetime:bad weekday', value => 'Sat',
+     text => 'Fri', level => 'm'}]],
+  ['Fri,(aa) 31 Jan 2014 02:12:01 GMT', '2014-01-31T02:12:01Z', 'Z',
+   [{type => 'datetime:bad CFWS', value => '(aa) ', level => 's'}]],
+  ['Fri,(a\za) 31 Jan 2014 02:12:01 GMT', '2014-01-31T02:12:01Z', 'Z',
+   [{type => 'datetime:bad CFWS', value => '(a\za) ', level => 's'}]],
+  ['Fri,((aa)) 31 Jan 2014 02:12:01 GMT', '2014-01-31T02:12:01Z', 'Z',
+   [{type => 'datetime:bad CFWS', value => '((aa)) ', level => 's'}]],
+  ['Fri,(((aa))) 31 Jan 2014 02:12:01 GMT', '2014-01-31T02:12:01Z', 'Z',
+   [{type => 'datetime:bad CFWS', value => '(((aa))) ', level => 's'}]],
+  ['Fri,((aa) 31 Jan 2014 02:12:01 GMT', undef, undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['Fri,((aa)\)) 31 Jan 2014 02:12:01 GMT', '2014-01-31T02:12:01Z', 'Z',
+   [{type => 'datetime:bad CFWS', value => '((aa)\)) ', level => 's'}]],
+  ["Fri,((aa)\x00) 31 Jan 2014 02:12:01 GMT", '2014-01-31T02:12:01Z', 'Z',
+   [{type => 'datetime:bad CFWS', value => "((aa)\x00) ", level => 's'}]],
+  ["Fri,((aa)\x80) 31 Jan 2014 02:12:01 GMT", '2014-01-31T02:12:01Z', 'Z',
+   [{type => 'datetime:syntax error', value => "((aa)\x80) ", level => 'm'}]],
+  ["Fri,((aa)\x{FFFF}) 31 Jan 2014 02:12:01 GMT", '2014-01-31T02:12:01Z', 'Z',
+   [{type => 'datetime:syntax error', value => "((aa)\x{FFFF}) ", level => 'm'}]],
+  ["Fri, 31 Jan 2014 02\x0D\x0A:12:01 GMT", '2014-01-31T02:12:01Z', 'Z',
+   [{type => 'datetime:syntax error', value => "\x0D\x0A", level => 'm'}]],
+  ["Fri, 31 Jan 2014 02\x0D\x0A :12:01 GMT", '2014-01-31T02:12:01Z', 'Z',
+   [{type => 'datetime:bad CFWS', value => "\x0D\x0A ", level => 's'}]],
+  ["Fri, 31 Jan 2014 02\x0D\x0A\x09:12:01 GMT", '2014-01-31T02:12:01Z', 'Z',
+   [{type => 'datetime:bad CFWS', value => "\x0D\x0A\x09", level => 's'}]],
+  ['Fri, 31 Jan 2014 02:12:01 -0360', undef, undef,
+   [{type => 'datetime:bad timezone minute', value => '60', level => 'm'}]],
+  ['Fri, 31 Jan 2014 02:12:01 -9950', '2014-02-04T06:02:01Z', '-99:50'],
+  ['Fri, 31 Jan 2014 02:12:01 Z', '2014-01-31T02:12:01Z', undef,
+   [{type => 'datetime:tzname', value => 'Z', level => 'w'}]],
+  ['Fri, 31 Jan 2014 02:12:01 S', '2014-01-31T02:12:01Z', undef,
+   [{type => 'datetime:tzname', value => 'S', level => 'w'}]],
+  ['Fri, 31 Jan 2014 02:12:01 J', '2014-01-31T02:12:01Z', undef,
+   [{type => 'datetime:tzname', value => 'J', level => 'm'}]],
+  ['Fri, 31 Jan 2014 02:12:01 HOGE', '2014-01-31T02:12:01Z', undef,
+   [{type => 'datetime:tzname', value => 'HOGE', level => 'm'}]],
+  ['Fri, 31 Jan 2014 02:12:01 EST', '2014-01-31T07:12:01Z', '-05:00',
+   [{type => 'datetime:tzname', value => 'EST', level => 'w'}]],
+  ['Fri, 31 Jan 2014 02:12:01 JST', '2014-01-30T17:12:01Z', '+09:00',
+   [{type => 'datetime:tzname', value => 'JST', level => 'm'}]],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_rss2_date_time_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $dt, 'Web::DateTime';
+      is $dt && $dt->to_global_date_and_time_string, $test->[1];
+      if (defined $test->[2]) {
+        is $dt && $dt->time_zone && $dt->time_zone->to_offset_string, $test->[2];
+      } else {
+        is $dt && $dt->time_zone, undef;
+      }
+    } else {
+      is $dt, undef;
+      ok 1;
+      ok 1;
+    }
+    eq_or_diff \@error, $test->[3] || [];
+    done $c;
+  } n => 4, name => ['parse_rss2_date_time_string', $test->[0]];
+}
+
+for my $test (
   ['2012-03-02T00:12:00', undef, undef,
    [{type => 'datetime:syntax error', level => 'm'}]],
   ['2012-03-02T00:12:00Z', '2012-03-02T00:12:00Z', 'Z'],

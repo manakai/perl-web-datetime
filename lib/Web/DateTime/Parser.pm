@@ -1,6 +1,7 @@
 package Web::DateTime::Parser;
 use strict;
 use warnings;
+no warnings 'utf8';
 our $VERSION = '1.0';
 use Web::DateTime;
 
@@ -958,6 +959,187 @@ sub parse_http_date_string ($$) {
   }
   return $dt;
 } # parse_http_date_string
+
+our $CContent; $CContent = qr/(?>[^()\\]+|\\.|\((??{ $CContent})\))*/;
+my $CFWS = qr/(?>[\x09\x0A\x0D\x20]+|\($CContent\))/s;
+
+sub parse_rss2_date_time_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ /\A
+    ($CFWS*)
+    (?:
+      ([A-Za-z]+) ($CFWS*) , ($CFWS*)
+    )?
+
+    ([0-9]+) ($CFWS+)
+    ([A-Za-z]+) ($CFWS+)
+    ([0-9]+) ($CFWS+)
+
+    ([0-9]+) ($CFWS*)
+    : ($CFWS*)
+    ([0-9]+) ($CFWS*)
+    (?:
+      : ($CFWS*)
+      ([0-9]+) ($CFWS+)
+    )?
+
+    (
+      [A-Za-z]+ |
+      [+-][0-9]{4}
+    )
+
+    ($CFWS*)
+  \z/xo) {
+    my ($s1, $wd, $s2, $s3, $d, $s4, $M, $s5, $y, $s6,
+        $h, $s7, $s8, $m, $s9, $s10, $s, $s11, $z, $s12)
+        = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+           $11, $12, $13, $14, $15, $16, $17, $18, $19, $20);
+
+    my $month = {qw(jan 1 feb 2 mar 3 apr 4 may 5 jun 6 jul 7
+                    aug 8 sep 9 oct 10 nov 11 dec 12)}->{lc $M};
+    unless (defined $month) {
+      $self->onerror->(type => 'datetime:bad month',
+                       value => $M,
+                       level => 'm');
+      return undef;
+    }
+    if ($M ne ucfirst lc $M) {
+      $self->onerror->(type => 'datetime:month:bad case',
+                       value => $M,
+                       level => 's');
+    }
+
+    if (2 == length $y) {
+      $self->onerror->(type => 'datetime:bad year',
+                       value => $y,
+                       level => 's');
+      ## RFC 2822 interpretation
+      $y = $y + 1900;
+      $y += 100 if $y < 1950;
+    } elsif (3 == length $y) {
+      $self->onerror->(type => 'datetime:bad year',
+                       value => $y,
+                       level => 'm');
+      $y += 1900; ## RFC 2822 interpretation
+    } elsif (not 4 == length $y) {
+      $self->onerror->(type => 'datetime:bad year',
+                       value => $y,
+                       level => 'm');
+    }
+
+    $self->onerror->(type => 'datetime:bad day',
+                     value => $d,
+                     level => 'm'), return undef
+        if $d < 1 or
+           $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$month];
+    $self->onerror->(type => 'datetime:bad day',
+                     value => $d,
+                     level => 'm'), return undef
+        if $month == 2 and $d == 29 and
+           not Web::DateTime::_is_leap_year ($y);
+    $self->onerror->(type => 'datetime:bad day',
+                     value => $d,
+                     level => 'm')
+        unless 2 >= length $d;
+
+    $self->onerror->(type => 'datetime:bad hour',
+                     value => $h,
+                     level => 'm'), return undef if $h > 23;
+    $self->onerror->(type => 'datetime:bad minute',
+                     value => $m,
+                     level => 'm'), return undef if $m > 59;
+    $s ||= '00';
+    $self->onerror->(type => 'datetime:bad second',
+                     value => $s,
+                     level => 'm'), return undef if $s > 59;
+    if (2 != length $h or
+        2 != length $m or
+        2 != length $s) {
+      $self->onerror->(type => 'datetime:syntax error',
+                       level => 'm');
+      # not return
+    }
+
+    my ($zh, $zm);
+    if ($z =~ /\A([+-])([0-9][0-9])([0-9][0-9])\z/) {
+      $zh = $1.$2;
+      $zm = $3;
+      $self->onerror->(type => 'datetime:bad timezone minute',
+                       value => $zm,
+                       level => 'm'), return undef
+          if $zm > 59;
+    } else {
+      require Web::DateTime::_Defs;
+      my $def = $Web::DateTime::_Defs->{mail_tz_names}->{uc $z} || {};
+      if (defined $def->{offset} and
+          not $def->{offset_unknown} and
+          not $def->{offset} % 60) {
+        $zh = int ($def->{offset} / 60 / 60);
+        $zm = ($def->{offset} / 60) % 60;
+      }
+
+      if ($def->{allowed_rfc822}) {
+        if ($def->{allowed_but_not_recommended}) {
+          $self->onerror->(type => 'datetime:tzname',
+                           value => $z,
+                           level => 's');
+        } elsif ('GMT' eq uc $z) {
+          #
+        } else {
+          $self->onerror->(type => 'datetime:tzname',
+                           value => $z,
+                           level => 'w');
+        }
+      } else {
+        $self->onerror->(type => 'datetime:tzname',
+                         value => $z,
+                         level => 'm');
+      }
+      if ($z ne uc $z) {
+        $self->onerror->(type => 'datetime:tz:bad case',
+                         value => $z,
+                         level => 's');
+      }
+    } # zone
+
+    for ($s1, $s2, $s3, $s4, $s5, $s6, $s7, $s8, $s9, $s10, $s11, $s12) {
+      next if not defined $_ or $_ eq '' or $_ eq ' ';
+      if (/[^\x00-\x7F]/ or /\x0D\x0A(?![\x20\x09])/) {
+        $self->onerror->(type => 'datetime:syntax error',
+                         value => $_,
+                         level => 'm');
+      } else {
+        $self->onerror->(type => 'datetime:bad CFWS',
+                         value => $_,
+                         level => 's');
+      }
+    }
+
+
+    my $dt = $self->_create ($y, $month, $d, $h, $m, $s, '', $zh, $zm)
+        or return undef;
+    if (defined $wd) {
+      my $dow_n = {sun => 0, mon => 1, tue => 2, wed => 3,
+                   thu => 4, fri => 5, sat => 6}->{lc $wd};
+      if (not defined $dow_n or not $dt->day_of_week == $dow_n) {
+        $self->onerror->(type => 'datetime:bad weekday',
+                         text => [qw[Sun Mon Tue Wed Thu Fri Sat]]->[$dt->day_of_week],
+                         value => $wd,
+                         level => 'm');
+      }
+      if ($wd ne ucfirst lc $wd) {
+        $self->onerror->(type => 'datetime:weekday:bad case',
+                         value => $wd,
+                         level => 's');
+      }
+    }
+    return $dt;
+  } else {
+    $self->onerror->(type => 'datetime:syntax error',
+                     level => 'm');
+    return undef;
+  }
+} # parse_rss2_date_time_string
 
 sub parse_ogp_date_time_string ($$) {
   my ($self, $value) = @_;

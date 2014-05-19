@@ -104,6 +104,16 @@ This method is suitable for values in HTTP C<Expires>,
 C<Last-Modified>, and C<Date> headers, as well as in C<Expires>
 attribute in Cookies.
 
+=item $dt = $parser->parse_rss2_date_time_string ($string)
+
+Parse the argument as an RFC 822 C<date-time> string used in RSS 2.0
+document [RFC822] [RSS2] [RSS2BP], and return a L<Web::DateTime> (or
+C<undef> if failed).  Any error is reported through the C<onerror>
+handler.
+
+This method is suitable for values in RSS 2.0 elements.  This method
+is B<NOT> suitable for dates in e-mail, netnews, or HTTP headers.
+
 =item $dt = $parser->parse_date_string ($string)
 
 Parse the argument as an HTML date string [HTML] and return
@@ -350,6 +360,20 @@ RFC 6265, HTTP State Management Mechanism
 
 Date and Time Formats
 <http://www.w3.org/TR/1998/NOTE-datetime-19980827>.
+
+=item RFC822
+
+RFC 822, STANDARD FOR THE FORMAT OF ARPA INTERNET TEXT MESSAGES
+<http://tools.ietf.org/html/rfc822>.
+
+=item RSS2
+
+RSS 2.0 Specification <http://www.rssboard.org/rss-specification>.
+
+=item RSS2BP
+
+Really Simple Syndication Best Practices Profile
+<http://www.rssboard.org/rss-profile>.
 
 =back
 
