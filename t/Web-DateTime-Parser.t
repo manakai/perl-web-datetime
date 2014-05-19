@@ -268,6 +268,36 @@ for my $test (
   ['2012-02-29T00:23:00-14:01', '2012-02-29T14:24:00Z', '-14:01',
    [],
    [{type => 'datetime:bad timezone hour', value => '-14', level => 'm'}]],
+  ['2014-07-01T00:00:60Z', undef, undef,
+   [{type => 'datetime:bad second', value => 60, level => 'm'}]],
+  ['2014-06-30T23:59:60Z', undef, undef,
+   [{type => 'datetime:bad second', value => 60, level => 'm'}]],
+  ['2012-06-30T23:59:60Z', '2012-06-30T23:59:59Z', 'Z',
+   [],
+   [{type => 'datetime:bad second', value => 60, level => 'm'}]],
+  ['2012-06-30T23:59:61Z', undef, undef,
+   [{type => 'datetime:bad second', value => 61, level => 'm'}]],
+  ['2012-06-30T23:58:60Z', undef, undef,
+   [{type => 'datetime:bad second', value => 60, level => 'm'}]],
+  ['2012-07-01T00:00:60Z', undef, undef,
+   [{type => 'datetime:bad second', value => 60, level => 'm'}]],
+  ['2012-07-01T08:59:60+09:00', '2012-06-30T23:59:59Z', '+09:00',
+   [],
+   [{type => 'datetime:bad second', value => 60, level => 'm'}]],
+  ['2012-06-30T04:59:60-19:00', '2012-06-30T23:59:59Z', '-19:00',
+   [],
+   [{type => 'datetime:bad second', value => 60, level => 'm'}]],
+  ['2012-06-30T04:59:60-00:00', '2012-06-30T04:59:59Z', undef,
+   [],
+   [{type => 'datetime:bad second', value => 60, level => 'm'}]],
+  ['2012-07-01T04:59:60-00:00', '2012-07-01T04:59:59Z', undef,
+   [],
+   [{type => 'datetime:bad second', value => 60, level => 'm'}]],
+  ['2012-07-01T04:51:60-00:00', '2012-07-01T04:51:59Z', undef,
+   [],
+   [{type => 'datetime:bad second', value => 60, level => 'm'}]],
+  ['2012-07-02T04:59:60-00:00', undef, undef,
+   [{type => 'datetime:bad second', value => 60, level => 'm'}]],
 ) {
   test {
     my $c = shift;
@@ -302,7 +332,7 @@ for my $test (
       push @error, {@_};
     });
     my $dt = $parser->parse_rfc3339_xs_date_time_string ($test->[0]);
-    if (defined $test->[1]) {
+    if (defined $test->[1] and not $test->[0] =~ /60(?:Z|[+-][0-9]+:[0-9]+)?$/) {
       isa_ok $dt, 'Web::DateTime';
       is $dt && $dt->to_global_date_and_time_string, $test->[1];
       if (defined $test->[2]) {

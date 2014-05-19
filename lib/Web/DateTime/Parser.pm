@@ -544,11 +544,14 @@ sub _parse_rfc3339_date_time_string ($$;%) {
     $self->onerror->(type => 'datetime:bad minute',
                      value => $m,
                      level => 'm'), return undef if $m > 59;
+    my $leap_second;
+    if (not $args{disallow_leap_second} and $s == 60) {
+      $leap_second = 1;
+      $s--;
+    }
     $self->onerror->(type => 'datetime:bad second',
                      value => $s,
                      level => 'm'), return undef if $s > 59;
-    # XXX leap seconds
-    # XXX $args{disallow_leap_second}
     $sf = defined $sf ? $sf : '';
     if (defined $zh) {
       $self->onerror->(type => 'datetime:bad timezone hour',
@@ -576,7 +579,28 @@ sub _parse_rfc3339_date_time_string ($$;%) {
       undef $zh;
       undef $zm;
     }
-    return $self->_create ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
+    my $dt = $self->_create ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm)
+        or return undef;
+
+    if ($leap_second) {
+      require Web::DateTime::_Defs;
+      my $time = $dt->to_unix_integer;
+      if ($Web::DateTime::_Defs->{positive_leap_second_after}->{$time}) {
+        return $dt;
+      } elsif (not defined $zh) {
+        for (keys %{$Web::DateTime::_Defs->{positive_leap_second_after}}) {
+          if ($time - 24*60*60 < $_ and $_ < $time + 24*60*60) {
+            return $dt;
+          }
+        }
+      }
+      $self->onerror->(type => 'datetime:bad second',
+                       value => '60',
+                       level => 'm');
+      return undef;
+    } # $leap_secnd
+
+    return $dt;
   } else {
     $self->onerror->(type => 'datetime:syntax error',
                      level => 'm');

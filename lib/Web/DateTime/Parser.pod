@@ -84,6 +84,11 @@ Parse the argument as an RFC 3339 C<date-time> string [RFC3339] and
 return a L<Web::DateTime> (or C<undef> if failed).  Any error is
 reported through the C<onerror> handler.
 
+The RFC 3339 format does support leap seconds, but the
+L<Web::DateTime> module does not support leap seconds.  If a leap
+second is specified, a L<Web::DateTime> object representing the second
+just before the leap second is returned.
+
 =item $dt = $parser->parse_rfc3339_xs_date_time_string ($string)
 
 Parse the argument as an RFC 3339 C<date-time> string [RFC3339],

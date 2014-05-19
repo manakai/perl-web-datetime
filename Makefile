@@ -45,12 +45,14 @@ local/perl-latest/pm/lib/perl5/JSON/PS.pm:
 	$(WGET) -O $@ https://raw.githubusercontent.com/wakaba/perl-json-ps/master/lib/JSON/PS.pm
 
 lib/Web/DateTime/_Defs.pm: bin/generate-defs.pl \
-    local/timezones-mail-names.json
+    local/timezones-mail-names.json local/datetime-seconds.json
 	$(PERL) bin/generate-defs.pl > $@
 	$(PERL) -c $@
 
 local/timezones-mail-names.json:
 	$(WGET) -O $@ https://raw.githubusercontent.com/manakai/data-locale/master/data/timezones/mail-names.json
+local/datetime-seconds.json:
+	$(WGET) -O $@ https://raw.githubusercontent.com/manakai/data-locale/master/data/datetime/seconds.json
 
 ## ------ Tests ------
 
