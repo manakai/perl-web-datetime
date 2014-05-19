@@ -27,8 +27,10 @@ test {
   is $date->to_unix_integer, 535153344;
   is $date->second_fraction_string, '';
   is $date->time_zone->offset_as_seconds, 0;
+  ok $date->has_component ('offset');
+  ok not $date->has_component ('week');
   done $c;
-} n => 3, name => 'new_from_unix_time positive';
+} n => 5, name => 'new_from_unix_time positive';
 
 test {
   my $c = shift;
@@ -172,6 +174,9 @@ test {
   is $date->utc_year, 2010;
   is $date->utc_month, 1;
   is $date->utc_day, 4;
+  is $date->utc_week_year, 2010;
+  is $date->utc_week, 1;
+  is $date->to_week_string, '2010-W01';
 
   $date = Web::DateTime::Parser->new->parse_week_string ('2010-W51');
   is $date->to_week_string, '2010-W51';
@@ -191,7 +196,7 @@ test {
   $date = Web::DateTime::Parser->new->parse_week_string ('2010-W53');
   is $date, undef;
   done $c;
-} n => 14, name => 'parse_week_string';
+} n => 17, name => 'parse_week_string';
 
 test {
   my $c = shift;

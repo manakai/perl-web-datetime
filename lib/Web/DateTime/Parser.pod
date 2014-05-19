@@ -36,6 +36,16 @@ for details of error handling.
 The value should not be set while the parser is running.  If the value
 is changed, the result is undefined.
 
+=item $dt = $parser->parse_html_datetime_value ($string)
+
+Parse the argument as an HTML C<time> element datetime value [HTML]
+and return a L<Web::DateTime>, L<Web::DateTime::TimeZone>, or
+L<Web::DateTime::Duration> object (or C<undef> if failed).  Any error
+is reported through the C<onerror> handler.
+
+This method is suitable for values from HTML C<time> element's
+C<datetime> attribute or element content.
+
 =item $dt = $parser->parse_global_date_and_time_string ($string)
 
 Parse the argument as an HTML global date and time string

@@ -50,6 +50,18 @@ leap second.
 
 Return whether the object is of the specified type or not.
 
+=item $boolean = $dt->has_component ($name)
+
+Return whether the specified component is given when the object is
+created.  Available component names are: C<year>, C<month> (month of
+year), C<week> (week of year), C<day> (day of month, week, or year),
+C<time> (hour, minute, and optional second of day), and C<offset>
+(time zone offset).
+
+For example, if the object is created from a valid week string,
+C<year> and C<week> will return true, and any other value will return
+false.
+
 =item $number = $dt->year
 
 =item $number = $dt->month

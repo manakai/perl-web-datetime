@@ -18,6 +18,8 @@ sub new_from_unix_time ($$) {
   }
   require Web::DateTime::TimeZone;
   $self->{tz} = Web::DateTime::TimeZone->new_from_offset (0);
+  $self->{has_component} = {year => 1, month => 1, day => 1,
+                            time => 1, offset => 1};
   return $self;
 } # new_from_unix_time
 
@@ -28,9 +30,11 @@ sub new_from_object ($$) {
     if ($f) {
       $self->{second_fraction} = $f;
     }
+    $self->{has_component} = {year => 1, month => 1, day => 1, time => 1};
     unless ($_[1]->time_zone->is_floating) {
       require Web::DateTime::TimeZone;
       $self->{tz} = Web::DateTime::TimeZone->new_from_offset ($_[1]->offset);
+      $self->{has_component}->{offset} = 1;
     }
     return $self;
   } elsif (UNIVERSAL::isa ($_[1], 'Time::Piece')) {
@@ -38,6 +42,8 @@ sub new_from_object ($$) {
     require Web::DateTime::TimeZone;
     $self->{tz} = Web::DateTime::TimeZone->new_from_offset
         ($_[1]->tzoffset->seconds);
+    $self->{has_component} = {year => 1, month => 1, day => 1,
+                              time => 1, offset => 1};
     return $self;
   } else {
     croak "Can't create |Web::DateTime| from a |" . (ref $_[1]) . "|";
@@ -48,6 +54,10 @@ sub is_date_time ($) { 1 }
 sub is_time_zone ($) { 0 }
 sub is_duration ($) { 0 }
 sub is_interval ($) { 0 }
+
+sub has_component ($$) {
+  return $_[0]->{has_component}->{$_[1]};
+} # has_component
 
 sub _is_leap_year ($) {
   return ($_[0] % 400 == 0 or ($_[0] % 4 == 0 and $_[0] % 100 != 0));
@@ -200,7 +210,7 @@ sub utc_week ($) {
 
   my $year = $self->utc_year;
 
-  my $jan1 = __PACKAGE__->_create ($year, 1, 1, 0, 0, 0, 0, undef, undef);
+  my $jan1 = __PACKAGE__->_create ({}, $year, 1, 1, 0, 0, 0, 0, undef, undef);
 
   my $days = $self->to_unix_integer - $jan1->to_unix_integer;
   $days /= 24 * 3600;
@@ -242,9 +252,10 @@ sub to_html_month_number ($) {
 
 my $unix_epoch = Time::Local::timegm (0, 0, 0, 1, 1 - 1, 1970);
 
-sub _create ($$$$$$$$$$;$) {
+sub _create ($$$$$$$$$$$;$) {
   my $self = bless {}, shift;
-  my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff) = @_;
+  my ($type, $y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff) = @_;
+  $self->{has_component} = $type;
   
   $zm *= -1 if defined $zh and $zh =~ /^-/;
   $self->{value} = Time::Local::timegm_nocheck

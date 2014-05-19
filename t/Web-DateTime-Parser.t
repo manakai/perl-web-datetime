@@ -1343,6 +1343,118 @@ for my $test (
   } n => 3, name => ['parse_weekly_time_range_string', $test->[0]];
 }
 
+for my $test (
+  ['2011-11' => {year => 1, month => 1}, '2011-11-01T00:00:00Z', undef],
+  ['2011-00' => undef, undef, undef,
+   [{type => 'datetime:bad month', value => '00', level => 'm'}]],
+  ['2011-11-20' => {year => 1, month => 1, day => 1},
+   '2011-11-20T00:00:00Z', undef],
+  ['2011-11-00' => undef, undef, undef,
+   [{type => 'datetime:bad day', value => '00', level => 'm'}]],
+  ['11-11' => {month => 1, day => 1}, '2000-11-11T00:00:00Z', undef],
+  ['11-00' => undef, undef, undef,
+   [{type => 'datetime:bad day', value => '00', level => 'm'}]],
+  ['--11-11' => {month => 1, day => 1}, '2000-11-11T00:00:00Z', undef],
+  ['--11-00' => undef, undef, undef,
+   [{type => 'datetime:bad day', value => '00', level => 'm'}]],
+  ['20:12' => {time => 1}, '1970-01-01T20:12:00Z', undef],
+  ['20:12:11' => {time => 1}, '1970-01-01T20:12:11Z', undef],
+  ['20:12:11.22' => {time => 1}, '1970-01-01T20:12:11.22Z', undef],
+  ['20:12:60' => undef, undef, undef,
+   [{type => 'datetime:bad second', value => '60', level => 'm'}]],
+  ['2012-01-04T20:12' => {year => 1, month => 1, day => 1, time => 1},
+   '2012-01-04T20:12:00Z', undef],
+  ['2012-01-04T20:12:11' => {year => 1, month => 1, day => 1, time => 1},
+   '2012-01-04T20:12:11Z', undef],
+  ['2012-01-04 20:12:11.22' => {year => 1, month => 1, day => 1, time => 1},
+   '2012-01-04T20:12:11.22Z', undef],
+  ['2012-01-04T20:12:60' => undef, undef, undef,
+   [{type => 'datetime:bad second', value => '60', level => 'm'}]],
+  ['2012-01-04T20:12Z' => {year => 1, month => 1, day => 1, time => 1, offset => 1},
+   '2012-01-04T20:12:00Z', 'Z'],
+  ['2012-01-04T20:12:11+00:00' => {year => 1, month => 1, day => 1, time => 1, offset => 1},
+   '2012-01-04T20:12:11Z', 'Z'],
+  ['2012-01-04 20:12:11.22+09:00' => {year => 1, month => 1, day => 1, time => 1, offset => 1},
+   '2012-01-04T11:12:11.22Z', '+09:00'],
+  ['2012-01-04T20:12:60Z' => undef, undef, undef,
+   [{type => 'datetime:bad second', value => '60', level => 'm'}]],
+  ['Z' => 'TimeZone', undef, 'Z'],
+  ['+00:00' => 'TimeZone', undef, 'Z'],
+  ['-00:30' => 'TimeZone', undef, '-00:30'],
+  ['+25:00' => undef, undef, undef,
+   [{type => 'datetime:bad timezone hour', value => 25, level => 'm'}]],
+  ['-00:00' => 'TimeZone', undef, 'Z',
+   [{type => 'datetime:-00:00', level => 'm'}]],
+  ['2012-W04' => {year => 1, week => 1}, '2012-01-23T00:00:00Z', undef],
+  ['2012-W04-02' => undef, undef, undef,
+   [{type => 'week:syntax error', level => 'm'}]],
+  ['2012' => {year => 1}, '2012-01-01T00:00:00Z', undef],
+  ['12012' => {year => 1}, '12012-01-01T00:00:00Z', undef],
+  ['0000' => undef, undef, undef,
+   [{type => 'datetime:bad year', value => '0000', level => 'm'}]],
+  ['PT4H18M3S' => 'Duration', 'PT15483S', undef],
+  ['4h 18m 3s' => 'Duration', 'PT15483S', undef],
+  ['P41Y' => undef, undef, undef,
+   [{type => 'duration:syntax error', value => 'PY', level => 'm'},
+    {type => 'duration:months', level => 'm'}]],
+  ['12/8' => undef, undef, undef,
+   [{type => 'date:syntax error', level => 'm'}]],
+  ['today' => undef, undef, undef,
+   [{type => 'duration:syntax error', level => 'm'}]],
+  ['30m ago' => undef, undef, undef,
+   [{type => 'duration:syntax error', level => 'm'}]],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $r = $parser->parse_html_datetime_value ($test->[0]);
+    if (defined $test->[1]) {
+      if (ref $test->[1]) {
+        isa_ok $r, 'Web::DateTime';
+        my $has = {};
+        if (UNIVERSAL::isa ($r, 'Web::DateTime')) {
+          for (qw(year month week day time offset)) {
+            $has->{$_} = 1 if $r->has_component ($_);
+          }
+        }
+        eq_or_diff $has, $test->[1];
+        is $r && $r->to_global_date_and_time_string, $test->[2];
+        if (defined $test->[3]) {
+          is $r && $r->time_zone && $r->time_zone->to_offset_string, $test->[3];
+        } else {
+          is $r && $r->time_zone, undef;
+        }
+      } elsif ($test->[1] eq 'Duration') {
+        isa_ok $r, 'Web::DateTime::' . $test->[1];
+        ok 1;
+        is $r && $r->to_duration_string, $test->[2];
+        is $test->[3], undef;
+      } elsif ($test->[1] eq 'TimeZone') {
+        isa_ok $r, 'Web::DateTime::' . $test->[1];
+        ok 1;
+        is $test->[2], undef;
+        is $r && $r->to_offset_string, $test->[3];
+      } else {
+        isa_ok $r, 'Web::DateTime::' . $test->[1];
+        ok 1;
+        ok 1;
+        is $test->[3], undef;
+      }
+    } else {
+      is $r, undef;
+      ok 1;
+      is $test->[2], undef;
+      is $test->[3], undef;
+    }
+    eq_or_diff \@error, $test->[4] || [];
+    done $c;
+  } n => 5, name => ['parse_html_datetime_value', $test->[0]];
+}
+
 run_tests;
 
 =head1 LICENSE

@@ -40,7 +40,8 @@ sub parse_time_string ($$) {
                      value => $s,
                      level => 'm'), return undef if $s > 59;
     $sf = defined $sf ? $sf : '';
-    return $self->_create (1970, 1, 1, $h, $m, $s, $sf, undef, undef);
+    return $self->_create
+        ({time => 1}, 1970, 1, 1, $h, $m, $s, $sf, undef, undef);
   } else {
     $self->onerror->(type => 'time:syntax error',
                      level => 'm');
@@ -67,7 +68,9 @@ sub parse_week_string ($$) {
                      level => 'm'), return undef
         if $w > Web::DateTime::_last_week_number ($y) || $w == 0;
     my $day = ($w - 1) * 7 - Web::DateTime::_week_year_diff ($y);
-    return $self->_create ($y, 1, 1, 0, 0, 0, '', undef, undef, $day * 24 * 3600 * 1000);
+    return $self->_create
+        ({year => 1, week => 1},
+         $y, 1, 1, 0, 0, 0, '', undef, undef, $day * 24 * 3600 * 1000);
   } else {
     $self->onerror->(type => 'week:syntax error',
                      level => 'm');
@@ -88,7 +91,7 @@ sub parse_year_string ($$) {
       return undef;
     }
 
-    return $self->_create ($y, 1, 1, 0, 0, 0, '', undef, undef);
+    return $self->_create ({year => 1}, $y, 1, 1, 0, 0, 0, '', undef, undef);
   } else {
     $self->onerror->(type => 'year:syntax error',
                      level => 'm');
@@ -128,7 +131,8 @@ sub parse_month_string ($$) {
       return undef;
     }
 
-    return $self->_create ($y, $M, 1, 0, 0, 0, '', undef, undef);
+    return $self->_create ({year => 1, month => 1},
+                           $y, $M, 1, 0, 0, 0, '', undef, undef);
   } else {
     $self->onerror->(type => 'month:syntax error',
                      level => 'm');
@@ -172,7 +176,8 @@ sub parse_date_string ($$) {
                        level => 'm');
       return undef;
     }
-    return $self->_create ($y, $M, $d, 0, 0, 0, '', undef, undef);
+    return $self->_create ({year => 1, month => 1, day => 1},
+                           $y, $M, $d, 0, 0, 0, '', undef, undef);
   } else {
     $self->onerror->(type => 'date:syntax error',
                      level => 'm');
@@ -287,14 +292,18 @@ sub parse_iso8601_date_string ($$) {
         if $d < 1 or $d > 7;
     my $day = ($w - 1) * 7 - Web::DateTime::_week_year_diff ($y);
     $day += $d - 1;
-    return $self->_create ($y, 1, 1, 0, 0, 0, '', undef, undef, $day * 24 * 3600 * 1000);
+    return $self->_create
+        ({year => 1, week => 1, day => 1},
+         $y, 1, 1, 0, 0, 0, '', undef, undef, $day * 24 * 3600 * 1000);
   } elsif (not defined $M) { ## Y, D
     $self->onerror->(type => 'datetime:bad day',
                      value => $d,
                      level => 'm'), return undef
         if $d < 1 or $d > 366 or
            ($d == 366 and not Web::DateTime::_is_leap_year ($y));
-    return $self->_create ($y, 1, 1, 0, 0, 0, '', undef, undef, ($d - 1) * 24 * 3600 * 1000);
+    return $self->_create
+        ({year => 1, day => 1},
+         $y, 1, 1, 0, 0, 0, '', undef, undef, ($d - 1) * 24 * 3600 * 1000);
   } else { ## Y, M, D
     if (0 < $M and $M < 13) {
       $self->onerror->(type => 'datetime:bad day',
@@ -306,7 +315,9 @@ sub parse_iso8601_date_string ($$) {
                        value => $d,
                        level => 'm'), return undef
           if $M == 2 and $d == 29 and not Web::DateTime::_is_leap_year ($y);
-      return $self->_create ($y, $M, $d, 0, 0, 0, '', undef, undef);
+      return $self->_create
+          ({year => 1, month => 1, day => 1},
+           $y, $M, $d, 0, 0, 0, '', undef, undef);
     } else {
       $self->onerror->(type => 'datetime:bad month',
                        value => $M,
@@ -334,7 +345,9 @@ sub parse_yearless_date_string ($$) {
                        level => 'm');
       return undef;
     }
-    return $self->_create (2000, $M, $d, 0, 0, 0, '', undef, undef);
+    return $self->_create
+        ({month => 1, day => 1},
+         2000, $M, $d, 0, 0, 0, '', undef, undef);
   } else {
     $self->onerror->(type => 'date:syntax error',
                      level => 'm');
@@ -413,10 +426,12 @@ sub parse_local_date_and_time_string ($$) {
                      level => 'm'), return undef if $m > 59;
     $s ||= 0;
     $self->onerror->(type => 'datetime:bad second',
-                     value => $d,
+                     value => $s,
                      level => 'm'), return undef if $s > 59;
     $sf = defined $sf ? $sf : '';
-    return $self->_create ($y, $M, $d, $h, $m, $s, $sf, undef, undef);
+    return $self->_create
+        ({year => 1, month => 1, day => 1, time => 1},
+         $y, $M, $d, $h, $m, $s, $sf, undef, undef);
   } else {
     $self->onerror->(type => 'datetime-local:syntax error',
                      level => 'm');
@@ -482,7 +497,9 @@ sub parse_global_date_and_time_string ($$) {
       $self->onerror->(type => 'datetime:-00:00',
                        level => 'm'); # don't return
     }
-    return $self->_create ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
+    return $self->_create
+        ({year => 1, month => 1, day => 1, time => 1, offset => 1},
+         $y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
   } else {
     $self->onerror->(type => 'datetime:syntax error',
                      level => 'm');
@@ -579,7 +596,9 @@ sub _parse_rfc3339_date_time_string ($$;%) {
       undef $zh;
       undef $zm;
     }
-    my $dt = $self->_create ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm)
+    my $dt = $self->_create
+        ({year => 1, month => 1, day => 1, time => 1, offset => defined $zh},
+         $y, $M, $d, $h, $m, $s, $sf, $zh, $zm)
         or return undef;
 
     if ($leap_second) {
@@ -676,7 +695,9 @@ sub parse_xs_date_time_string ($$) {
       $zh = 0;
       $zm = 0;
     }
-    return $self->_create ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
+    return $self->_create
+        ({type => 1, month => 1, day => 1, time => 1, offset => $has_zone},
+         $y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
   } else {
     $self->onerror->(type => 'datetime:syntax error',
                      level => 'm');
@@ -750,7 +771,9 @@ sub parse_xs_date_time_stamp_string ($$) {
       $zh = 0;
       $zm = 0;
     }
-    return $self->_create ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
+    return $self->_create
+        ({year => 1, month => 1, day => 1, time => 1, offset => 1},
+         $y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
   } else {
     $self->onerror->(type => 'datetime:syntax error',
                      level => 'm');
@@ -827,7 +850,9 @@ sub parse_schema_org_date_time_string ($$) {
       $self->onerror->(type => 'datetime:-00:00',
                        level => 'm'); # don't return
     }
-    return $self->_create ($y, $M, $d, $h, $m, $s, '', $zh, $zm);
+    return $self->_create
+        ({year => 1, month => 1, day => 1, time => 1, offset => defined $z},
+         $y, $M, $d, $h, $m, $s, '', $zh, $zm);
   } else {
     $self->onerror->(type => 'datetime:syntax error',
                      level => 'm');
@@ -968,7 +993,8 @@ sub parse_http_date_string ($$) {
     if $month_value == 2 and $day_of_month_value == 29 and
        not Web::DateTime::_is_leap_year ($year_value);
   my $dt = $self->_create
-      ($year_value, $month_value, $day_of_month_value,
+      ({year => 1, month => 1, day => 1, time => 1, zone => 1},
+       $year_value, $month_value, $day_of_month_value,
        $hour_value, $minute_value, $second_value, '', 0, 0)
       or return undef;
   if (defined $dow) {
@@ -1140,7 +1166,9 @@ sub parse_rss2_date_time_string ($$) {
     }
 
 
-    my $dt = $self->_create ($y, $month, $d, $h, $m, $s, '', $zh, $zm)
+    my $dt = $self->_create
+        ({year => 1, month => 1, day => 1, time => 1, offset => defined $zh},
+         $y, $month, $d, $h, $m, $s, '', $zh, $zm)
         or return undef;
     if (defined $wd) {
       my $dow_n = {sun => 0, mon => 1, tue => 2, wed => 3,
@@ -1247,7 +1275,9 @@ sub parse_js_date_time_string ($$) {
       $zh = 0;
       $zm = 0;
     }
-    return $self->_create ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
+    return $self->_create
+        ({year => 1, month => 1, day => 1, time => 1, offset => defined $zh},
+         $y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
 
   ## XXX It seems that browsers support more formats, including
   ## English month names and named time zone offsets...
@@ -1288,6 +1318,7 @@ sub parse_ogp_date_time_string ($$) {
     $y = $6 if not defined $y;
     $M = $7 if not defined $M;
     $d = $8 if not defined $d;
+    my $has_time = defined $4 || defined $9;
     $y =~ s/\x{2212}/-/g;
     if (0 < $M and $M < 13) {
       $self->onerror->(type => 'datetime:bad day',
@@ -1321,7 +1352,9 @@ sub parse_ogp_date_time_string ($$) {
     $self->onerror->(type => 'datetime:bad minute',
                      value => $m,
                      level => 'm'), return undef if $m > 59;
-    return $self->_create ($y, $M, $d, $h, $m, 0, '', undef, undef);
+    return $self->_create
+        ({year => 1, month => 1, day => 1, time => $has_time},
+         $y, $M, $d, $h, $m, 0, '', undef, undef);
   } else {
     $self->onerror->(type => 'datetime:syntax error',
                      level => 'm');
@@ -1345,6 +1378,9 @@ sub parse_w3c_dtf_string ($$) {
   \z/x) {
     my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm)
         = ($1, $2, $3, $4 || 0, $5 || 0, $6 || 0, $7, $8, $9);
+    my $has_month = defined $2;
+    my $has_day = defined $3;
+    my $has_time = defined $4;
     $M = 1 if not defined $2;
     $d = 1 if not defined $3;
     if (0 < $M and $M < 13) {
@@ -1387,7 +1423,10 @@ sub parse_w3c_dtf_string ($$) {
       $zh = 0;
       $zm = 0;
     }
-    return $self->_create ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
+    return $self->_create
+        ({year => 1, month => $has_month, day => $has_day,
+          time => $has_time, offset => $has_time},
+         $y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
   } else {
     $self->onerror->(type => 'datetime:syntax error',
                      level => 'm');
@@ -1458,10 +1497,14 @@ sub parse_date_string_with_optional_time ($$) {
         $self->onerror->(type => 'datetime:-00:00',
                          level => 'm'); # don't return
       }
-      return $self->_create ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
+      return $self->_create
+          ({year => 1, month => 1, day => 1, time => 1, offset => 1},
+           $y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
     } else {
       ## A valid date string
-      return $self->_create ($y, $M, $d, 0, 0, 0, 0, undef, undef);
+      return $self->_create
+          ({year => 1, month => 1, day => 1},
+           $y, $M, $d, 0, 0, 0, 0, undef, undef);
     }
   } else {
     $self->onerror->(type => 'dateandopttime:syntax error',
@@ -1495,6 +1538,34 @@ sub parse_date_string_with_optional_time_and_duration ($$) {
     return $self->parse_date_string_with_optional_time ($v1);
   }
 } # parse_date_string_with_optional_time_and_duration
+
+sub parse_html_datetime_value ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ /^[0-9]{4,}$/) {
+    return $self->parse_year_string ($value);
+  } elsif ($value =~ /^[0-9]{4,}\W[0-9]+$/) {
+    return $self->parse_month_string ($value);
+  } elsif ($value =~ /^[0-9]{4,}\W[0-9]+\W[0-9]+$/) {
+    return $self->parse_date_string ($value);
+  } elsif ($value =~ /^[0-9]{4,}\W[0-9]+\W[0-9]+.[0-9]+\W[0-9]+/) {
+    if ($value =~ /Z$/ or $value =~ /[+-][0-9]+\W[0-9]+$/) {
+      return $self->parse_global_date_and_time_string ($value);
+    } else {
+      return $self->parse_local_date_and_time_string ($value);
+    }
+  } elsif ($value =~ /^[0-9]+:[0-9]+/) {
+    return $self->parse_time_string ($value);
+  } elsif ($value eq 'Z' or
+           $value =~ /^[+-](?:[0-9]+\W[0-9]+|[0-9]{4,})$/) {
+    return $self->parse_time_zone_offset_string ($value);
+  } elsif ($value =~ /^-*[0-9]{1,2}\W[0-9]{1,2}$/) {
+    return $self->parse_yearless_date_string ($value);
+  } elsif ($value =~ /^[0-9]{4,}\W[Ww]/) {
+    return $self->parse_week_string ($value);
+  } else {
+    return $self->parse_duration_string ($value);
+  }
+} # parse_html_datetime_value
 
 ## ------ Time zone ------
 
@@ -1535,8 +1606,9 @@ sub parse_time_zone_offset_string ($$) {
 } # parse_time_zone_offset_string
 
 sub _create {
-  my ($self, $y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff) = @_;
-  my $dt = Web::DateTime->_create ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff);
+  my ($self, $type, $y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff) = @_;
+  my $dt = Web::DateTime->_create
+      ($type, $y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff);
 
   unless ($diff) { # XXX
   unless ($h == 24) { # XXX

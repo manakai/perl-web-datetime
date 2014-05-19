@@ -53,8 +53,11 @@ test {
   is $date->to_unix_integer, $tp->epoch;
   is $date->time_zone->offset_as_seconds, $tp->tzoffset->seconds;
   is $date->time_zone->offset_as_seconds, -4 * 3600;
+  ok $date->has_component ('year');
+  ok $date->has_component ('day');
+  ok $date->has_component ('offset');
   done $c;
-} n => 4, name => 'new_from_object Time::Piece::localtime';
+} n => 7, name => 'new_from_object Time::Piece::localtime';
 
 run_tests;
 

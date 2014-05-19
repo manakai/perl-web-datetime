@@ -82,8 +82,11 @@ test {
   isa_ok $date, 'Web::DateTime';
   is $date->to_unix_integer, $dt->epoch;
   is $date->time_zone->offset_as_seconds, +4*3600;
+  ok $date->has_component ('year');
+  ok $date->has_component ('day');
+  ok $date->has_component ('offset');
   done $c;
-} n => 3, name => 'new_from_object DateTime non UTC';
+} n => 6, name => 'new_from_object DateTime non UTC';
 
 test {
   my $c = shift;
@@ -92,9 +95,12 @@ test {
   isa_ok $date, 'Web::DateTime';
   is $date->to_unix_integer, $dt->epoch;
   is $date->second_fraction_string, '';
+  ok $date->has_component ('year');
+  ok $date->has_component ('day');
+  ok not $date->has_component ('offset');
   is $date->time_zone, undef;
   done $c;
-} n => 4, name => 'new_from_object DateTime floating';
+} n => 7, name => 'new_from_object DateTime floating';
 
 test {
   my $c = shift;
