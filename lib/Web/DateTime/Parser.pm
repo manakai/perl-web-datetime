@@ -1629,31 +1629,9 @@ sub parse_time_zone_offset_string ($$) {
 } # parse_time_zone_offset_string
 
 sub _create {
-  my ($self, $type, $y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff) = @_;
-  my $dt = Web::DateTime->_create
-      ($type, $y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff);
-
-  unless ($diff) { # XXX
-  unless ($h == 24) { # XXX
-  if ($dt->year != $y and not ($dt->year + 1 == $y or $dt->year - 1 == $y) #or
-      #$dt->month != $M or
-      #$dt->day != $d or
-      #$dt->hour != $h or
-      #$dt->minute != $m
-  ) {
-    ## Too large or small
-    #warn $dt->to_global_date_and_time_string;
-    $self->onerror->(type => 'date value not supported',
-                     value => join (", ", map { defined $_ ? $_ : '' } $y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff, $dt->to_global_date_and_time_string),
-                     level => 'u');
-    # XXX 0001-0999
-    return undef;
-  }}}
-
-  return $dt;
+  shift;
+  return Web::DateTime->_create (@_);
 } # _create
-
-# XXX parser for HTML <time> value
 
 ## ------ Duration ------
 

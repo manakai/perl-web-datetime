@@ -1,9 +1,8 @@
 package Web::DateTime;
 use strict;
 use warnings;
-our $VERSION = '5.0';
+our $VERSION = '6.0';
 use Carp qw(croak);
-use Time::Local;
 
 sub new_from_unix_time ($$) {
   my $self = bless {value => 0+$_[1]}, $_[0];
@@ -50,6 +49,90 @@ sub new_from_object ($$) {
   }
 } # new_from_object
 
+
+{
+  ## Derived from |Time::Local|
+  ## <http://cpansearch.perl.org/src/DROLSKY/Time-Local-1.2300/lib/Time/Local.pm>.
+
+  use constant SECS_PER_MINUTE => 60;
+  use constant SECS_PER_HOUR   => 3600;
+  use constant SECS_PER_DAY    => 86400;
+
+  my %Cheat;
+  my $Epoc = _daygm( gmtime(0) );
+  %Cheat = ();
+
+  sub _daygm {
+
+    # This is written in such a byzantine way in order to avoid
+    # lexical variables and sub calls, for speed
+    return $_[3] + (
+        $Cheat{ pack( 'ss', @_[ 4, 5 ] ) } ||= do {
+            my $month = ( $_[4] + 10 ) % 12;
+            my $year  = $_[5] + 1900 - int($month / 10);
+
+            ( ( 365 * $year )
+              + int( $year / 4 )
+              - int( $year / 100 )
+              + int( $year / 400 )
+              + int( ( ( $month * 306 ) + 5 ) / 10 )
+            )
+            - $Epoc;
+        }
+    );
+  }
+
+  sub timegm_nocheck {
+    my ( $sec, $min, $hour, $mday, $month, $year ) = @_;
+
+    my $days = _daygm( undef, undef, undef, $mday, $month, $year - 1900);
+
+    return $sec
+           + ( SECS_PER_MINUTE * $min )
+           + ( SECS_PER_HOUR * $hour )
+           + ( SECS_PER_DAY * $days );
+  }
+}
+
+my $unix_epoch = timegm_nocheck (0, 0, 0, 1, 1 - 1, 1970);
+
+sub _create ($$$$$$$$$$$;$) {
+  my $self = bless {}, shift;
+  my ($type, $y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff) = @_;
+  $self->{has_component} = $type;
+  
+  $zm *= -1 if defined $zh and $zh =~ /^-/;
+  $self->{value} = timegm_nocheck
+      ($s, $m - ($zm || 0), $h - ($zh || 0), $d, $M-1, $y);
+  if (defined $zh) {
+    require Web::DateTime::TimeZone;
+    $self->{tz} = Web::DateTime::TimeZone->new_from_offset
+        (($zh =~ /^-/ ? -1 : +1) * ((abs $zh) * 60 * 60 + (abs $zm) * 60));
+  }
+  
+  if ($diff) {
+    my $v = $self->{value} . $sf;
+    $v += $diff / 1000;
+    my $int_v = int $v;
+    if ($int_v != $v) {
+      if ($v > 0) {
+        $self->{value} = $int_v;
+        $sf = $v - $int_v;
+      } else {
+        $self->{value} = $int_v - 1;
+        $sf = $v - $int_v - 1;
+      }
+    } else {
+      $self->{value} = $v;
+      $sf = '';
+    }
+  }
+
+  $self->{second_fraction} = $sf;
+
+  return $self;
+} # _create
+
 sub is_date_time ($) { 1 }
 sub is_time_zone ($) { 0 }
 sub is_duration ($) { 0 }
@@ -65,13 +148,13 @@ sub _is_leap_year ($) {
 
 ## <http://www.whatwg.org/specs/web-apps/current-work/#week-number-of-the-last-day>
 sub _last_week_number ($) {
-  my $jan1_dow = [gmtime Time::Local::timegm (0, 0, 0, 1, 1 - 1, $_[0])]->[6];
+  my $jan1_dow = [gmtime timegm_nocheck (0, 0, 0, 1, 1 - 1, $_[0])]->[6];
   return ($jan1_dow == 4 or
           ($jan1_dow == 3 and _is_leap_year ($_[0]))) ? 53 : 52;
 } # _last_week_number
 
 sub _week_year_diff ($) {
-  my $jan1_dow = [gmtime Time::Local::timegm (0, 0, 0, 1, 1 - 1, $_[0])]->[6];
+  my $jan1_dow = [gmtime timegm_nocheck (0, 0, 0, 1, 1 - 1, $_[0])]->[6];
   if ($jan1_dow <= 4) {
     return $jan1_dow - 1;
   } else {
@@ -93,6 +176,9 @@ sub to_shortest_time_string ($) {
   $s =~ s/:00\z//;
   return $s;
 } # to_shortest_time_string
+
+# XXX How y < 1 (which is not allowed in HTML) should be serialized?
+# undef should be returned?
 
 sub to_week_string ($) {
   my $self = shift;
@@ -249,45 +335,6 @@ sub to_html_month_number ($) {
   my $m = $self->month - 1;
   return $y * 12 + $m;
 } # to_html_month_number
-
-my $unix_epoch = Time::Local::timegm (0, 0, 0, 1, 1 - 1, 1970);
-
-sub _create ($$$$$$$$$$$;$) {
-  my $self = bless {}, shift;
-  my ($type, $y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff) = @_;
-  $self->{has_component} = $type;
-  
-  $zm *= -1 if defined $zh and $zh =~ /^-/;
-  $self->{value} = Time::Local::timegm_nocheck
-      ($s, $m - ($zm || 0), $h - ($zh || 0), $d, $M-1, $y);
-  if (defined $zh) {
-    require Web::DateTime::TimeZone;
-    $self->{tz} = Web::DateTime::TimeZone->new_from_offset
-        (($zh =~ /^-/ ? -1 : +1) * ((abs $zh) * 60 * 60 + (abs $zm) * 60));
-  }
-  
-  if ($diff) {
-    my $v = $self->{value} . $sf;
-    $v += $diff / 1000;
-    my $int_v = int $v;
-    if ($int_v != $v) {
-      if ($v > 0) {
-        $self->{value} = $int_v;
-        $sf = $v - $int_v;
-      } else {
-        $self->{value} = $int_v - 1;
-        $sf = $v - $int_v - 1;
-      }
-    } else {
-      $self->{value} = $v;
-      $sf = '';
-    }
-  }
-
-  $self->{second_fraction} = $sf;
-
-  return $self;
-} # _set
 
 sub second_fraction_string ($) {
   my $self = shift;
@@ -458,5 +505,10 @@ Copyright 2008-2014 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
+
+This program partially derived from L<Time::Local>: "Copyright (c)
+1997-2003 Graham Barr, 2003-2007 David Rolsky.  All rights reserved.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself."
 
 =cut

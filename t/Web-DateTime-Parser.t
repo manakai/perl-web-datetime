@@ -883,6 +883,7 @@ for my $test (
   ['2001-7-12', '2001-07-12T00:00:00Z', undef],
   ['2001-7-12 12:3', '2001-07-12T12:03:00Z', undef],
   ['1-1-2012', '2012-01-01T00:00:00Z', undef],
+  ['-001001-01-22', '-1001-01-23T00:00:00Z', undef],
 ) {
   test {
     my $c = shift;
@@ -1428,6 +1429,21 @@ for my $test (
    [{type => 'duration:syntax error', level => 'm'}]],
   ['30m ago' => undef, undef, undef,
    [{type => 'duration:syntax error', level => 'm'}]],
+  ['0001-02-04T00:12:44Z' => {year => 1, month => 1, day => 1, time => 1, offset => 1},
+   '0001-02-04T00:12:44Z', 'Z'],
+  ['0099-02-04T00:12:44Z' => {year => 1, month => 1, day => 1, time => 1, offset => 1},
+   '0099-02-04T00:12:44Z', 'Z'],
+  ['0101-02-04T00:12:44Z' => {year => 1, month => 1, day => 1, time => 1, offset => 1},
+   '0101-02-04T00:12:44Z', 'Z'],
+  ['1900-02-04T00:12:44Z' => {year => 1, month => 1, day => 1, time => 1, offset => 1},
+   '1900-02-04T00:12:44Z', 'Z'],
+  ['0031-02-04T00:12:44Z' => {year => 1, month => 1, day => 1, time => 1, offset => 1},
+   '0031-02-04T00:12:44Z', 'Z'],
+  ['1970-01-01T00:00:00Z' => {year => 1, month => 1, day => 1, time => 1, offset => 1},
+   '1970-01-01T00:00:00Z', 'Z'],
+  ['0001-W01' => {year => 1, week => 1}, '0001-01-01T00:00:00Z', undef],
+  ['0001-W02' => {year => 1, week => 1}, '0001-01-08T00:00:00Z', undef],
+  ['10001-W02' => {year => 1, week => 1}, '10001-01-08T00:00:00Z', undef],
 ) {
   test {
     my $c = shift;

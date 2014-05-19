@@ -364,8 +364,7 @@ This method requires the L<Time::Piece> module.
 
 =head1 DEPENDENCY
 
-The module requires Perl 5.8 or later and the L<Time::Local> module
-(which is a core module).
+The module requires Perl 5.8 or later.
 
 Methods C<to_date_time>, C<to_time_piece_gm>, and
 C<to_time_piece_local> require more modules.
@@ -406,11 +405,30 @@ Really Simple Syndication Best Practices Profile
 
 Wakaba <wakaba@suikawiki.org>.
 
+=head1 ACKNOWLEDGEMENTS
+
+This module contains a code derived from L<Time::Local>, whose authors
+are:
+
+  This module is based on a Perl 4 library, timelocal.pl, that was
+  included with Perl 4.036, and was most likely written by Tom
+  Christiansen.
+
+  The current version was written by Graham Barr.
+
+  It is now being maintained separately from the Perl core by Dave
+  Rolsky, <autarch@urth.org>.
+
 =head1 LICENSE
 
 Copyright 2008-2014 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
+
+This program partially derived from L<Time::Local>: "Copyright (c)
+1997-2003 Graham Barr, 2003-2007 David Rolsky.  All rights reserved.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself."
 
 =cut
