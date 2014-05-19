@@ -1141,6 +1141,100 @@ sub parse_rss2_date_time_string ($$) {
   }
 } # parse_rss2_date_time_string
 
+sub parse_js_date_time_string ($$) {
+  my ($self, $value) = @_;
+  ## This method does not detect all conformance errors for now.  In
+  ## fact there is no actual spec...
+  if ($value =~ m{\A
+    ## ECMA-262's profile of ISO 8601, with extensions
+    ([+-]?[0-9]{1,}) # [0-9]{4}|[+-][0-9]{6} in ECMA-262
+    (?:
+      [-/] ([0-9]{1,}) # [0-9]{2} in ECMA-262
+      (?:
+        [-/] ([0-9]{1,}) # [0-9]{2} in ECMA-262
+      )?
+    )? # separators are - in ECMA-262
+    (?:
+      [Tt\x20] # T in ECMA-262
+      ([0-9]+) : ([0-9]+) # [0-9]{2} in ECMA-262
+      (?: : ([0-9]+) # [0-9]{2} in ECMA-262
+       (?: (\.[0-9]+) )? # [0-9]{3} in ECMA-262
+      )?
+      (
+        [Zz] | # Z in ECMA-262
+        ([+-][0-9]{2}):?([0-9]{2}) # : required in ECMA-262
+      )?
+    )?
+  \z}x) {
+    my ($y, $M, $d, $h, $m, $s, $sf, $z, $zh, $zm)
+        = ($1, $2, $3, $4 || 0, $5 || 0, $6 || 0, $7, $8, $9, $10);
+    if (not defined $M or not defined $d) {
+      $M ||= 1;
+      $d ||= 1;
+    } elsif ($y =~ /^[+-]/ or 2 < length $y) {
+      #
+    } elsif (2 < length $d) {
+      ($y, $M, $d) = ($d, $y, $M);
+    } else {
+      #
+    }
+
+    if (0 < $M and $M < 13) {
+      $self->onerror->(type => 'datetime:bad day',
+                       value => $d,
+                       level => 'm'), return undef
+          if $d < 1 or
+             $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$M];
+      $self->onerror->(type => 'datetime:bad day',
+                       value => $d,
+                       level => 'm'), return undef
+          if $M == 2 and $d == 29 and not Web::DateTime::_is_leap_year ($y);
+    } else {
+      $self->onerror->(type => 'datetime:bad month',
+                       value => $M,
+                       level => 'm');
+      return undef;
+    }
+    
+    $self->onerror->(type => 'datetime:bad hour',
+                     value => $h,
+                     level => 'm'), return undef if $h > 23;
+    $self->onerror->(type => 'datetime:bad minute',
+                     value => $m,
+                     level => 'm'), return undef if $m > 59;
+    $self->onerror->(type => 'datetime:bad second',
+                     value => $s,
+                     level => 'm'), return undef if $s > 59;
+    $sf = defined $sf ? $sf : '';
+    if (defined $zh) {
+      $self->onerror->(type => 'datetime:bad timezone hour',
+                       value => $zh,
+                       level => 'm'), return undef
+        if $zh > 23 or $zh < -23;
+      $self->onerror->(type => 'datetime:bad timezone minute',
+                       value => $zm,
+                       level => 'm'), return undef
+        if $zm > 59;
+      if ($zh eq '-00' and $zm eq '00') {
+        $self->onerror->(type => 'datetime:-00:00',
+                         level => 'm'); # don't return
+      }
+    } elsif (defined $z) {
+      $zh = 0;
+      $zm = 0;
+    }
+    return $self->_create ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm);
+
+  ## XXX It seems that browsers support more formats, including
+  ## English month names and named time zone offsets...
+
+  } else {
+    $self->onerror->(type => 'datetime:syntax error',
+                     level => 'm');
+    return undef;
+  }
+} # parse_js_date_time_string
+
 sub parse_ogp_date_time_string ($$) {
   my ($self, $value) = @_;
   
@@ -1166,8 +1260,10 @@ sub parse_ogp_date_time_string ($$) {
     ([0-9]{4}|[+\x{2212}-][0-9]{4,})([0-9]{2})([0-9]{2})
     (?:T? ([0-9]{2})([0-9]{2}) )?
   )\z/x) {
-    my ($y, $M, $d, $h, $m) = ($1, $2 || $7 || 0, $3 || $8 || 0, $4 || $9 || 0, $5 || $10 || 0);
+    my ($y, $M, $d, $h, $m) = ($1, $2, $3, $4 || $9 || 0, $5 || $10 || 0);
     $y = $6 if not defined $y;
+    $M = $7 if not defined $M;
+    $d = $8 if not defined $d;
     $y =~ s/\x{2212}/-/g;
     if (0 < $M and $M < 13) {
       $self->onerror->(type => 'datetime:bad day',
@@ -1224,7 +1320,9 @@ sub parse_w3c_dtf_string ($$) {
     )?
   \z/x) {
     my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm)
-        = ($1, $2 || 1, $3 || 1, $4 || 0, $5 || 0, $6 || 0, $7, $8, $9);
+        = ($1, $2, $3, $4 || 0, $5 || 0, $6 || 0, $7, $8, $9);
+    $M = 1 if not defined $2;
+    $d = 1 if not defined $3;
     if (0 < $M and $M < 13) {
       $self->onerror->(type => 'datetime:bad day',
                        value => $d,
