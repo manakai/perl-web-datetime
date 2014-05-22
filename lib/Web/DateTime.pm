@@ -59,7 +59,8 @@ sub new_from_object ($$) {
   use constant SECS_PER_DAY    => 86400;
 
   my %Cheat;
-  my $Epoc = _daygm( gmtime(0) );
+  my $Epoc = 0;
+  $Epoc = _daygm( gmtime(0) );
   %Cheat = ();
 
   sub _daygm {
