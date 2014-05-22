@@ -136,6 +136,35 @@ for my $test (
 }
 
 for my $test (
+  ['+00:00', 0],
+  ['-00:12', -12*60],
+  ['+03:12', 3*60*60+12*60],
+  ['-13:12', -(13*60*60+12*60)],
+  ['-00:00', 0],
+  ['Z', undef],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $tz = $parser->parse_vcard_time_zone_offset_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $tz, 'Web::DateTime::TimeZone';
+      is $tz->offset_as_seconds, $test->[1];
+      eq_or_diff \@error, $test->[2] || [];
+    } else {
+      is $tz, undef;
+      ok 1;
+      eq_or_diff \@error, $test->[2] || [{type => 'tz:syntax error', level => 'm'}];
+    }
+    done $c;
+  } n => 3;
+}
+
+for my $test (
   [''],
   ['z'],
   ['+0000'],
@@ -158,6 +187,19 @@ for my $test (
     eq_or_diff \@error, $test->[1] || [{type => 'tz:syntax error', level => 'm'}];
     done $c;
   } n => 2;
+
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $tz = $parser->parse_vcard_time_zone_offset_string ($test->[0]);
+    is $tz, undef;
+    eq_or_diff \@error, $test->[1] || [{type => 'tz:syntax error', level => 'm'}];
+    done $c;
+  } n => 2, name => ['parse_vcard_time_zone_offset_string', $test->[0]];
 }
 
 for my $test (

@@ -270,6 +270,12 @@ Parse the argument as an HTML time-zone offset string [HTML]
 and return a L<Web::DateTime::TimeZone> (or C<undef> if failed).  Any
 error is reported through the C<onerror> handler.
 
+=item $tz = $parser->parse_vcard_time_zone_offset_string ($string)
+
+Parse the argument as a time-zone offset string used in vCard C<tz>
+item value [HTML] and return a L<Web::DateTime::TimeZone> (or C<undef>
+if failed).  Any error is reported through the C<onerror> handler.
+
 =item $duration = $parser->parse_duration_string ($string)
 
 Parse the argument as an HTML duration string [HTML] and return a

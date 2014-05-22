@@ -1628,6 +1628,30 @@ sub parse_time_zone_offset_string ($$) {
   }
 } # parse_time_zone_offset_string
 
+sub parse_vcard_time_zone_offset_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ /\A(?:
+    ([+-])([0-9]{2}):([0-9]{2})
+  )\z/x) {
+    my ($zs, $zh, $zm) = ($1, $2, $3);
+    $zs .= '1';
+    $self->onerror->(type => 'datetime:bad timezone hour',
+                     value => $zh,
+                     level => 'm'), return undef
+        if $zh > 23;
+    $self->onerror->(type => 'datetime:bad timezone minute',
+                     value => $zm,
+                     level => 'm'), return undef
+        if $zm > 59;
+    require Web::DateTime::TimeZone;
+    return Web::DateTime::TimeZone->new_from_offset ($zs * ($zh * 60 * 60 + $zm * 60));
+  } else {
+    $self->onerror->(type => 'tz:syntax error',
+                     level => 'm');
+    return undef;
+  }
+} # parse_vcard_time_zone_offset_string
+
 sub _create {
   shift;
   return Web::DateTime->_create (@_);
