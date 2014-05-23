@@ -11,6 +11,11 @@ sub new_from_offset ($) {
   return bless {offset => $_[1]}, $_[0];
 } # new_from_offset
 
+sub is_date_time ($) { 0 }
+sub is_time_zone ($) { 1 }
+sub is_duration ($) { 0 }
+sub is_interval ($) { 0 }
+
 sub offset_as_seconds ($) {
   return $_[0]->{offset};
 } # offset_as_seconds

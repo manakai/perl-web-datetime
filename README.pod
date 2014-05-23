@@ -1,1 +1,66 @@
-lib/Web/DateTime.pod
+=head1 NAME
+
+perl-web-datetime - Date and time for Web
+
+=head1 DESCRIPTION
+
+The perl-web-datetime package contains modules for handling date and
+time values in the context of Web-related protocols and formats.
+
+=head1 MODULES
+
+Following modules are available:
+
+=over 4
+
+=item L<Web::DateTime::Parser>
+
+Parser for date and time string values, which can also be used for
+conformance checking of those values.
+
+=item L<Web::DateTime>
+
+Parsed date and time object, which has component accessors,
+serializers, and cast methods.
+
+=item L<Web::DateTime::TimeZone>
+
+Parsed time zone object, which has component accessors and a
+serializer.
+
+=item L<Web::DateTime::Duration>
+
+Parsed duration object, which has component accessors and serializers.
+
+=item L<Web::DateTime::WeeklyTimeRange>
+
+Parsed weekly time range object, which has a serializer.
+
+=back
+
+=head1 SPECIFICATIONS
+
+Date and time formats defined by following specifications and
+protocols are supported (for details, see documentation of relevant
+modules):
+
+HTML, Schema.org, Data-Vocabulary.org, HTTP, Cookies, JavaScript, Atom
+0.3, Atom 1.0, RSS 1.0, RSS 2.0, OGP, RDF.
+
+=head1 SEE ALSO
+
+SuikaWiki:Webの日時形式
+<http://wiki.suikawiki.org/n/Web%E3%81%AE%E6%97%A5%E6%99%82%E5%BD%A2%E5%BC%8F>.
+
+=head1 AUTHOR
+
+Wakaba <wakaba@suikawiki.org>.
+
+=head1 LICENSE
+
+Copyright 2008-2014 Wakaba <wakaba@suikawiki.org>.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

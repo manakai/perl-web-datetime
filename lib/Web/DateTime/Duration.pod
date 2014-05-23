@@ -1,0 +1,112 @@
+=head1 NAME
+
+Web::DateTime::Duration - Durations for Web
+
+=head1 SYNOPSIS
+
+  use Web::DateTime::Duration;
+  $duration = Web::DateTime::Duration->new_from_seconds (6 * 60);
+  warn $duration->to_duration_string;
+
+=head1 DESCRIPTION
+
+The C<Web::DateTime::Duration> class represents a duration, i.e. a
+length of time.  A duration is a tuple of (number of seconds, number
+of months, direction).
+
+=head1 METHODS
+
+=over 4
+
+=item $duration = Web::DateTime::Duration->new_from_seconds ($number)
+
+Create a new duration object with the specified number of seconds.
+Number of months is set to zero.  The direction is set by the sign of
+the specified number.  The number of seconds can have a fractional
+part.
+
+=item $duration = Web::DateTime::Duration->new_from_seconds_and_months_and_sign ($number, $number, $sign)
+
+Create a new duration object.  The first argument must be the number
+of seconds (non-negative), which can have a fractional part.  The
+second argument must be the number of months, which is a non-negative
+integer.  The third argument must be the direction, which is one of
+number C<+1> (positive) or number C<-1> (negative).
+
+=item false = $duration->is_date_time
+
+=item false = $duration->is_time_zone
+
+=item true = $duration->is_duration
+
+=item false = $duration->is_interval
+
+Return whether the object is of the specified type or not.
+
+=item $number = $duration->seconds
+
+Return the number of seconds, which might have a fractional part.  The
+value is always non-negative.
+
+=item $number = $duration->months
+
+Return the number of months.  The value is always a non-negative
+integer.
+
+=item $sign = $duration->sign
+
+Return the sign of the duration.  The returned value is either number
+C<+1> (positive) or C<-1> (negative).
+
+=item $string = $duration->to_duration_string
+
+Return an HTML valid duration string [HTML] representing the duration
+of the object, ignoring the direction.  Please note that if the
+duration has a non-zero number of months, C<undef> is returned
+instead, as the format cannot encode the number of months.
+
+=item $string = $duration->to_vevent_duration_string
+
+Return an HTML valid vevent duration string [HTML] representing the
+duration of the object, ignoring the direction and the fractional part
+of the seconds.  Please note that of the duration has a non-zero
+number of months, C<undef> is returned instead, as the format cannot
+encode the number of months.
+
+=item $string = $duration->to_xs_duration
+
+Return an XML Schema C<xs:duration> string [XSDT] representing the
+duration of the object.
+
+The return value is, in most cases, a valid
+C<http://schema.org/Duration> item value.
+
+=back
+
+=head1 SPECIFICATIONS
+
+=over 4
+
+=item HTML
+
+HTML Standard <http://www.whatwg.org/specs/web-apps/current-work/>.
+
+=item XSDT
+
+W3C XML Schema Definition Language (XSD) 1.1 Part 2: Datatypes
+<http://www.w3.org/TR/xmlschema11-2/>.
+
+=back
+
+=head1 AUTHOR
+
+Wakaba <wakaba@suikawiki.org>.
+
+=head1 LICENSE
+
+Copyright 2014 Wakaba <wakaba@suikawiki.org>.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

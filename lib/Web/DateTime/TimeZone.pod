@@ -28,6 +28,16 @@ Create a new time zone object representing the UTC time zone.
 Create a new time zone object whose offset is the integer (in seconds)
 specified as the argument.
 
+=item false = $tz->is_date_time
+
+=item true = $tz->is_time_zone
+
+=item false = $tz->is_duration
+
+=item false = $tz->is_interval
+
+Return whether the object is of the specified type or not.
+
 =item $number = $tz->offset_as_seconds
 
 Return the number of seconds of the time-zone offset.

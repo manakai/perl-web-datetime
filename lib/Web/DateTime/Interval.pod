@@ -1,0 +1,100 @@
+=head1 NAME
+
+Web::DateTime::Interval - Interval between dates for Web
+
+=head1 SYNOPSIS
+
+  use Web::DateTime::Interval;
+  $interval = Web::DateTime::Interval->new_from_start_and_end ($dt1, $dt2);
+  warn $interval->to_start_and_end_string;
+
+=head1 DESCRIPTION
+
+The C<Web::DateTime::Interval> class represents a time interval between
+two dates and times.
+
+=head1 METHODS
+
+Following methods are available:
+
+=over 4
+
+=item $interval = Web::DateTime::Interval->new_from_start_and_end ($dt1, $dt2)
+
+Create a new interval object from start and end L<Web::DateTime>
+objects.  The first date/time must be less than or equal to the second
+date/time.
+
+=item $interval = Web::DateTime::Interval->new_from_start_and_duration ($dt, $duration)
+
+Create a new interval object from start L<Web::DateTime> object and
+L<Web::DateTime::Duration> object.  The duration must be positive and
+must not have non-zero months.
+
+=item false = $interval->is_date_time
+
+=item false = $interval->is_time_zone
+
+=item false = $interval->is_duration
+
+=item true = $interval->is_interval
+
+Return whether the object is of the specified type or not.
+
+=item $dt = $interval->start_date_time
+
+Return the L<Web::DateTime> object representing the start date and
+time of the interval.
+
+=item $dt = $interval->end_date_time
+
+Return the L<Web::DateTime> object representing the end date and time
+of the interval.
+
+=item $duration = $interval->duration
+
+Return the L<Web::DateTime::Duration> object representing the duration
+between the start and end dates and times.
+
+=item $string = $interval->to_start_and_end_string
+
+Return the string representing the interval, using the format of two
+valid global date and time strings, which is appropriate for vEvent
+microdata [HTML].
+
+This can also be used as an ISO 8601 time interval representation in
+most cases.
+
+=item $string = $interval->to_start_and_duration_string
+
+Return the string representing the interval, using the format of a valid
+global date and time string and an vevent duration string, which is
+appropriate for vEvent microdata [HTML].
+
+This can also be used as an ISO 8601 time interval representation in
+most cases.
+
+=back
+
+=head1 SPECIFICATION
+
+=over 4
+
+=item HTML
+
+HTML Standard <http://www.whatwg.org/specs/web-apps/current-work/>.
+
+=back
+
+=head1 AUTHOR
+
+Wakaba <wakaba@suikawiki.org>.
+
+=head1 LICENSE
+
+Copyright 2014 Wakaba <wakaba@suikawiki.org>.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

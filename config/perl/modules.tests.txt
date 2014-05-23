@@ -1,4 +1,6 @@
 DateTime
+Time::Piece
+
 Path::Tiny
 Test::Differences
 Test::More

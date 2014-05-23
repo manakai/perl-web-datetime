@@ -1,8 +1,147 @@
 package Web::DateTime;
 use strict;
 use warnings;
-our $VERSION = '5.0';
-use Time::Local;
+our $VERSION = '6.0';
+use Carp qw(croak);
+
+sub new_from_unix_time ($$) {
+  my $self = bless {value => 0+$_[1]}, $_[0];
+  if ($self->{value} != int $self->{value}) {
+    if ($self->{value} >= 0) {
+      $self->{second_fraction} = $self->{value} - int $self->{value};
+      $self->{value} = int $self->{value};
+    } else {
+      $self->{second_fraction} = $self->{value} - (-(int abs $self->{value}) - 1);
+      $self->{value} = -(int abs $self->{value}) - 1;
+    }
+  }
+  require Web::DateTime::TimeZone;
+  $self->{tz} = Web::DateTime::TimeZone->new_from_offset (0);
+  $self->{has_component} = {year => 1, month => 1, day => 1,
+                            time => 1, offset => 1};
+  return $self;
+} # new_from_unix_time
+
+sub new_from_object ($$) {
+  if (UNIVERSAL::isa ($_[1], 'DateTime')) {
+    my $self = bless {value => $_[1]->epoch}, $_[0];
+    my $f = $_[1]->fractional_second - $_[1]->second;
+    if ($f) {
+      $self->{second_fraction} = $f;
+    }
+    $self->{has_component} = {year => 1, month => 1, day => 1, time => 1};
+    unless ($_[1]->time_zone->is_floating) {
+      require Web::DateTime::TimeZone;
+      $self->{tz} = Web::DateTime::TimeZone->new_from_offset ($_[1]->offset);
+      $self->{has_component}->{offset} = 1;
+    }
+    return $self;
+  } elsif (UNIVERSAL::isa ($_[1], 'Time::Piece')) {
+    my $self = bless {value => $_[1]->epoch}, $_[0];
+    require Web::DateTime::TimeZone;
+    $self->{tz} = Web::DateTime::TimeZone->new_from_offset
+        ($_[1]->tzoffset->seconds);
+    $self->{has_component} = {year => 1, month => 1, day => 1,
+                              time => 1, offset => 1};
+    return $self;
+  } else {
+    croak "Can't create |Web::DateTime| from a |" . (ref $_[1]) . "|";
+  }
+} # new_from_object
+
+
+{
+  ## Derived from |Time::Local|
+  ## <http://cpansearch.perl.org/src/DROLSKY/Time-Local-1.2300/lib/Time/Local.pm>.
+
+  use constant SECS_PER_MINUTE => 60;
+  use constant SECS_PER_HOUR   => 3600;
+  use constant SECS_PER_DAY    => 86400;
+
+  my %Cheat;
+  my $Epoc = 0;
+  $Epoc = _daygm( gmtime(0) );
+  %Cheat = ();
+
+  sub _daygm {
+
+    # This is written in such a byzantine way in order to avoid
+    # lexical variables and sub calls, for speed
+    return $_[3] + (
+        $Cheat{ pack( 'ss', @_[ 4, 5 ] ) } ||= do {
+            my $month = ( $_[4] + 10 ) % 12;
+            my $year  = $_[5] + 1900 - int($month / 10);
+
+            ( ( 365 * $year )
+              + int( $year / 4 )
+              - int( $year / 100 )
+              + int( $year / 400 )
+              + int( ( ( $month * 306 ) + 5 ) / 10 )
+            )
+            - $Epoc;
+        }
+    );
+  }
+
+  sub timegm_nocheck {
+    my ( $sec, $min, $hour, $mday, $month, $year ) = @_;
+
+    my $days = _daygm( undef, undef, undef, $mday, $month, $year - 1900);
+
+    return $sec
+           + ( SECS_PER_MINUTE * $min )
+           + ( SECS_PER_HOUR * $hour )
+           + ( SECS_PER_DAY * $days );
+  }
+}
+
+my $unix_epoch = timegm_nocheck (0, 0, 0, 1, 1 - 1, 1970);
+
+sub _create ($$$$$$$$$$$;$) {
+  my $self = bless {}, shift;
+  my ($type, $y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff) = @_;
+  $self->{has_component} = $type;
+  
+  $zm *= -1 if defined $zh and $zh =~ /^-/;
+  $self->{value} = timegm_nocheck
+      ($s, $m - ($zm || 0), $h - ($zh || 0), $d, $M-1, $y);
+  if (defined $zh) {
+    require Web::DateTime::TimeZone;
+    $self->{tz} = Web::DateTime::TimeZone->new_from_offset
+        (($zh =~ /^-/ ? -1 : +1) * ((abs $zh) * 60 * 60 + (abs $zm) * 60));
+  }
+  
+  if ($diff) {
+    my $v = $self->{value} . $sf;
+    $v += $diff / 1000;
+    my $int_v = int $v;
+    if ($int_v != $v) {
+      if ($v > 0) {
+        $self->{value} = $int_v;
+        $sf = $v - $int_v;
+      } else {
+        $self->{value} = $int_v - 1;
+        $sf = $v - $int_v - 1;
+      }
+    } else {
+      $self->{value} = $v;
+      $sf = '';
+    }
+  }
+
+  $self->{second_fraction} = $sf;
+
+  return $self;
+} # _create
+
+sub is_date_time ($) { 1 }
+sub is_time_zone ($) { 0 }
+sub is_duration ($) { 0 }
+sub is_interval ($) { 0 }
+
+sub has_component ($$) {
+  return $_[0]->{has_component}->{$_[1]};
+} # has_component
 
 sub _is_leap_year ($) {
   return ($_[0] % 400 == 0 or ($_[0] % 4 == 0 and $_[0] % 100 != 0));
@@ -10,13 +149,13 @@ sub _is_leap_year ($) {
 
 ## <http://www.whatwg.org/specs/web-apps/current-work/#week-number-of-the-last-day>
 sub _last_week_number ($) {
-  my $jan1_dow = [gmtime Time::Local::timegm (0, 0, 0, 1, 1 - 1, $_[0])]->[6];
+  my $jan1_dow = [gmtime timegm_nocheck (0, 0, 0, 1, 1 - 1, $_[0])]->[6];
   return ($jan1_dow == 4 or
           ($jan1_dow == 3 and _is_leap_year ($_[0]))) ? 53 : 52;
 } # _last_week_number
 
 sub _week_year_diff ($) {
-  my $jan1_dow = [gmtime Time::Local::timegm (0, 0, 0, 1, 1 - 1, $_[0])]->[6];
+  my $jan1_dow = [gmtime timegm_nocheck (0, 0, 0, 1, 1 - 1, $_[0])]->[6];
   if ($jan1_dow <= 4) {
     return $jan1_dow - 1;
   } else {
@@ -31,6 +170,17 @@ sub to_time_string ($) {
       $self->utc_second, $self->second_fraction_string;
 } # to_time_string
 
+sub to_shortest_time_string ($) {
+  my $s = $_[0]->to_time_string;
+  $s =~ s/\.0+\z//;
+  $s =~ s/(\.[0-9]*[1-9])0+\z/$1/;
+  $s =~ s/:00\z//;
+  return $s;
+} # to_shortest_time_string
+
+# XXX How y < 1 (which is not allowed in HTML) should be serialized?
+# undef should be returned?
+
 sub to_week_string ($) {
   my $self = shift;
   return sprintf '%04d-W%02d', $self->utc_week_year, $self->utc_week;
@@ -41,11 +191,21 @@ sub to_month_string ($) {
   return sprintf '%04d-%02d', $self->utc_year, $self->utc_month;
 } # to_month_string
 
+sub to_year_string ($) {
+  return sprintf '%04d', $_[0]->utc_year;
+} # to_year_string
+
 sub to_date_string ($) {
   my $self = shift;
   return sprintf '%04d-%02d-%02d',
       $self->utc_year, $self->utc_month, $self->utc_day;
 } # to_date_string
+
+sub to_yearless_date_string ($) {
+  my $self = shift;
+  return sprintf '--%02d-%02d',
+      $self->utc_month, $self->utc_day;
+} # to_yearless_date_string
 
 sub to_local_date_and_time_string ($) {
   my $self = shift;
@@ -53,6 +213,12 @@ sub to_local_date_and_time_string ($) {
       $self->year, $self->month, $self->day,
       $self->hour, $self->minute, $self->second, $self->second_fraction_string;
 } # to_local_date_and_time_string
+
+sub to_normalized_local_date_and_time_string ($) {
+  my $self = shift;
+  return sprintf '%04d-%02d-%02dT%s',
+      $self->year, $self->month, $self->day, $self->to_shortest_time_string;
+} # to_normalized_local_date_and_time_string
 
 sub to_global_date_and_time_string ($) {
   my $self = shift;
@@ -62,6 +228,13 @@ sub to_global_date_and_time_string ($) {
       $self->utc_hour, $self->utc_minute,
       $self->utc_second, $self->second_fraction_string;
 } # to_global_date_and_time_string
+
+sub to_normalized_forced_utc_global_date_and_time_string ($) {
+  my $self = shift;
+  return sprintf '%04d-%02d-%02dT%sZ',
+      $self->utc_year, $self->utc_month, $self->utc_day,
+      $self->to_shortest_time_string;
+} # to_normalized_forced_utc_global_date_and_time_string
 
 sub to_time_zoned_global_date_and_time_string ($) {
   my $self = shift;
@@ -79,9 +252,41 @@ sub to_date_string_with_optional_time ($) {
   }
 } # to_date_string_with_optional_time
 
+sub to_http_date_string ($) {
+  my $self = $_[0];
+  return sprintf '%s, %02d %s %04d %02d:%02d:%02d GMT',
+      [qw(Sun Mon Tue Wed Thu Fri Sat Sun)]->[$self->utc_day_of_week],
+      $self->utc_day,
+      [qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)]->[$self->utc_month - 1],
+      $self->utc_year,
+      $self->utc_hour, $self->utc_minute, $self->utc_second;
+} # to_http_date_string
+
+sub to_rss2_date_time_string ($) {
+  my $self = $_[0];
+  return sprintf '%s, %02d %s %04d %02d:%02d:%02d +0000',
+      [qw(Sun Mon Tue Wed Thu Fri Sat Sun)]->[$self->utc_day_of_week],
+      $self->utc_day,
+      [qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)]->[$self->utc_month - 1],
+      $self->utc_year,
+      $self->utc_hour, $self->utc_minute, $self->utc_second;
+} # to_rss2_date_time_string
+
+sub to_document_last_modified_string ($) {
+  my $self = $_[0];
+  return sprintf '%02d/%02d/%04d %02d:%02d:%02d',
+      $self->month, $self->day, $self->year,
+      $self->hour, $self->minute, $self->second;
+} # to_document_last_modified_string
+
 sub time_zone ($) {
   return $_[0]->{tz}; # or undef
 } # time_zone
+
+sub set_time_zone ($$) {
+  delete $_[0]->{cache};
+  $_[0]->{tz} = $_[1];
+} # set_time_zone
 
 sub utc_week ($) {
   my $self = shift;
@@ -92,7 +297,7 @@ sub utc_week ($) {
 
   my $year = $self->utc_year;
 
-  my $jan1 = __PACKAGE__->_create ($year, 1, 1, 0, 0, 0, 0, undef, undef);
+  my $jan1 = __PACKAGE__->_create ({}, $year, 1, 1, 0, 0, 0, 0, undef, undef);
 
   my $days = $self->to_unix_integer - $jan1->to_unix_integer;
   $days /= 24 * 3600;
@@ -131,43 +336,6 @@ sub to_html_month_number ($) {
   my $m = $self->month - 1;
   return $y * 12 + $m;
 } # to_html_month_number
-
-my $unix_epoch = Time::Local::timegm (0, 0, 0, 1, 1 - 1, 1970);
-
-sub _create ($$$$$$$$$$;$) {
-  my $self = bless {}, shift;
-  my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff) = @_;
-  
-  $self->{value} = Time::Local::timegm_nocheck
-      ($s, $m - ($zm || 0), $h - ($zh|| 0), $d, $M-1, $y);
-  if (defined $zh) {
-    require Web::DateTime::TimeZone;
-    $self->{tz} = Web::DateTime::TimeZone->new_from_offset
-        (($zh >= 0 ? +1 : -1) * ((abs $zh) * 60 * 60 + $zm * 60));
-  }
-  
-  if ($diff) {
-    my $v = $self->{value} . $sf;
-    $v += $diff / 1000;
-    my $int_v = int $v;
-    if ($int_v != $v) {
-      if ($v > 0) {
-        $self->{value} = $int_v;
-        $sf = $v - $int_v;
-      } else {
-        $self->{value} = $int_v - 1;
-        $sf = $v - $int_v - 1;
-      }
-    } else {
-      $self->{value} = $v;
-      $sf = '';
-    }
-  }
-
-  $self->{second_fraction} = $sf;
-
-  return $self;
-} # _set
 
 sub second_fraction_string ($) {
   my $self = shift;
@@ -305,27 +473,30 @@ sub to_unix_integer ($) {
   return $self->{value} - $unix_epoch;
 } # to_unix_integer
 
-sub to_datetime ($) {
+sub to_unix_number ($) {
+  my $self = shift;
+  return (($self->{value} . $self->second_fraction_string) - $unix_epoch);
+} # to_unix_number
+
+sub to_date_time ($) {
   my $self = shift;
   require DateTime;
   return DateTime->from_epoch
       (epoch => $self->to_unix_integer,
        time_zone => defined $self->{tz} ? $self->{tz}->to_offset_string : 'floating');
-} # to_datetime
+} # to_date_time
 
-# XXX to_time_piece
+sub to_time_piece_gm ($) {
+  my $self = $_[0];
+  require Time::Piece;
+  return Time::Piece::gmtime ($self->to_unix_integer);
+} # to_time_piece_gm
 
-# XXX from_datetime
-# XXX from_time_piece
-
-# XXX normalized serializer
-# XXX XML Schema datatypes
-# XXX OGP datetime
-# XXX RFC 3339 date-time
-# XXX document.lastModified
-# XXX HTTP datetime
-
-# XXX JavaScript timestamp parser/serializer
+sub to_time_piece_local ($) {
+  my $self = $_[0];
+  require Time::Piece;
+  return Time::Piece::localtime ($self->to_unix_integer);
+} # to_time_piece_local
 
 1;
 
@@ -335,5 +506,10 @@ Copyright 2008-2014 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
+
+This program partially derived from L<Time::Local>: "Copyright (c)
+1997-2003 Graham Barr, 2003-2007 David Rolsky.  All rights reserved.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself."
 
 =cut
