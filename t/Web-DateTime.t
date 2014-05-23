@@ -789,6 +789,24 @@ test {
   done $c;
 } n => 4, name => ['set_time_zone'];
 
+test {
+  my $c = shift;
+
+  my $dt0 = Web::DateTime->new_from_unix_time (-135555556);
+  is $dt0->second, 44;
+  is $dt0->to_unix_integer, -135555556;
+  is $dt0->to_unix_number, -135555556;
+  is $dt0->to_html_number, -135555556000;
+
+  my $dt = Web::DateTime->new_from_unix_time (-135555555.3113);
+  is $dt->second, 44;
+  is $dt->to_unix_integer, $dt0->to_unix_integer;
+  is $dt->to_unix_number, -135555555.3113;
+  is $dt->to_html_number, -135555555311.3;
+
+  done $c;
+} n => 8, name => 'to_unix number negative fractional';
+
 run_tests;
 
 =head1 LICENSE
