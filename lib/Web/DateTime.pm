@@ -459,13 +459,7 @@ sub utc_fractional_second ($) {
 
 sub to_html_number ($) {
   my $self = shift;
-  my $int = $self->{value} - $unix_epoch;
-  my $frac = $self->second_fraction_string . '00000';
-  $frac = substr $frac, 1; # remove leading "."
-  substr ($frac, 4, 0) = '.';
-  $frac =~ s/0+\z//;
-  $frac =~ s/\.\z//;
-  return $int . $frac;
+  return $self->to_unix_number * 1000;
 } # to_html_number
 
 sub to_unix_integer ($) {
@@ -475,14 +469,21 @@ sub to_unix_integer ($) {
 
 sub to_unix_number ($) {
   my $self = shift;
-  return (($self->{value} . $self->second_fraction_string) - $unix_epoch);
+  my $value = $self->{value} - $unix_epoch;
+  my $frac = $self->second_fraction_string;
+  if (length $frac) {
+    $frac = '0' . $frac;
+  } else {
+    $frac = 0;
+  }
+  return $value + $frac;
 } # to_unix_number
 
 sub to_date_time ($) {
   my $self = shift;
   require DateTime;
   return DateTime->from_epoch
-      (epoch => $self->to_unix_integer,
+      (epoch => $self->to_unix_number,
        time_zone => defined $self->{tz} ? $self->{tz}->to_offset_string : 'floating');
 } # to_date_time
 

@@ -67,6 +67,19 @@ test {
 
 test {
   my $c = shift;
+  my $date = Web::DateTime::Parser->new->parse_global_date_and_time_string
+      ('2010-12-13T00:12:33.4424422211Z');
+  my $dt = $date->to_date_time;
+  isa_ok $dt, 'DateTime';
+  is $dt . '', '2010-12-13T00:12:33';
+  is $dt->time_zone->name, 'UTC';
+  is $dt->epoch, $date->to_unix_integer;
+  is $dt->nanosecond, 442440000;
+  done $c;
+} n => 5, name => 'to_date_time, fraction';
+
+test {
+  my $c = shift;
   my $dt = DateTime->from_epoch (epoch => 521534555, time_zone => 'UTC');
   my $date = Web::DateTime->new_from_object ($dt);
   isa_ok $date, 'Web::DateTime';
