@@ -24,7 +24,7 @@ CPAN::Meta::Requirements~2.125
 ExtUtils::Config~0.007
 Scalar::Util~1.38
 Test::Requires~0.07
-Module::Metadata~1.000022
+Module::Metadata~1.000023
 File::Spec~3.47
 Package::Stash::XS~0.28
 Test::Fatal~0.013
