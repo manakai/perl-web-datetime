@@ -387,8 +387,8 @@ POSIX.1-2008
 RFC 1945, Hypertext Transfer Protocol -- HTTP/1.0
 <http://tools.ietf.org/html/rfc1945>.
 
-RFC 2616, Hypertext Transfer Protocol -- HTTP/1.1
-<http://tools.ietf.org/html/rfc2616>.
+RFC 7231, Hypertext Transfer Protocol (HTTP/1.1): Semantics and
+Content <https://tools.ietf.org/html/rfc7231>.
 
 =item RSS2
 

@@ -120,6 +120,9 @@ rules in RFC 6265 [COOKIES], and
 return a L<Web::DateTime> (or C<undef> if failed).  Any error is
 reported through the C<onerror> handler.
 
+Leap seconds are treated as invalid second values, which is a willful
+violation to RFC 7231.
+
 This method is suitable for values in HTTP C<Expires>,
 C<Last-Modified>, and C<Date> headers, as well as in C<Expires>
 attribute in Cookies.
@@ -382,8 +385,8 @@ interchange -- Representation of dates and times.
 RFC 1945, Hypertext Transfer Protocol -- HTTP/1.0
 <http://tools.ietf.org/html/rfc1945>.
 
-RFC 2616, Hypertext Transfer Protocol -- HTTP/1.1
-<http://tools.ietf.org/html/rfc2616>.
+RFC 7231, Hypertext Transfer Protocol (HTTP/1.1): Semantics and
+Content <https://tools.ietf.org/html/rfc7231>.
 
 =item COOKIES
 
