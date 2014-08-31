@@ -1,4 +1,4 @@
-DateTime~1.10
+DateTime~1.12
 Capture::Tiny~0.25
 Time::Piece~1.27
 Sub::Exporter~0.987
