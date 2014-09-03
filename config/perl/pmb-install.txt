@@ -21,7 +21,7 @@ Sub::Name~0.09
 Sub::Identify~0.04
 Data::OptList~0.109
 Text::Diff~1.41
-Test::More~1.001003
+Test::More~1.001006
 Test::Differences~0.62
 Module::Build::Tiny~0.037
 CPAN::Meta::Requirements~2.126
