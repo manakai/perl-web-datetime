@@ -3,7 +3,7 @@ Capture::Tiny~0.25
 Time::Piece~1.29
 Sub::Exporter~0.987
 DateTime::Locale~0.45
-List::Util~1.40
+List::Util~1.41
 CPAN::Meta~2.142060
 Module::Implementation~0.09
 Module::Build~0.4210
@@ -24,11 +24,11 @@ Text::Diff~1.41
 Test::More~1.001006
 Test::Differences~0.62
 Module::Build::Tiny~0.037
-CPAN::Meta::Requirements~2.126
+CPAN::Meta::Requirements~2.127
 Sub::Exporter::Progressive~0.001011
 ExtUtils::Config~0.008
 Variable::Magic~0.53
-Scalar::Util~1.40
+Scalar::Util~1.41
 Test::Requires~0.08
 Module::Metadata~1.000024
 File::Spec~3.47
