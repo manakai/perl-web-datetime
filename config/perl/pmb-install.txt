@@ -25,7 +25,7 @@ Module::Build::Tiny~0.038
 CPAN::Meta::Requirements~2.128
 ExtUtils::Config~0.008
 Sub::Exporter::Progressive~0.001011
-Variable::Magic~0.53
+Variable::Magic~0.54
 Module::Metadata~1.000024
 Scalar::Util~1.41
 File::Spec~3.47
