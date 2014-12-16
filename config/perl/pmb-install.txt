@@ -22,7 +22,7 @@ Module::Metadata~1.000024
 Scalar::Util~1.41
 File::Spec~3.47
 Module::Runtime~0.014
-Filter::Util::Call~1.49
+Filter::Util::Call~1.51
 Perl::OSType~1.007
 Algorithm::Diff~1.1903
 Path::Tiny~0.061
