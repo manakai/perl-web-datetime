@@ -6,7 +6,7 @@ List::Util~1.41
 CPAN::Meta~2.143240
 Module::Implementation~0.09
 Module::Build~0.4210
-List::MoreUtils~0.33
+List::MoreUtils~0.401
 Try::Tiny~0.22
 Term::ANSIColor~4.03
 AnyEvent~7.08
@@ -22,7 +22,7 @@ Module::Metadata~1.000024
 Scalar::Util~1.41
 File::Spec~3.47
 Module::Runtime~0.014
-Filter::Util::Call~1.51
+Filter::Util::Call~1.52
 Perl::OSType~1.007
 Algorithm::Diff~1.1903
 Path::Tiny~0.061
@@ -32,6 +32,7 @@ version~0.9909
 CPAN::Meta::YAML~0.012
 Carp~1.3301
 DateTime::TimeZone~1.81
-Class::Singleton~1.5
 JSON::PP~2.27300
+Class::Singleton~1.5
 Params::Validate~1.13
+Exporter::Tiny~0.042
