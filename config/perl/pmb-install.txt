@@ -18,7 +18,7 @@ Text::Diff~1.41
 Test::More~1.001014
 Test::Differences~0.63
 CPAN::Meta::Requirements~2.131
-Module::Metadata~1.000025
+Module::Metadata~1.000026
 Scalar::Util~1.41
 File::Spec~3.47
 Module::Runtime~0.014
@@ -28,10 +28,10 @@ Algorithm::Diff~1.1903
 Path::Tiny~0.061
 ExtUtils::CBuilder~0.280220
 Parse::CPAN::Meta~1.4414
-version~0.9909
+version~0.991
 CPAN::Meta::YAML~0.012
 Carp~1.3301
-DateTime::TimeZone~1.83
+DateTime::TimeZone~1.84
 JSON::PP~2.27300
 Class::Singleton~1.5
 Params::Validate~1.17
