@@ -22,13 +22,13 @@ Module::Metadata~1.000026
 Scalar::Util~1.41
 File::Spec~3.47
 Module::Runtime~0.014
-Filter::Util::Call~1.53
+Filter::Util::Call~1.54
 Perl::OSType~1.007
 Algorithm::Diff~1.1903
 Path::Tiny~0.061
 ExtUtils::CBuilder~0.280220
 Parse::CPAN::Meta~1.4414
-version~0.991
+version~0.9911
 CPAN::Meta::YAML~0.012
 Carp~1.3301
 DateTime::TimeZone~1.84
