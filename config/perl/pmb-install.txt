@@ -3,14 +3,14 @@ Capture::Tiny~0.28
 Time::Piece~1.29
 DateTime::Locale~0.45
 List::Util~1.41
-CPAN::Meta~2.143240
+CPAN::Meta~2.150001
 Module::Implementation~0.09
 Module::Build~0.4211
 List::MoreUtils~0.406
 Try::Tiny~0.22
 Term::ANSIColor~4.03
 AnyEvent~7.08
-parent~0.229
+parent~0.231
 Data::Dumper~2.154
 ExtUtils::ParseXS~3.24
 List::AllUtils~0.09
