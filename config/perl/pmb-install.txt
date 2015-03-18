@@ -6,7 +6,7 @@ List::Util~1.41
 CPAN::Meta~2.150001
 Module::Implementation~0.09
 Module::Build~0.4211
-List::MoreUtils~0.406
+List::MoreUtils~0.408
 Try::Tiny~0.22
 Term::ANSIColor~4.03
 AnyEvent~7.08
@@ -29,7 +29,7 @@ Path::Tiny~0.065
 ExtUtils::CBuilder~0.280220
 Parse::CPAN::Meta~1.4414
 version~0.9912
-CPAN::Meta::YAML~0.013
+CPAN::Meta::YAML~0.014
 Carp~1.35
 DateTime::TimeZone~1.85
 JSON::PP~2.27300
