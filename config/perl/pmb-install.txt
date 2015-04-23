@@ -2,7 +2,7 @@ DateTime~1.18
 Capture::Tiny~0.28
 Time::Piece~1.29
 DateTime::Locale~0.45
-List::Util~1.41
+List::Util~1.42
 CPAN::Meta~2.150001
 Module::Implementation~0.09
 Module::Build~0.4211
@@ -19,7 +19,7 @@ Test::More~1.001014
 Test::Differences~0.63
 CPAN::Meta::Requirements~2.133
 Module::Metadata~1.000027
-Scalar::Util~1.41
+Scalar::Util~1.42
 File::Spec~3.47
 Module::Runtime~0.014
 Filter::Util::Call~1.54
