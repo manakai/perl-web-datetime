@@ -19,7 +19,7 @@ Data::Dumper~2.154
 List::AllUtils~0.09
 Carp~1.36
 Text::Diff~1.41
-DateTime::TimeZone~1.88
+DateTime::TimeZone~1.90
 Test::More~1.001014
 Class::Singleton~1.5
 Test::Differences~0.63
