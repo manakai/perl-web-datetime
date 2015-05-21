@@ -4,7 +4,7 @@ Capture::Tiny~0.30
 File::Spec~3.47
 Time::Piece~1.30
 Module::Runtime~0.014
-DateTime::Locale~0.45
+DateTime::Locale~0.46
 List::Util~1.42
 Filter::Util::Call~1.54
 Module::Implementation~0.09
@@ -13,14 +13,15 @@ List::MoreUtils~0.412
 Path::Tiny~0.068
 Try::Tiny~0.22
 parent~0.232
-AnyEvent~7.09
 Term::ANSIColor~4.03
+AnyEvent~7.09
 Data::Dumper~2.154
 List::AllUtils~0.09
+Dist::CheckConflicts~0.11
 Carp~1.36
 Text::Diff~1.41
-DateTime::TimeZone~1.90
 Test::More~1.001014
+DateTime::TimeZone~1.90
 Class::Singleton~1.5
 Test::Differences~0.63
 Params::Validate~1.18
