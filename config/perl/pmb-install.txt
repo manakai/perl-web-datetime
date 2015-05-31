@@ -1,5 +1,5 @@
 Scalar::Util~1.42
-DateTime~1.18
+DateTime~1.19
 Capture::Tiny~0.30
 File::Spec~3.47
 Time::Piece~1.30
