@@ -21,8 +21,8 @@ Dist::CheckConflicts~0.11
 Carp~1.36
 Text::Diff~1.41
 Test::More~1.001014
-DateTime::TimeZone~1.90
+DateTime::TimeZone~1.91
 Class::Singleton~1.5
 Test::Differences~0.63
-Params::Validate~1.18
+Params::Validate~1.19
 Exporter::Tiny~0.042
