@@ -14,7 +14,7 @@ Path::Tiny~0.070
 Try::Tiny~0.22
 parent~0.234
 Term::ANSIColor~4.03
-AnyEvent~7.09
+AnyEvent~7.11
 Data::Dumper~2.154
 List::AllUtils~0.09
 Dist::CheckConflicts~0.11
