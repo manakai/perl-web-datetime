@@ -10,7 +10,7 @@ Filter::Util::Call~1.54
 Module::Implementation~0.09
 Algorithm::Diff~1.1903
 List::MoreUtils~0.413
-Path::Tiny~0.070
+Path::Tiny~0.072
 Try::Tiny~0.22
 parent~0.234
 Term::ANSIColor~4.03
