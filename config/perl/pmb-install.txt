@@ -6,7 +6,7 @@ Time::Piece~1.30
 Module::Runtime~0.014
 DateTime::Locale~0.46
 List::Util~1.42
-Filter::Util::Call~1.54
+Filter::Util::Call~1.55
 Module::Implementation~0.09
 Algorithm::Diff~1.1903
 List::MoreUtils~0.413
