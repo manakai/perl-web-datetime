@@ -13,15 +13,14 @@ List::MoreUtils~0.413
 Path::Tiny~0.072
 Try::Tiny~0.22
 parent~0.234
-Term::ANSIColor~4.03
 AnyEvent~7.11
+Term::ANSIColor~4.03
 Data::Dumper~2.154
-List::AllUtils~0.09
 Dist::CheckConflicts~0.11
 Carp~1.36
 Text::Diff~1.41
+DateTime::TimeZone~1.93
 Test::More~1.001014
-DateTime::TimeZone~1.92
 Class::Singleton~1.5
 Test::Differences~0.63
 Params::Validate~1.21
