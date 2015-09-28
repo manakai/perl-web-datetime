@@ -4,7 +4,7 @@ Capture::Tiny~0.30
 File::Spec~3.47
 Time::Piece~1.30
 Module::Runtime~0.014
-DateTime::Locale~0.46
+DateTime::Locale~0.92
 List::Util~1.42
 Filter::Util::Call~1.55
 Module::Implementation~0.09
