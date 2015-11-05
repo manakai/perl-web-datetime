@@ -155,7 +155,7 @@ without associated time zone information.  If the object has no
 associated time zone, it is considered as a UTC timestamp for the
 purpose of conversion.
 
-=item $number = $dt->to_unix_time
+=item $number = $dt->to_unix_number
 
 Return a Unix time value of the time represented by the object, with
 fractional part of the second, if any.  The value can be positive or
