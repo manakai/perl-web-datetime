@@ -1,7 +1,7 @@
 Scalar::Util~1.42
 DateTime~1.21
 Capture::Tiny~0.30
-File::Spec~3.59
+File::Spec~3.60
 Time::Piece~1.31
 Module::Runtime~0.014
 DateTime::Locale~1.01
