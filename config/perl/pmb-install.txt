@@ -21,6 +21,6 @@ Text::Diff~1.43
 Class::Singleton~1.5
 Test::More~1.001014
 DateTime::TimeZone~1.94
-Test::Differences~0.63
+Test::Differences~0.64
 Params::Validate~1.21
 Exporter::Tiny~0.042
