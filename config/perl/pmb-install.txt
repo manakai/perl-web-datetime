@@ -4,14 +4,14 @@ Capture::Tiny~0.30
 File::Spec~3.60
 Time::Piece~1.31
 Module::Runtime~0.014
-DateTime::Locale~1.01
+DateTime::Locale~1.02
 List::Util~1.42
 Filter::Util::Call~1.55
 Module::Implementation~0.09
 Algorithm::Diff~1.1903
 List::MoreUtils~0.413
 Path::Tiny~0.076
-Try::Tiny~0.22
+Try::Tiny~0.24
 AnyEvent~7.11
 Term::ANSIColor~4.04
 Data::Dumper~2.154
