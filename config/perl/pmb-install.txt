@@ -12,7 +12,7 @@ Algorithm::Diff~1.1903
 List::MoreUtils~0.413
 Path::Tiny~0.076
 Try::Tiny~0.24
-AnyEvent~7.11
+AnyEvent~7.12
 Term::ANSIColor~4.04
 Data::Dumper~2.154
 Dist::CheckConflicts~0.11
@@ -20,7 +20,7 @@ Carp~1.38
 Text::Diff~1.43
 Class::Singleton~1.5
 Test::More~1.001014
-DateTime::TimeZone~1.94
+DateTime::TimeZone~1.95
 Test::Differences~0.64
 Params::Validate~1.21
 Exporter::Tiny~0.042
