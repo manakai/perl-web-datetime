@@ -1,7 +1,7 @@
 all:
 
 clean: clean-json-ps
-	rm -fr local/*.json
+	rm -fr local/*.json local/*.txt
 
 updatenightly: clean update-submodules json-ps lib/Web/DateTime/_Defs.pm
 	git add lib/Web/DateTime/_Defs.pm
@@ -54,13 +54,18 @@ local/timezones-mail-names.json:
 local/datetime-seconds.json:
 	$(WGET) -O $@ https://raw.githubusercontent.com/manakai/data-locale/master/data/datetime/seconds.json
 
+local/jd-g.txt:
+	$(WGET) -O $@ https://raw.githubusercontent.com/manakai/data-locale/master/data/calendar/map-jd-gregorian.txt
+local/jd-j.txt:
+	$(WGET) -O $@ https://raw.githubusercontent.com/manakai/data-locale/master/data/calendar/map-jd-julian.txt
+
 ## ------ Tests ------
 
 PROVE = ./prove
 
 test: test-deps test-main
 
-test-deps: deps
+test-deps: deps local/jd-g.txt local/jd-j.txt
 
 test-main:
 	$(PROVE) t/*.t

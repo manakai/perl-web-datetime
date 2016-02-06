@@ -485,17 +485,13 @@ sub fractional_second ($) {
 sub _julian ($) {
   my $self = $_[0];
   return $self->{cache}->{julian} ||= do {
-    my $mjd = $self->to_mjd;
-    my $n = $mjd + 678883;
-    my $e = 4 * $n + 3;
-    my $h = 5 * floor ( ($e % 1461) / 4 ) + 2;
-    my $D = floor (($h % 153) / 5) + 1;
-    my $M = floor ($h / 153) + 3;
-    my $Y = floor ($e / 1461);
-    if ($M > 12) {
-      $M -= 12;
-      $Y++;
-    }
+    my $c = floor ($self->to_jd + 0.5) + 32082;
+    my $d = floor ((4*$c + 3) / 1461);
+    my $e = $c - floor (1461 * $d / 4);
+    my $m = floor ((5*$e + 2) / 153);
+    my $D = $e - floor ((153*$m + 2) / 5) + 1;
+    my $M = $m + 3 - 12 * floor ($m / 10);
+    my $Y = $d - 4800 + floor ($m / 10);
     [$Y, $M, $D];
   };
 } # _julian
