@@ -124,9 +124,9 @@ sub new_from_components ($$$$$$$) {
 
 my $unix_epoch = timegm_nocheck (0, 0, 0, 1, 1 - 1, 1970);
 
-sub _create ($$$$$$$$$$$;$) {
+sub _create ($$$$$$$$$$$;$$) {
   my $self = bless {}, shift;
-  my ($type, $y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff) = @_;
+  my ($type, $y, $M, $d, $h, $m, $s, $sf, $zh, $zm, $diff, $julian) = @_;
   $self->{has_component} = $type;
   
   $zm *= -1 if defined $zh and $zh =~ /^-/;
@@ -136,8 +136,20 @@ sub _create ($$$$$$$$$$$;$) {
     $M = $M % 12;
     $M++;
   }
-  $self->{value} = timegm_nocheck
-      ($s, $m - ($zm || 0), $h - ($zh || 0), $d, $M-1, $y);
+
+  if ($julian) {
+    $y += floor (($M - 3) / 12);
+    my $month = ($M - 3) % 12;
+    my $n = $d - 1 + floor ((153 * $month + 2) / 5) + 365 * $y + floor ($y / 4);
+    $self->{value} = ($n - 678883 + 2400000.5 - 2440587.5) * 24 * 60 * 60
+                   + ($h - ($zh || 0)) * 60 * 60
+                   + ($m - ($zm || 0)) * 60
+                   + $s;
+  } else {
+    $self->{value} = timegm_nocheck
+        ($s, $m - ($zm || 0), $h - ($zh || 0), $d, $M-1, $y);
+  }
+
   if (defined $zh) {
     require Web::DateTime::TimeZone;
     $self->{tz} = Web::DateTime::TimeZone->new_from_offset
@@ -330,6 +342,15 @@ sub to_ymd_string ($) {
   }
 } # to_ymd_string
 
+sub to_julian_ymd_string ($) {
+  my $y = $_[0]->julian_year;
+  if ($y < 0) {
+    return sprintf '-%04d-%02d-%02d', -$y, $_[0]->julian_month, $_[0]->julian_day;
+  } else {
+    return sprintf '%04d-%02d-%02d', $y, $_[0]->julian_month, $_[0]->julian_day;
+  }
+} # to_julian_ymd_string
+
 sub time_zone ($) {
   return $_[0]->{tz}; # or undef
 } # time_zone
@@ -460,6 +481,36 @@ sub fractional_second ($) {
   my $self = shift;
   return $self->second + $self->{second_fraction};
 } # fractional_second
+
+sub _julian ($) {
+  my $self = $_[0];
+  return $self->{cache}->{julian} ||= do {
+    my $mjd = $self->to_mjd;
+    my $n = $mjd + 678883;
+    my $e = 4 * $n + 3;
+    my $h = 5 * floor ( ($e % 1461) / 4 ) + 2;
+    my $D = floor (($h % 153) / 5) + 1;
+    my $M = floor ($h / 153) + 3;
+    my $Y = floor ($e / 1461);
+    if ($M > 12) {
+      $M -= 12;
+      $Y++;
+    }
+    [$Y, $M, $D];
+  };
+} # _julian
+
+sub julian_year ($) {
+  return $_[0]->_julian->[0];
+} # julian_year
+
+sub julian_month ($) {
+  return $_[0]->_julian->[1];
+} # julian_month
+
+sub julian_day ($) {
+  return $_[0]->_julian->[2];
+} # julian_day
 
 sub utc_year ($) {
   my $self = shift;

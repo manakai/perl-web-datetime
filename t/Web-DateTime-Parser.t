@@ -1633,6 +1633,35 @@ for my $test (
     }
     done $c;
   } n => (defined $test->[1] ? 11 : 4), name => ['parse_ymd_string'];
+
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_julian_ymd_string ($test->[0]);
+    if (defined $test->[1]) {
+      is 0+@error, 0;
+      isa_ok $dt, 'Web::DateTime';
+      ok $dt->is_date_time;
+      is $dt->julian_year, $test->[1];
+      is $dt->julian_month, $test->[2];
+      is $dt->julian_day, $test->[3];
+      is $dt->hour, 0;
+      is $dt->minute, 0;
+      is $dt->second, 0;
+      is $dt->second_fraction_string, '';
+      is $dt->time_zone->to_offset_string, 'Z';
+    } else {
+      is 0+@error, 1;
+      is $error[0]->{type}, 'date:syntax error';
+      is $error[0]->{level}, 'm';
+      is $dt, undef;
+    }
+    done $c;
+  } n => (defined $test->[1] ? 11 : 4), name => ['parse_julian_ymd_string'];
 }
 
 run_tests;

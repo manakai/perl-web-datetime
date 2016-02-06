@@ -1042,6 +1042,22 @@ for my $test (
   } n => 2, name => ['to_manakai_year_string / to_ymd_string', $test->[2]];
 }
 
+for my $test (
+  [0 => '-4712-01-01', -4712, 1, 1],
+  [1234567 => '-1332-01-23', -1332, 1, 23],
+  [2299160 => '1582-10-04', 1582, 10, 4],
+) {
+  test {
+    my $c = shift;
+    my $dt = Web::DateTime->new_from_jd ($test->[0]);
+    is $dt->to_julian_ymd_string, $test->[1];
+    is $dt->julian_year, $test->[2];
+    is $dt->julian_month, $test->[3];
+    is $dt->julian_day, $test->[4];
+    done $c;
+  } n => 4, name => ['julian', $test->[1]];
+}
+
 run_tests;
 
 =head1 LICENSE

@@ -163,9 +163,15 @@ vocabulary.
 
 =item $dt = $parser->parse_ymd_string ($string)
 
-Parse the argument as an YMD string [DATETIME] and return a
-L<Web::DateTime> (or C<undef> if failed).  Any error is reported
-through the C<onerror> handler.
+Parse the argument as an YMD string in the Gregorian calendar
+[DATETIME] and return a L<Web::DateTime> (or C<undef> if failed).  Any
+error is reported through the C<onerror> handler.
+
+=item $dt = $parser->parse_julian_ymd_string ($string)
+
+Parse the argument as an YMD string in the Julian calendar [DATETIME]
+and return a L<Web::DateTime> (or C<undef> if failed).  Any error is
+reported through the C<onerror> handler.
 
 =item $dt = $parser->parse_date_string_with_optional_time ($string)
 
@@ -367,17 +373,17 @@ The module requires Perl 5.8 or later.
 
 =item HTML
 
-HTML Standard <http://www.whatwg.org/specs/web-apps/current-work/>.
+HTML Standard <https://www.whatwg.org/specs/web-apps/current-work/>.
 
 =item XSDT
 
 W3C XML Schema Definition Language (XSD) 1.1 Part 2: Datatypes
-<http://www.w3.org/TR/xmlschema11-2/>.
+<https://www.w3.org/TR/xmlschema11-2/>.
 
 =item RFC3339
 
 Date and Time on the Internet: Timestamps
-<http://tools.ietf.org/html/rfc3339>.
+<https://tools.ietf.org/html/rfc3339>.
 
 =item SCHEMAORG
 
@@ -395,7 +401,7 @@ interchange -- Representation of dates and times.
 =item HTTP
 
 RFC 1945, Hypertext Transfer Protocol -- HTTP/1.0
-<http://tools.ietf.org/html/rfc1945>.
+<https://tools.ietf.org/html/rfc1945>.
 
 RFC 7231, Hypertext Transfer Protocol (HTTP/1.1): Semantics and
 Content <https://tools.ietf.org/html/rfc7231>.
@@ -403,17 +409,17 @@ Content <https://tools.ietf.org/html/rfc7231>.
 =item COOKIES
 
 RFC 6265, HTTP State Management Mechanism
-<http://tools.ietf.org/html/rfc6265>.
+<https://tools.ietf.org/html/rfc6265>.
 
 =item W3CDTF
 
 Date and Time Formats
-<http://www.w3.org/TR/1998/NOTE-datetime-19980827>.
+<https://www.w3.org/TR/1998/NOTE-datetime-19980827>.
 
 =item RFC822
 
 RFC 822, STANDARD FOR THE FORMAT OF ARPA INTERNET TEXT MESSAGES
-<http://tools.ietf.org/html/rfc822>.
+<https://tools.ietf.org/html/rfc822>.
 
 =item RSS2
 

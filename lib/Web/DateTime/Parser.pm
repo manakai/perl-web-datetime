@@ -352,6 +352,19 @@ sub parse_ymd_string ($$) {
   }
 } # parse_ymd_string
 
+sub parse_julian_ymd_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ /\A([+-]?[0-9]+)-([0-9]+)-([0-9]+)\z/) {
+    my ($y, $m, $d) = (0+$1, 0+$2, 0+$3);
+    return $self->_create ({year => 1, month => 1, day => 1},
+                           $y, $m, $d, 0, 0, 0, '', 0, 0, undef, 'julian');
+  } else {
+    $self->onerror->(type => 'date:syntax error',
+                     level => 'm');
+    return undef;
+  }
+} # parse_julian_ymd_string
+
 ## ------ Yearless date ------
 
 sub parse_yearless_date_string ($$) {

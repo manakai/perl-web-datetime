@@ -104,7 +104,18 @@ false.
 =item $number = $dt->second
 
 Return the number in the year, month, day, hour, minute, or second
-component of the object, respectively.  If a time zone is associated
+component of the object, in the Gregorian calendar, respectively.  If
+a time zone is associated with the object, the return value is in that
+time zone.
+
+=item $number = $dt->julian_year
+
+=item $number = $dt->julian_month
+
+=item $number = $dt->julian_day
+
+Return the number in the year, month, or day component of the object,
+in the Julian calendar, respectively.  If a time zone is associated
 with the object, the return value is in that time zone.
 
 =item $number = $dt->utc_year
@@ -325,8 +336,15 @@ C<time> elements, C<< <ins datetime=""> >> and C<< <del datetime="">
 
 =item $string = $dt->to_ymd_string
 
-Serialize the date value represented by the object as a YMD string
-[DATETIME].  Note that time and time zone are ignored.
+Serialize the date value represented by the object as a YMD string of
+the Gregorian calendar [DATETIME].  Note that time and time zone are
+ignored.
+
+=item $string = $dt->to_julian_ymd_string
+
+Serialize the date value represented by the object as a YMD string of
+the Julian calendar [DATETIME].  Note that time and time zone are
+ignored.
 
 =item $string = $dt->to_date_string_with_optional_time
 
