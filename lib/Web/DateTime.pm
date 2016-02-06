@@ -1,8 +1,9 @@
 package Web::DateTime;
 use strict;
 use warnings;
-our $VERSION = '6.0';
+our $VERSION = '7.0';
 use Carp qw(croak);
+use POSIX qw(floor);
 
 sub new_from_unix_time ($$) {
   my $self = bless {value => 0+$_[1]}, $_[0];
@@ -49,6 +50,23 @@ sub new_from_object ($$) {
   }
 } # new_from_object
 
+sub new_from_components ($$$$$$$) {
+  my ($class, $year, $month, $day, $hour, $minute, $second) = @_;
+  my $components = {year => defined $year,
+                    month => defined $month,
+                    day => defined $day,
+                    time => defined $hour};
+  $second ||= 0;
+  my $sec_i = int $second;
+  my $sec_f = $second - $sec_i;
+  return $class->_create
+      ($components,
+       defined $year ? $year : 1970,
+       defined $month ? $month : 1,
+       defined $day ? $day : 1,
+       $hour || 0, $minute || 0, $sec_i, $sec_f,
+       undef, undef);
+} # new_from_components
 
 {
   ## Derived from |Time::Local|
@@ -73,10 +91,10 @@ sub new_from_object ($$) {
             my $year  = $_[5] + 1900 - int($month / 10);
 
             ( ( 365 * $year )
-              + int( $year / 4 )
-              - int( $year / 100 )
-              + int( $year / 400 )
-              + int( ( ( $month * 306 ) + 5 ) / 10 )
+              + floor( $year / 4 )
+              - floor( $year / 100 )
+              + floor( $year / 400 )
+              + floor( ( ( $month * 306 ) + 5 ) / 10 )
             )
             - $Epoc;
         }
@@ -103,6 +121,12 @@ sub _create ($$$$$$$$$$$;$) {
   $self->{has_component} = $type;
   
   $zm *= -1 if defined $zh and $zh =~ /^-/;
+  if ($M > 12 || $M < 1) {
+    $M--;
+    $y += floor ($M / 12);
+    $M = $M % 12;
+    $M++;
+  }
   $self->{value} = timegm_nocheck
       ($s, $m - ($zm || 0), $h - ($zh || 0), $d, $M-1, $y);
   if (defined $zh) {
@@ -327,11 +351,11 @@ sub utc_week_year ($) {
   return $self->{cache}->{utc_week_year};
 } # utc_week_year
 
-## <http://www.whatwg.org/specs/web-apps/current-work/#month-state-(type=month)>
+## <https://www.whatwg.org/specs/web-apps/current-work/#month-state-(type=month)>
 sub to_html_month_number ($) {
   my $self = shift;
-  ## Note that the spec does not explicitly define what should be
-  ## defined when the year is less than 1970.
+  ## HTML Standard is not clear on the sign of the number when
+  ## |$self->year < 1970|...
   my $y = $self->year - 1970;
   my $m = $self->month - 1;
   return $y * 12 + $m;
@@ -503,7 +527,7 @@ sub to_time_piece_local ($) {
 
 =head1 LICENSE
 
-Copyright 2008-2014 Wakaba <wakaba@suikawiki.org>.
+Copyright 2008-2016 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

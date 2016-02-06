@@ -29,6 +29,21 @@ representing a Unix time (i.e. number of seconds from January 1, 1970,
 00:00:00 UTC).  The number can contain fractional part and can be
 negative.
 
+=item $dt = Web::DateTime->new_from_components ($year, $month, $day, $hour, $minute, $second)
+
+Create a new instance of C<Web::DateTime> from the specified set of
+date/time components.
+
+The arguments are interpreted as the year, month, day, hour, minute,
+and second components of the date/time in the proleptic Gregorian
+calendar.  Every argument can be omitted; their defaults are 1970, 1,
+1, 0, 0, and 0.  The month component is an integer, where C<1>
+represents January.  They can be out of range (e.g. month can be 33,
+day can be -1, and so on), but the returned object might or might not
+be useful.
+
+No time zone offset is set to the object.
+
 =item $dt = Web::DateTime->new_from_object ($obj)
 
 Create a new instance of C<Web::DateTime> from the specified date/time
@@ -375,7 +390,7 @@ C<to_time_piece_local> require more modules.
 
 =item HTML
 
-HTML Standard <http://www.whatwg.org/specs/web-apps/current-work/>.
+HTML Standard <https://www.whatwg.org/specs/web-apps/current-work/>.
 
 =item POSIX.1
 
@@ -421,7 +436,7 @@ are:
 
 =head1 LICENSE
 
-Copyright 2008-2014 Wakaba <wakaba@suikawiki.org>.
+Copyright 2008-2016 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

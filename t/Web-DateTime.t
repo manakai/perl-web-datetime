@@ -807,11 +807,160 @@ test {
   done $c;
 } n => 8, name => 'to_unix number negative fractional';
 
+test {
+  my $c = shift;
+  my $dt = Web::DateTime->new_from_components
+      (2012, 6, 7, 1, 3, 6.4);
+  is $dt->year, 2012;
+  is $dt->month, 6;
+  is $dt->day, 7;
+  is $dt->hour, 1;
+  is $dt->minute, 3;
+  is $dt->second, 6;
+  like $dt->second_fraction_string, qr{^\.4};
+  is $dt->time_zone, undef;
+  done $c;
+} n => 8, name => 'new_from_components';
+
+test {
+  my $c = shift;
+  my $dt = Web::DateTime->new_from_components
+      (2012, 0, 1, 11, 10, 6.4);
+  is $dt->year, 2011;
+  is $dt->month, 12;
+  is $dt->day, 1;
+  is $dt->hour, 11;
+  is $dt->minute, 10;
+  is $dt->second, 6;
+  like $dt->second_fraction_string, qr{^\.4};
+  is $dt->time_zone, undef;
+  done $c;
+} n => 8, name => 'new_from_components';
+
+test {
+  my $c = shift;
+  my $dt = Web::DateTime->new_from_components
+      (2012, 0, 0, 11, 10, 6.4);
+  is $dt->year, 2011;
+  is $dt->month, 11;
+  is $dt->day, 30;
+  is $dt->hour, 11;
+  is $dt->minute, 10;
+  is $dt->second, 6;
+  like $dt->second_fraction_string, qr{^\.4};
+  is $dt->time_zone, undef;
+  done $c;
+} n => 8, name => 'new_from_components';
+
+test {
+  my $c = shift;
+  my $dt = Web::DateTime->new_from_components
+      (2012, 28, 37, 41, 103, 6.4);
+  is $dt->year, 2014;
+  is $dt->month, 5;
+  is $dt->day, 8;
+  is $dt->hour, 18;
+  is $dt->minute, 43;
+  is $dt->second, 6;
+  like $dt->second_fraction_string, qr{^\.4};
+  is $dt->time_zone, undef;
+  done $c;
+} n => 8, name => 'new_from_components';
+
+test {
+  my $c = shift;
+  my $dt = Web::DateTime->new_from_components
+      (2012, -3, 37, 41, 103, 6.4);
+  is $dt->year, 2011;
+  is $dt->month, 10;
+  is $dt->day, 8;
+  is $dt->hour, 18;
+  is $dt->minute, 43;
+  is $dt->second, 6;
+  like $dt->second_fraction_string, qr{^\.4};
+  is $dt->time_zone, undef;
+  done $c;
+} n => 8, name => 'new_from_components';
+
+test {
+  my $c = shift;
+  my $dt = Web::DateTime->new_from_components
+      (32, 6, 7, 1, 3, 6.4);
+  is $dt->year, 32;
+  is $dt->month, 6;
+  is $dt->day, 7;
+  is $dt->hour, 1;
+  is $dt->minute, 3;
+  is $dt->second, 6;
+  like $dt->second_fraction_string, qr{^\.4};
+  is $dt->time_zone, undef;
+  done $c;
+} n => 8, name => 'new_from_components';
+
+test {
+  my $c = shift;
+  my $dt = Web::DateTime->new_from_components
+      (0, 6, 7, 1, 3, 6.4);
+  is $dt->year, 0;
+  is $dt->month, 6;
+  is $dt->day, 7;
+  is $dt->hour, 1;
+  is $dt->minute, 3;
+  is $dt->second, 6;
+  like $dt->second_fraction_string, qr{^\.4};
+  is $dt->time_zone, undef;
+  done $c;
+} n => 8, name => 'new_from_components';
+
+test {
+  my $c = shift;
+  my $dt = Web::DateTime->new_from_components
+      (-2012, 6, 7, 1, 3, 6.4);
+  is $dt->year, -2012;
+  is $dt->month, 6;
+  is $dt->day, 7;
+  is $dt->hour, 1;
+  is $dt->minute, 3;
+  is $dt->second, 6;
+  like $dt->second_fraction_string, qr{^\.4};
+  is $dt->time_zone, undef;
+  done $c;
+} n => 8, name => 'new_from_components';
+
+test {
+  my $c = shift;
+  my $dt = Web::DateTime->new_from_components
+      (-153, 6, 7, 1, 3, 6.4);
+  is $dt->year, -153;
+  is $dt->month, 6;
+  is $dt->day, 7;
+  is $dt->hour, 1;
+  is $dt->minute, 3;
+  is $dt->second, 6;
+  like $dt->second_fraction_string, qr{^\.4};
+  is $dt->time_zone, undef;
+  done $c;
+} n => 8, name => 'new_from_components';
+
+test {
+  my $c = shift;
+  my $dt = Web::DateTime->new_from_components;
+  is $dt->year, 1970;
+  is $dt->month, 1;
+  is $dt->day, 1;
+  is $dt->hour, 0;
+  is $dt->minute, 0;
+  is $dt->second, 0;
+  is $dt->second_fraction_string, '';
+  is $dt->time_zone, undef;
+  done $c;
+} n => 8, name => 'new_from_components';
+
 run_tests;
 
 =head1 LICENSE
 
-Copyright 2008-2014 Wakaba <wakaba@suikawiki.org>.
+Copyright 2008-2016 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
