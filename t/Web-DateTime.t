@@ -792,6 +792,42 @@ test {
 test {
   my $c = shift;
 
+  my $dt0 = Web::DateTime->new_from_unix_time (135555555);
+  is $dt0->second, 15;
+  is $dt0->to_unix_integer, 135555555;
+  is $dt0->to_unix_number, 135555555;
+  is $dt0->to_html_number, 135555555000;
+
+  my $dt = Web::DateTime->new_from_unix_time (135555555.3113);
+  is $dt->second, 15;
+  is $dt->to_unix_integer, $dt0->to_unix_integer;
+  is $dt->to_unix_number, 135555555.3113;
+  is $dt->to_html_number, 135555555311.3;
+  is $dt->to_jd, 2442156.43003833;
+  is $dt->to_mjd, 42155.930038325;
+  is $dt->to_rd, 720731.930038325;
+
+  done $c;
+} n => 11, name => 'to_unix number';
+
+test {
+  my $c = shift;
+
+  my $dt0 = Web::DateTime->new_from_unix_time (0);
+  is $dt0->second, 0;
+  is $dt0->to_unix_integer, 0;
+  is $dt0->to_unix_number, 0;
+  is $dt0->to_html_number, 0;
+  is $dt0->to_jd, 2440587.5;
+  is $dt0->to_mjd, 40587;
+  is $dt0->to_rd, 719163;
+
+  done $c;
+} n => 7, name => 'to_unix number';
+
+test {
+  my $c = shift;
+
   my $dt0 = Web::DateTime->new_from_unix_time (-135555556);
   is $dt0->second, 44;
   is $dt0->to_unix_integer, -135555556;
@@ -803,9 +839,12 @@ test {
   is $dt->to_unix_integer, $dt0->to_unix_integer;
   is $dt->to_unix_number, -135555555.3113;
   is $dt->to_html_number, -135555555311.3;
+  is $dt->to_jd, 2439018.56996167;
+  is $dt->to_mjd, 39018.069961675;
+  is $dt->to_rd, 717594.069961675;
 
   done $c;
-} n => 8, name => 'to_unix number negative fractional';
+} n => 11, name => 'to_unix number negative fractional';
 
 test {
   my $c = shift;
@@ -955,6 +994,53 @@ test {
   is $dt->time_zone, undef;
   done $c;
 } n => 8, name => 'new_from_components';
+
+for my $test (
+  [2299161, '1582-10-15'],
+  [2345678, '1710-02-23'],
+  [2400000.5, '1858-11-17'],
+  [2451545, '2000-01-01'],
+  [4000000, '6239-07-12'],
+) {
+  test {
+    my $c = shift;
+    my $dt = Web::DateTime->new_from_jd ($test->[0]);
+    is $dt->to_ymd_string, $test->[1];
+    done $c;
+  } n => 1, name => ['new_from_jd', $test->[0]];
+}
+
+for my $test (
+  [-2399963, '-4712-01-01'],
+  [-605833,  '0200-03-01'],
+  [-100840,  '1582-10-15'],
+  [51544,    '2000-01-01'],
+) {
+  test {
+    my $c = shift;
+    my $dt = Web::DateTime->new_from_mjd ($test->[0]);
+    is $dt->to_ymd_string, $test->[1];
+    done $c;
+  } n => 1, name => ['new_from_mjd', $test->[0]];
+}
+
+for my $test (
+  [[-402000, 1, 2] => '-402000', '-402000-01-02'],
+  [[-2000, 1, 2] => '-2000', '-2000-01-02'],
+  [[0, 1, 2] => '0000', '0000-01-02'],
+  [[900, 1, 2] => '0900', '0900-01-02'],
+  [[2000, 1, 2] => '2000', '2000-01-02'],
+  [[2000, 12, 31] => '2000', '2000-12-31'],
+  [[12000, 12, 31] => '12000', '12000-12-31'],
+) {
+  test {
+    my $c = shift;
+    my $dt = Web::DateTime->new_from_components (@{$test->[0]});
+    is $dt->to_manakai_year_string, $test->[1];
+    is $dt->to_ymd_string, $test->[2];
+    done $c;
+  } n => 2, name => ['to_manakai_year_string / to_ymd_string', $test->[2]];
+}
 
 run_tests;
 

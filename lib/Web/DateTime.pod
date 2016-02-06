@@ -29,6 +29,20 @@ representing a Unix time (i.e. number of seconds from January 1, 1970,
 00:00:00 UTC).  The number can contain fractional part and can be
 negative.
 
+=item $dt = Web::DateTime->new_from_jd ($number)
+
+Create a new instance of C<Web::DateTime> from the specified number,
+representing a Julian Day (i.e. Julian Date, JD,
+<https://en.wikipedia.org/wiki/Julian_day>).  The number can contain
+fractional part and can be negative.
+
+=item $dt = Web::DateTime->new_from_mjd ($number)
+
+Create a new instance of C<Web::DateTime> from the specified number,
+representing a Modified Julian Day (MJD,
+<https://en.wikipedia.org/wiki/Julian_day>).  The number can contain
+fractional part and can be negative.
+
 =item $dt = Web::DateTime->new_from_components ($year, $month, $day, $hour, $minute, $second)
 
 Create a new instance of C<Web::DateTime> from the specified set of
@@ -186,6 +200,26 @@ used for, e.g., C<< <input type=datetime> >> (i.e. number of
 milliseconds from the beginning of January 1, 1970 UTC) [HTML].  Note
 that the number might not be an integer.
 
+=item $number = $dt->to_jd
+
+Return the number representing the Julian Day of the date and time
+(i.e. Julian Date, JD, <https://en.wikipedia.org/wiki/Julian_day>)
+represented by the object.  Note that the number might not be an
+integer.
+
+=item $number = $dt->to_mjd
+
+Return the Modified Julian Day (MJD,
+<https://en.wikipedia.org/wiki/Julian_day>) of the date and time
+represented by the object.  Note that the number might not be an
+integer.
+
+=item $number = $dt->to_rd
+
+Return the Rata Die (RD, <https://en.wikipedia.org/wiki/Rata_Die>) of
+the date and time represented by the object.  Note that the number
+might not be an integer.
+
 =item $number = $dt->to_html_month_number
 
 Return the number (an integer) of the month represented by the object,
@@ -289,6 +323,11 @@ This method is suitable for values for HTML C<< <input type=date> >>,
 C<time> elements, C<< <ins datetime=""> >> and C<< <del datetime="">
 >> attributes, and microdata C<http://schema.org/Date> item values.
 
+=item $string = $dt->to_ymd_string
+
+Serialize the date value represented by the object as a YMD string
+[DATETIME].  Note that time and time zone are ignored.
+
 =item $string = $dt->to_date_string_with_optional_time
 
 Serialize the date value represented by the object as HTML valid date
@@ -305,6 +344,12 @@ Serialize the year value represented by the object for HTML.  Note
 that month, day, time, and time zone are ignored.
 
 This method is suitable for values for HTML C<time> elements.
+
+=item $string = $dt->to_manakai_year_string
+
+Serialize the year value represented by the object as specified by the
+manakai Date and Time specification [DATETIME].  Note that month, day,
+time, and time zone are ignored.
 
 =item $string = $dt->to_month_string
 
@@ -413,6 +458,10 @@ RSS 2.0 Specification <http://www.rssboard.org/rss-specification>.
 
 Really Simple Syndication Best Practices Profile
 <http://www.rssboard.org/rss-profile>.
+
+=item DATETIME
+
+Dates and times <https://manakai.github.io/spec-datetime/>.
 
 =back
 

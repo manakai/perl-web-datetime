@@ -99,6 +99,18 @@ sub parse_year_string ($$) {
   }
 } # parse_year_string
 
+sub parse_manakai_year_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ /\A([+-]?[0-9]+)\z/) {
+    my ($y) = (0+$1);
+    return $self->_create ({year => 1}, $y, 1, 1, 0, 0, 0, '', 0, 0);
+  } else {
+    $self->onerror->(type => 'year:syntax error',
+                     level => 'm');
+    return undef;
+  }
+} # parse_manakai_year_string
+
 sub parse_xs_g_year_string ($$) {
   my ($self, $value) = @_;
   if ($value =~ s/^(-?[0-9]+)//) {
@@ -326,6 +338,19 @@ sub parse_iso8601_date_string ($$) {
     }
   }
 } # parse_iso8601_date_string
+
+sub parse_ymd_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ /\A([+-]?[0-9]+)-([0-9]+)-([0-9]+)\z/) {
+    my ($y, $m, $d) = (0+$1, 0+$2, 0+$3);
+    return $self->_create ({year => 1, month => 1, day => 1},
+                           $y, $m, $d, 0, 0, 0, '', 0, 0);
+  } else {
+    $self->onerror->(type => 'date:syntax error',
+                     level => 'm');
+    return undef;
+  }
+} # parse_ymd_string
 
 ## ------ Yearless date ------
 

@@ -1538,11 +1538,108 @@ for my $test (
   } n => 5, name => ['parse_html_datetime_value', $test->[0]];
 }
 
+for my $test (
+  [undef, undef],
+  ['', undef],
+  ['abc', undef],
+  ['13aa', undef],
+  ['1342 ', undef],
+  ['-121111', -121111],
+  ['-131', -131],
+  ['-0121', -121],
+  ['0', 0],
+  ['12', 12],
+  ['0000', 0],
+  ['2999', 2999],
+  ['10000', 10000],
+  ['+421444', 421444],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_manakai_year_string ($test->[0]);
+    if (defined $test->[1]) {
+      is 0+@error, 0;
+      isa_ok $dt, 'Web::DateTime';
+      ok $dt->is_date_time;
+      is $dt->year, $test->[1];
+      is $dt->month, 1;
+      is $dt->day, 1;
+      is $dt->hour, 0;
+      is $dt->minute, 0;
+      is $dt->second, 0;
+      is $dt->second_fraction_string, '';
+      is $dt->time_zone->to_offset_string, 'Z';
+    } else {
+      is 0+@error, 1;
+      is $error[0]->{type}, 'year:syntax error';
+      is $error[0]->{level}, 'm';
+      is $dt, undef;
+    }
+    done $c;
+  } n => (defined $test->[1] ? 11 : 4), name => ['parse_manakai_year_string'];
+}
+
+for my $test (
+  [undef, undef],
+  ['', undef],
+  ['abc', undef],
+  ['13-01-33aa', undef],
+  ['1342-03-11 ', undef],
+  ['-121111-01-01', -121111, 1, 1],
+  ['-131-01-01', -131, 1, 1],
+  ['-0121-01-01', -121, 1, 1],
+  ['0-01-01', 0, 1, 1],
+  ['12-01-01', 12, 1, 1],
+  ['0000-01-01', 0, 1, 1],
+  ['0010-01-21', 10, 1, 21],
+  ['2000-12-31', 2000, 12, 31],
+  ['2999-01-01', 2999, 1, 1],
+  ['10000-01-01', 10000, 1, 1],
+  ['+421444-01-01', 421444, 1, 1],
+  ['200-2-1', 200, 2, 1],
+  ['000200-00002-0001', 200, 2, 1],
+  ['30200-302-21', 30225, 2, 21],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_ymd_string ($test->[0]);
+    if (defined $test->[1]) {
+      is 0+@error, 0;
+      isa_ok $dt, 'Web::DateTime';
+      ok $dt->is_date_time;
+      is $dt->year, $test->[1];
+      is $dt->month, $test->[2];
+      is $dt->day, $test->[3];
+      is $dt->hour, 0;
+      is $dt->minute, 0;
+      is $dt->second, 0;
+      is $dt->second_fraction_string, '';
+      is $dt->time_zone->to_offset_string, 'Z';
+    } else {
+      is 0+@error, 1;
+      is $error[0]->{type}, 'date:syntax error';
+      is $error[0]->{level}, 'm';
+      is $dt, undef;
+    }
+    done $c;
+  } n => (defined $test->[1] ? 11 : 4), name => ['parse_ymd_string'];
+}
+
 run_tests;
 
 =head1 LICENSE
 
-Copyright 2014 Wakaba <wakaba@suikawiki.org>.
+Copyright 2014-2016 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

@@ -23,6 +23,15 @@ sub new_from_unix_time ($$) {
   return $self;
 } # new_from_unix_time
 
+sub new_from_jd ($$) {
+  return $_[0]->new_from_unix_time (($_[1] - 2440587.5) * 24 * 60 * 60);
+} # new_from_jd
+
+sub new_from_mjd ($$) {
+  return $_[0]->new_from_unix_time
+      (($_[1] + 2400000.5 - 2440587.5) * 24 * 60 * 60);
+} # new_from_mjd
+
 sub new_from_object ($$) {
   if (UNIVERSAL::isa ($_[1], 'DateTime')) {
     my $self = bless {value => $_[1]->epoch}, $_[0];
@@ -303,6 +312,24 @@ sub to_document_last_modified_string ($) {
       $self->hour, $self->minute, $self->second;
 } # to_document_last_modified_string
 
+sub to_manakai_year_string ($) {
+  my $y = $_[0]->year;
+  if ($y < 0) {
+    return sprintf '-%04d', -$y;
+  } else {
+    return sprintf '%04d', $y;
+  }
+} # to_manakai_year_string
+
+sub to_ymd_string ($) {
+  my $y = $_[0]->year;
+  if ($y < 0) {
+    return sprintf '-%04d-%02d-%02d', -$y, $_[0]->month, $_[0]->day;
+  } else {
+    return sprintf '%04d-%02d-%02d', $y, $_[0]->month, $_[0]->day;
+  }
+} # to_ymd_string
+
 sub time_zone ($) {
   return $_[0]->{tz}; # or undef
 } # time_zone
@@ -502,6 +529,18 @@ sub to_unix_number ($) {
   }
   return $value + $frac;
 } # to_unix_number
+
+sub to_jd ($) {
+  return $_[0]->to_unix_number / (24*60*60) + 2440587.5;
+} # to_jd
+
+sub to_mjd ($) {
+  return $_[0]->to_jd - 2400000.5;
+} # to_mjd
+
+sub to_rd ($) {
+  return $_[0]->to_jd - 1721424.5;
+} # to_rd
 
 sub to_date_time ($) {
   my $self = shift;

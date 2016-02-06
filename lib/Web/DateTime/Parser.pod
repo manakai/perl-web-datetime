@@ -161,6 +161,12 @@ This method is suitable for microdata C<http://schema.org/Date> item
 values and date item values in data-vocabulary.org microdata
 vocabulary.
 
+=item $dt = $parser->parse_ymd_string ($string)
+
+Parse the argument as an YMD string [DATETIME] and return a
+L<Web::DateTime> (or C<undef> if failed).  Any error is reported
+through the C<onerror> handler.
+
 =item $dt = $parser->parse_date_string_with_optional_time ($string)
 
 Parse the argument as an HTML date string with optional time
@@ -198,6 +204,12 @@ through the C<onerror> handler.
 Parse the argument as an XML Schema C<xs:gYear> string [XSDT] and
 return a L<Web::DateTime> (or C<undef> if failed).  Any error is
 reported through the C<onerror> handler.
+
+=item $dt = $parser->parse_manakai_year_string ($string)
+
+Parse the argument as a year string in manakai Date and Time
+specification [DATETIME] and return a L<Web::DateTime> (or C<undef> if
+failed).  Any error is reported through the C<onerror> handler.
 
 =item $dt = $parser->parse_month_string ($string)
 
@@ -421,6 +433,10 @@ JavaScript and Dates, What a Mess!
 <http://blog.dygraphs.com/2012/03/javascript-and-dates-what-mess.html>,
 <http://dygraphs.com/date-formats.html>.
 
+=item DATETIME
+
+Dates and times <https://manakai.github.io/spec-datetime/>.
+
 =back
 
 =head1 AUTHOR
@@ -429,7 +445,7 @@ Wakaba <wakaba@suikawiki.org>.
 
 =head1 LICENSE
 
-Copyright 2008-2014 Wakaba <wakaba@suikawiki.org>.
+Copyright 2008-2016 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
