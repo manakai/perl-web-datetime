@@ -1,5 +1,5 @@
-Scalar::Util~1.42
 DateTime~1.21
+Scalar::Util~1.42
 Capture::Tiny~0.30
 File::Spec~3.62
 Time::Piece~1.31
@@ -8,8 +8,8 @@ DateTime::Locale~1.02
 List::Util~1.42
 Filter::Util::Call~1.55
 Module::Implementation~0.09
-Algorithm::Diff~1.1903
 List::MoreUtils~0.413
+Algorithm::Diff~1.1903
 Path::Tiny~0.076
 Try::Tiny~0.24
 AnyEvent~7.12
@@ -17,10 +17,10 @@ Term::ANSIColor~4.04
 Data::Dumper~2.154
 Dist::CheckConflicts~0.11
 Carp~1.38
-Text::Diff~1.43
-Class::Singleton~1.5
-Test::More~1.001014
 DateTime::TimeZone~1.95
-Test::Differences~0.64
+Test::More~1.001014
+Class::Singleton~1.5
+Text::Diff~1.43
 Params::Validate~1.21
+Test::Differences~0.64
 Exporter::Tiny~0.042
