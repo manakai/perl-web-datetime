@@ -1,7 +1,6 @@
-DateTime~1.21
+DateTime~1.25
 Scalar::Util~1.43
-Capture::Tiny~0.34
-File::Spec~3.62
+Capture::Tiny~0.36
 Time::Piece~1.31
 Module::Runtime~0.014
 DateTime::Locale~1.02
@@ -10,7 +9,7 @@ Filter::Util::Call~1.55
 Module::Implementation~0.09
 List::MoreUtils~0.413
 Algorithm::Diff~1.1903
-Path::Tiny~0.076
+Path::Tiny~0.084
 Try::Tiny~0.24
 AnyEvent~7.12
 Term::ANSIColor~4.04
