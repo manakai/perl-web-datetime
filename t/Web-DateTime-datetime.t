@@ -68,7 +68,7 @@ test {
 test {
   my $c = shift;
   my $date = Web::DateTime::Parser->new->parse_global_date_and_time_string
-      ('2010-12-13T00:12:33.4424422211Z');
+      ('2010-12-13T00:12:33.44244Z');
   my $dt = $date->to_date_time;
   isa_ok $dt, 'DateTime';
   is $dt . '', '2010-12-13T00:12:33';
