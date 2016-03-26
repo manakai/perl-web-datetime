@@ -1,8 +1,8 @@
 DateTime~1.26
 Capture::Tiny~0.36
 Time::Piece~1.31
-DateTime::Locale~1.02
-List::Util~1.44
+DateTime::Locale~1.03
+List::Util~1.45
 CPAN::Meta~2.150005
 Module::Implementation~0.09
 Module::Build~0.4216
@@ -19,7 +19,7 @@ Text::Diff~1.44
 Test::Differences~0.64
 CPAN::Meta::Requirements~2.140
 Module::Metadata~1.000027
-Scalar::Util~1.44
+Scalar::Util~1.45
 Module::Runtime~0.014
 Filter::Util::Call~1.55
 Perl::OSType~1.009
@@ -34,5 +34,5 @@ Carp~1.38
 Class::Singleton~1.5
 JSON::PP~2.27300
 DateTime::TimeZone~1.97
-Params::Validate~1.22
+Params::Validate~1.23
 Exporter::Tiny~0.042
