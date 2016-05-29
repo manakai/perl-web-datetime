@@ -1,7 +1,7 @@
 package Web::DateTime;
 use strict;
 use warnings;
-our $VERSION = '7.0';
+our $VERSION = '8.0';
 use Carp qw(croak);
 use POSIX qw(floor);
 
@@ -287,6 +287,14 @@ sub to_time_zoned_global_date_and_time_string ($) {
     defined $self->{tz} ? $self->{tz}->to_offset_string : 'Z'
   );
 } # to_time_zoned_global_date_and_time_string
+
+sub to_generalized_time_string ($) {
+  my $self = shift;
+  ## Always in UTC
+  return sprintf '%04d%02d%02d%02d%02d%02dZ',
+      $self->utc_year, $self->utc_month, $self->utc_day,
+      $self->utc_hour, $self->utc_minute, $self->utc_second;
+} # to_generalized_time_string
 
 sub to_date_string_with_optional_time ($) {
   my $self = $_[0];

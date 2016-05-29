@@ -113,6 +113,14 @@ reported through the C<onerror> handler.
 
 This method is suitable for values in Atom 1.0 Date construct.
 
+=item $dt = $parser->parse_pkix_generalized_time_string ($string)
+
+Parse the argument as a PKIX C<GeneralizedTime> string [PKIX].  Any
+error is reported through the C<onerror> handler.
+
+This method is suitable for various timestamp fields in Certificates,
+CRLs, and OCSP objects, used with TLS.
+
 =item $dt = $parser->parse_http_date_string ($string)
 
 Parse the argument as an C<HTTP-date> string [HTTP], using the parsing

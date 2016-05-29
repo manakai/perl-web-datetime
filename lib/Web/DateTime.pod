@@ -283,6 +283,15 @@ This method is suitable for values for HTML C<< <input type=datetime>
 >>, C<time> elements, and C<< <ins datetime=""> >> and C<< <del
 datetime=""> >> attributes.
 
+=item $string = $dt->to_generalized_time_string
+
+Serialize the date and time value represented by the object as a PKIX
+GeneralizedTime string [PKIX].  Any fraction part of seconds is
+discarded.
+
+This method is suitable for various timestamp fields in Certificates,
+CRLs, and OCSP objects, used with TLS.
+
 =item $string = $dt->to_http_date_string
 
 Serialize the date and time value represented by the object as an HTTP
@@ -476,6 +485,12 @@ RSS 2.0 Specification <http://www.rssboard.org/rss-specification>.
 
 Really Simple Syndication Best Practices Profile
 <http://www.rssboard.org/rss-profile>.
+
+=item PKIX
+
+RFC 5280, Internet X.509 Public Key Infrastructure Certificate and
+Certificate Revocation List (CRL) Profile
+<https://tools.ietf.org/html/rfc5280>.
 
 =item DATETIME
 

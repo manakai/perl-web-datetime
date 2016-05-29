@@ -2,7 +2,7 @@ package Web::DateTime::Parser;
 use strict;
 use warnings;
 no warnings 'utf8';
-our $VERSION = '1.0';
+our $VERSION = '2.0';
 use Web::DateTime;
 
 sub new ($) {
@@ -920,6 +920,45 @@ sub parse_schema_org_date_time_string ($$) {
     return undef;
   }
 } # parse_schema_org_date_time_string
+
+sub parse_pkix_generalized_time_string ($$) {
+  my ($self, $value) = @_;
+  if ($value =~ /\A([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})Z\z/) {
+    my ($y, $M, $d, $h, $m, $s) = ($1, $2, $3, $4, $5, $6);
+    if (0 < $M and $M < 13) {
+      $self->onerror->(type => 'datetime:bad day',
+                       value => $d,
+                       level => 'm'), return undef
+          if $d < 1 or
+             $d > [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]->[$M];
+      $self->onerror->(type => 'datetime:bad day',
+                       value => $d,
+                       level => 'm'), return undef
+          if $M == 2 and $d == 29 and not Web::DateTime::_is_leap_year ($y);
+    } else {
+      $self->onerror->(type => 'datetime:bad month',
+                       value => $M,
+                       level => 'm');
+      return undef;
+    }
+    $self->onerror->(type => 'datetime:bad hour',
+                     value => $h,
+                     level => 'm'), return undef if $h > 23;
+    $self->onerror->(type => 'datetime:bad minute',
+                     value => $m,
+                     level => 'm'), return undef if $m > 59;
+    $self->onerror->(type => 'datetime:bad second',
+                     value => $s,
+                     level => 'm'), return undef if $s > 59;
+    return $self->_create
+        ({type => 1, month => 1, day => 1, time => 1, offset => 1},
+         $y, $M, $d, $h, $m, $s, '', 0, 0);
+  } else {
+    $self->onerror->(type => 'datetime:syntax error',
+                     level => 'm');
+    return undef;
+  }
+} # parse_pkix_generalized_time_string
 
 ## RFC 6265 Section 5.1.1. with a bug fix: "(non-digit *OCTET)" in
 ## grammer can be omitted.
