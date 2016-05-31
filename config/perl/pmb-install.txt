@@ -1,5 +1,5 @@
 DateTime~1.28
-Capture::Tiny~0.40
+Capture::Tiny~0.42
 Time::Piece~1.31
 DateTime::Locale~1.03
 List::Util~1.45
