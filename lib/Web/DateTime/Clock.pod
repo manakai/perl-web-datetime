@@ -1,0 +1,64 @@
+=head1 NAME
+
+Web::DateTime::Clock - Clocks
+
+=head1 SYNOPSIS
+
+  use Web::DateTime::Clock;
+  
+  $clock = Web::DateTime::Clock->realtime_clock;
+  warn $clock->();
+  
+  $clock = Web::DateTime::Clock->monotonic_clock;
+  warn $clock->();
+
+=head1 DESCRIPTION
+
+The C<Web::DateTime::Clock> module defines clocks.
+
+=head1 CLOCKS
+
+A clock is a Perl subroutine that returns a number representing the
+number of seconds from some epoch.  It can have fractional part.
+
+In addition to the clocks provided by this module, applications can
+define their own clocks, as long as they conform to the definition
+above.  For example, a test script can use a constant subroutine as a
+clock.
+
+=head1 METHODS
+
+There are following methods:
+
+=over 4
+
+=item $clock = Web::DateTime::Clock->realtime_clock
+
+Return a walltime clock, i.e. a clock that returns the "real" time.
+The number represents the number of seconds from the Epoch, possibly
+with fractional part.  This is the so-called "unix time".
+
+=item $clock = Web::DateTime::Clock->monotonic_clock
+
+Return a monotonic clock, i.e. a clock whose value is monotonically
+increasing.  The number represents the number of seconds from a
+clock-dependent epoch, possibly with fractional part.
+
+=back
+
+=head1 SPECIFICATION
+
+High Resolution Time Level 2 <https://w3c.github.io/hr-time/>.
+
+=head1 AUTHOR
+
+Wakaba <wakaba@suikawiki.org>.
+
+=head1 LICENSE
+
+Copyright 2016 Wakaba <wakaba@suikawiki.org>.
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut

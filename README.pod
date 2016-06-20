@@ -36,6 +36,10 @@ Parsed duration object, which has component accessors and serializers.
 
 Parsed weekly time range object, which has a serializer.
 
+=item L<Web::DateTime::Clock>
+
+Clocks.
+
 =back
 
 =head1 SPECIFICATIONS
@@ -45,12 +49,12 @@ protocols are supported (for details, see documentation of relevant
 modules):
 
 HTML, Schema.org, Data-Vocabulary.org, HTTP, Cookies, JavaScript, Atom
-0.3, Atom 1.0, RSS 1.0, RSS 2.0, OGP, RDF.
+0.3, Atom 1.0, RSS 1.0, RSS 2.0, OGP, RDF, PKIX.
 
 =head1 SEE ALSO
 
 SuikaWiki:Webの日時形式
-<http://wiki.suikawiki.org/n/Web%E3%81%AE%E6%97%A5%E6%99%82%E5%BD%A2%E5%BC%8F>.
+<https://wiki.suikawiki.org/n/Web%E3%81%AE%E6%97%A5%E6%99%82%E5%BD%A2%E5%BC%8F>.
 
 =head1 AUTHOR
 
@@ -58,7 +62,7 @@ Wakaba <wakaba@suikawiki.org>.
 
 =head1 LICENSE
 
-Copyright 2008-2014 Wakaba <wakaba@suikawiki.org>.
+Copyright 2008-2016 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
