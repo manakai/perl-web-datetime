@@ -13,7 +13,7 @@ AnyEvent~7.12
 Data::Dumper~2.154
 ExtUtils::ParseXS~3.30
 Dist::CheckConflicts~0.11
-Test::More~1.302031
+Test::More~1.302033
 Text::Diff~1.44
 Test::Differences~0.64
 CPAN::Meta::Requirements~2.140
