@@ -1,7 +1,7 @@
 DateTime~1.28
 Capture::Tiny~0.42
 Time::Piece~1.31
-DateTime::Locale~1.04
+DateTime::Locale~1.05
 List::Util~1.45
 Module::Implementation~0.09
 CPAN::Meta~2.150005
@@ -13,7 +13,7 @@ AnyEvent~7.12
 Data::Dumper~2.154
 ExtUtils::ParseXS~3.30
 Dist::CheckConflicts~0.11
-Test::More~1.302033
+Test::More~1.302035
 Text::Diff~1.44
 Test::Differences~0.64
 CPAN::Meta::Requirements~2.140
@@ -28,7 +28,7 @@ ExtUtils::CBuilder~0.280224
 Parse::CPAN::Meta~1.4417
 version~0.9917
 CPAN::Meta::YAML~0.018
-Time::HiRes~1.9737
+Time::HiRes~1.9738
 TAP::Harness~3.36
 Carp~1.38
 DateTime::TimeZone~2.00
