@@ -11,12 +11,12 @@ Path::Tiny~0.096
 Try::Tiny~0.24
 AnyEvent~7.12
 Term::ANSIColor~4.05
-Data::Dumper~2.160
+Data::Dumper~2.161
 Time::HiRes~1.9739
 Carp~1.38
 Class::Singleton~1.5
 DateTime::TimeZone~2.00
-Test::More~1.302037
+Test::More~1.302040
 Text::Diff~1.44
 Params::Validate~1.24
 Test::Differences~0.64
