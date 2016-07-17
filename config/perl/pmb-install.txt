@@ -15,7 +15,7 @@ Data::Dumper~2.161
 Time::HiRes~1.9739
 Carp~1.38
 Class::Singleton~1.5
-DateTime::TimeZone~2.00
+DateTime::TimeZone~2.01
 Test::More~1.302040
 Text::Diff~1.44
 Params::Validate~1.24
