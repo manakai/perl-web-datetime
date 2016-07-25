@@ -46,6 +46,13 @@ clock-dependent epoch, possibly with fractional part.
 
 =back
 
+=head1 DEPENDENCY
+
+This module requires L<Time::HiRes>, which is a core module of Perl.
+Please note that, as C<clock_gettime>, which is a standard POSIX
+function, is not implemented on Mac OS X, L<Time::HiRes> older than
+1.9732 (2016-03) is broken on that platform.
+
 =head1 SPECIFICATION
 
 High Resolution Time Level 2 <https://w3c.github.io/hr-time/>.

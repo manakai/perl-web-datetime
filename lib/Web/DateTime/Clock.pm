@@ -2,7 +2,7 @@ package Web::DateTime::Clock;
 use strict;
 use warnings;
 our $VERSION = '1.0';
-use Time::HiRes qw(time clock_gettime CLOCK_MONOTONIC);
+use Time::HiRes 1.9732 qw(time clock_gettime CLOCK_MONOTONIC);
 
 use constant realtime_clock => sub { return time };
 use constant monotonic_clock => sub { return clock_gettime (CLOCK_MONOTONIC) };
