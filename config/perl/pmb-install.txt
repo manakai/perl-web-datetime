@@ -11,6 +11,7 @@ List::Util~1.45
 Module::Implementation~0.09
 Params::Validate~1.24
 Path::Tiny~0.096
+Scalar::Util~1.45
 Term::ANSIColor~4.05
 Test::Builder~1.302049
 Test::Differences~0.64
