@@ -1,6 +1,6 @@
 Algorithm::Diff~1.1903
 AnyEvent~7.12
-Capture::Tiny~0.42
+Capture::Tiny~0.44
 Carp~1.38
 Class::Singleton~1.5
 DateTime~1.34
