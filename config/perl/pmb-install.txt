@@ -14,6 +14,7 @@ Package::Stash~0.37
 Package::Stash::XS~0.28
 Params::Validate~1.24
 Path::Tiny~0.096
+Scalar::Util~1.45
 Sub::Exporter::Progressive~0.001012
 Sub::Identify~0.12
 Term::ANSIColor~4.05
