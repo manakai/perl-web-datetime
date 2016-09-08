@@ -17,14 +17,14 @@ Path::Tiny~0.096
 Sub::Exporter::Progressive~0.001012
 Sub::Identify~0.12
 Term::ANSIColor~4.05
+Test::Builder~1.302052
 Test::Differences~0.64
 Test::Fatal~0.014
-Test::More~1.302052
 Test::Requires~0.10
 Text::Diff~1.44
 Time::HiRes~1.9739
 Time::Piece~1.31
 Try::Tiny~0.27
-Variable::Magic~0.59
+Variable::Magic~0.60
 namespace::autoclean~0.28
 namespace::clean~0.27
