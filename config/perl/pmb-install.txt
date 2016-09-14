@@ -18,9 +18,9 @@ Scalar::Util~1.45
 Sub::Exporter::Progressive~0.001012
 Sub::Identify~0.12
 Term::ANSIColor~4.05
-Test::Builder~1.302052
 Test::Differences~0.64
 Test::Fatal~0.014
+Test::More~1.302056
 Test::Requires~0.10
 Text::Diff~1.44
 Time::HiRes~1.9739
