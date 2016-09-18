@@ -5,9 +5,9 @@ Capture::Tiny~0.44
 Carp~1.38
 Class::Data::Inheritable~0.08
 Class::Singleton~1.5
-DateTime~1.38
-DateTime::Locale~1.06
-DateTime::TimeZone~2.02
+DateTime~1.39
+DateTime::Locale~1.07
+DateTime::TimeZone~2.03
 Devel::StackTrace~2.01
 Eval::Closure~0.14
 Exception::Class~1.40
@@ -24,8 +24,8 @@ Specio::Declare~0.25
 Sub::Exporter::Progressive~0.001012
 Sub::Identify~0.12
 Term::ANSIColor~4.05
+Test::Builder~1.302056
 Test::Differences~0.64
-Test::More~1.302056
 Text::Diff~1.44
 Time::HiRes~1.9739
 Time::Piece~1.31
