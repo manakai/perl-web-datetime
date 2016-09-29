@@ -12,7 +12,7 @@ Devel::StackTrace~2.01
 Eval::Closure~0.14
 Exception::Class~1.40
 Filter::Util::Call~1.55
-List::Util~1.45
+List::Util~1.46
 MRO::Compat~0.12
 Module::Implementation~0.09
 Package::Stash~0.37
@@ -20,12 +20,12 @@ Package::Stash::XS~0.28
 Params::ValidationCompiler~0.13
 Path::Tiny~0.096
 Role::Tiny~2.000003
-Specio::Library::Numeric~0.26
+Specio::Library::String~0.26
 Sub::Exporter::Progressive~0.001012
 Sub::Identify~0.12
 Term::ANSIColor~4.05
-Test::Builder~1.302059
 Test::Differences~0.64
+Test::More~1.302059
 Text::Diff~1.44
 Time::HiRes~1.9740
 Time::Piece~1.31
