@@ -19,12 +19,14 @@ Package::Stash~0.37
 Package::Stash::XS~0.28
 Params::ValidationCompiler~0.13
 Path::Tiny~0.096
-Role::Tiny~2.000003
-Specio::Library::Numeric~0.26
+Role::Tiny::With~2.000003
+Scalar::Util~1.46
+Specio::Library::String~0.28
 Sub::Exporter::Progressive~0.001012
 Sub::Identify~0.12
 Term::ANSIColor~4.05
 Test::Differences~0.64
+Test::Fatal~0.014
 Test::More~1.302059
 Text::Diff~1.44
 Time::HiRes~1.9740
