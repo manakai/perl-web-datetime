@@ -7,7 +7,7 @@ Class::Data::Inheritable~0.08
 Class::Singleton~1.5
 DateTime~1.39
 DateTime::Locale~1.09
-DateTime::TimeZone~2.05
+DateTime::TimeZone~2.06
 Devel::StackTrace~2.01
 Eval::Closure~0.14
 Exception::Class~1.40
@@ -20,14 +20,13 @@ Package::Stash::XS~0.28
 Params::ValidationCompiler~0.13
 Path::Tiny~0.098
 Role::Tiny::With~2.000003
-Scalar::Util~1.46
-Specio::Library::Numeric~0.30
+Specio::Declare~0.30
 Sub::Exporter::Progressive~0.001012
 Sub::Identify~0.12
 Term::ANSIColor~4.05
 Test::Differences~0.64
 Test::Fatal~0.014
-Test::More~1.302059
+Test::More~1.302062
 Text::Diff~1.44
 Time::HiRes~1.9740
 Time::Piece~1.31
