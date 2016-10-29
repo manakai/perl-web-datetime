@@ -24,7 +24,7 @@ Scalar::Util~1.46
 Specio::Declare~0.30
 Sub::Exporter::Progressive~0.001013
 Sub::Identify~0.12
-Term::ANSIColor~4.05
+Term::ANSIColor~4.06
 Test::Builder~1.302062
 Test::Differences~0.64
 Test::Fatal~0.014
