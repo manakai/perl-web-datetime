@@ -21,7 +21,7 @@ Params::ValidationCompiler~0.13
 Path::Tiny~0.098
 Role::Tiny~2.000003
 Scalar::Util~1.46
-Specio::Declare~0.30
+Specio::Library::String~0.30
 Sub::Exporter::Progressive~0.001013
 Sub::Identify~0.12
 Term::ANSIColor~4.06
