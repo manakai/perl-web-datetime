@@ -24,9 +24,9 @@ Specio::Library::Builtins~0.31
 Sub::Exporter::Progressive~0.001013
 Sub::Identify~0.12
 Term::ANSIColor~4.06
+Test::Builder~1.302073
 Test::Differences~0.64
 Test::Fatal~0.014
-Test::More~1.302073
 Text::Diff~1.44
 Time::HiRes~1.9741
 Time::Piece~1.31
