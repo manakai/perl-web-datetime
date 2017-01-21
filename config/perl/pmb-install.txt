@@ -11,7 +11,7 @@ DateTime::TimeZone~2.09
 Devel::StackTrace~2.02
 Eval::Closure~0.14
 Exception::Class~1.42
-Filter::Util::Call~1.55
+Filter::Util::Call~1.56
 List::Util~1.47
 MRO::Compat~0.12
 Module::Implementation~0.09
@@ -19,8 +19,8 @@ Package::Stash~0.37
 Package::Stash::XS~0.28
 Params::ValidationCompiler~0.22
 Path::Tiny~0.100
-Role::Tiny~2.000005
-Specio::Library::Numeric~0.32
+Role::Tiny::With~2.000005
+Specio::Exporter~0.32
 Sub::Exporter::Progressive~0.001013
 Sub::Identify~0.12
 Term::ANSIColor~4.06
