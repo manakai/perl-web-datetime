@@ -6,7 +6,7 @@ Carp~1.38
 Class::Data::Inheritable~0.08
 Class::Singleton~1.5
 DateTime~1.42
-DateTime::Locale~1.12
+DateTime::Locale~1.13
 DateTime::TimeZone~2.10
 Devel::StackTrace~2.02
 Eval::Closure~0.14
@@ -19,8 +19,8 @@ Package::Stash~0.37
 Package::Stash::XS~0.28
 Params::ValidationCompiler~0.23
 Path::Tiny~0.104
-Role::Tiny::With~2.000005
-Specio~0.36
+Role::Tiny~2.000005
+Specio::Library::Builtins~0.36
 Sub::Exporter::Progressive~0.001013
 Sub::Identify~0.12
 Term::ANSIColor~4.06
