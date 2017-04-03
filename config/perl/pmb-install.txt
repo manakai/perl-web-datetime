@@ -27,10 +27,9 @@ Package::Stash::XS~0.28
 Params::ValidationCompiler~0.23
 Path::Tiny~0.104
 Role::Tiny~2.000005
-Scalar::Util~1.47
 Specio::Library::Builtins~0.36
 Sub::Exporter::Progressive~0.001013
-Sub::Identify~0.12
+Sub::Identify~0.13
 TAP::Harness::Env~3.38
 Term::ANSIColor~4.06
 Test::Differences~0.64
