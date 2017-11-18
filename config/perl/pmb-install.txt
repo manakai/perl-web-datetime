@@ -9,7 +9,7 @@ Class::Singleton~1.5
 DateTime~1.44
 DateTime::Locale~1.17
 DateTime::TimeZone~2.15
-Devel::StackTrace~2.02
+Devel::StackTrace~2.03
 Eval::Closure~0.14
 Exception::Class~1.43
 ExtUtils::Config~0.008
@@ -27,16 +27,15 @@ Package::Stash::XS~0.28
 Params::ValidationCompiler~0.24
 Path::Tiny~0.104
 Role::Tiny~2.000006
-Scalar::Util~1.49
-Specio::Exporter~0.42
+Specio::Library::Numeric~0.42
 Sub::Exporter::Progressive~0.001013
 Sub::Identify~0.14
 Sub::Quote~2.004000
 TAP::Harness::Env~3.39
 Term::ANSIColor~4.06
-Test::Builder~1.302106
 Test::Differences~0.64
 Test::Fatal~0.014
+Test::More~1.302106
 Text::Diff~1.45
 Time::HiRes~1.9746
 Time::Piece~1.3202
