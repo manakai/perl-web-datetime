@@ -6,7 +6,7 @@ Carp~1.38
 Class::Data::Inheritable~0.08
 Class::Inspector~1.32
 Class::Singleton~1.5
-DateTime~1.45
+DateTime~1.46
 DateTime::Locale~1.17
 DateTime::TimeZone~2.17
 Devel::StackTrace~2.03
@@ -24,10 +24,10 @@ Module::Build::Tiny~0.039
 Module::Implementation~0.09
 Package::Stash~0.37
 Package::Stash::XS~0.28
-Params::ValidationCompiler~0.26
+Params::ValidationCompiler~0.27
 Path::Tiny~0.104
 Role::Tiny~2.000006
-Specio::Library::String~0.42
+Specio::Exporter~0.42
 Sub::Exporter::Progressive~0.001013
 Sub::Identify~0.14
 Sub::Quote~2.005000
