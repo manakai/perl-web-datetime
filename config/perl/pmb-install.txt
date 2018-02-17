@@ -34,9 +34,9 @@ Sub::Identify~0.14
 Sub::Quote~2.005000
 TAP::Harness::Env~3.39
 Term::ANSIColor~4.06
-Test::Builder~1.302122
 Test::Differences~0.64
 Test::Fatal~0.014
+Test::More~1.302122
 Text::Diff~1.45
 Time::HiRes~1.9754
 Time::Piece~1.3203
