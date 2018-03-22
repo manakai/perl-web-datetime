@@ -38,7 +38,7 @@ Test::Builder~1.302133
 Test::Differences~0.64
 Test::Fatal~0.014
 Text::Diff~1.45
-Time::HiRes~1.9757
+Time::HiRes~1.9758
 Time::Piece~1.3204
 Try::Tiny~0.30
 Variable::Magic~0.62
