@@ -118,6 +118,8 @@ for my $test (
   ['-00:12', -12*60],
   ['+03:12', 3*60*60+12*60],
   ['-13:12', -(13*60*60+12*60)],
+  ['+0600', 6*60*60, [{type => 'tz:syntax error', level => 'm'}]],
+  ['-0412', -(4*60*60+12*60), [{type => 'tz:syntax error', level => 'm'}]],
   ['-00:00', 0, [{type => 'datetime:-00:00', level => 'm'}]],
 ) {
   test {
@@ -140,6 +142,9 @@ for my $test (
   ['-00:12', -12*60],
   ['+03:12', 3*60*60+12*60],
   ['-13:12', -(13*60*60+12*60)],
+  ['+0000', 0, [{type => 'tz:syntax error', level => 'm'}]],
+  ['+0600', 6*60*60, [{type => 'tz:syntax error', level => 'm'}]],
+  ['-0412', -(4*60*60+12*60), [{type => 'tz:syntax error', level => 'm'}]],
   ['-00:00', 0],
   ['Z', undef],
 ) {
@@ -167,7 +172,6 @@ for my $test (
 for my $test (
   [''],
   ['z'],
-  ['+0000'],
   ['12:00'],
   ['+24:00', [{type => 'datetime:bad timezone hour', level => 'm', value => 24}]],
   ['-24:00', [{type => 'datetime:bad timezone hour', level => 'm', value => 24}]],
@@ -340,6 +344,8 @@ for my $test (
    [{type => 'datetime:bad second', value => 60, level => 'm'}]],
   ['2012-07-02T04:59:60-00:00', undef, undef,
    [{type => 'datetime:bad second', value => 60, level => 'm'}]],
+  ['2012-03-02T00:12:00+0400', '2012-03-01T20:12:00Z', '+04:00',
+   [{type => 'tz:syntax error', level => 'm'}]],
 ) {
   test {
     my $c = shift;
@@ -734,6 +740,8 @@ for my $test (
   ['2012-02-29T00:23:00-13:59', '2012-02-29T14:22:00Z', '-13:59'],
   ['2012-02-29T00:23:00-14:00', '2012-02-29T14:23:00Z', '-14:00'],
   ['2012-02-29T00:23:00-14:01', '2012-02-29T14:24:00Z', '-14:01'],
+  ['2012-03-02T00:12:00+0400', '2012-03-01T20:12:00Z', '+04:00',
+   [{type => 'tz:syntax error', level => 'm'}]],
 ) {
   test {
     my $c = shift;
@@ -830,6 +838,8 @@ for my $test (
   ['2012-07-02T04:59:60-00:00', undef, undef,
    [{type => 'datetime:-00:00', level => 'm'},
     {type => 'datetime:bad second', value => 60, level => 'm'}]],
+  ['2012-03-02T00:12:00+0400', '2012-03-01T20:12:00Z', '+04:00',
+   [{type => 'tz:syntax error', level => 'm'}]],
 ) {
   test {
     my $c = shift;
@@ -973,7 +983,8 @@ for my $test (
   ['2012-02-29T00:23:00+14:00', '2012-02-28T10:23:00Z', '+14:00'],
   ['2012-02-29T00:23:00+14:01', '2012-02-28T10:22:00Z', '+14:01'],
   ['2012-02-29T00:23:00-13:59', '2012-02-29T14:22:00Z', '-13:59'],
-  ['2012-02-29T00:23:00-1359', '2012-02-29T14:22:00Z', '-13:59'],
+  ['2012-02-29T00:23:00-1359', '2012-02-29T14:22:00Z', '-13:59',
+   [{type => 'tz:syntax error', level => 'm'}]],
   ['2012-02-29T00:23:00-14:00', '2012-02-29T14:23:00Z', '-14:00'],
   ['2012-02-29T00:23:00-14:01', '2012-02-29T14:24:00Z', '-14:01'],
   ['2001/06/12', '2001-06-12T00:00:00Z', undef],
@@ -991,6 +1002,8 @@ for my $test (
   ['2001-7-12 12:3', '2001-07-12T12:03:00Z', undef],
   ['1-1-2012', '2012-01-01T00:00:00Z', undef],
   ['-001001-01-22', '-1001-01-22T00:00:00Z', undef],
+  ['2012-03-02T00:12:00+0400', '2012-03-01T20:12:00Z', '+04:00',
+   [{type => 'tz:syntax error', level => 'm'}]],
 ) {
   test {
     my $c = shift;
@@ -1514,6 +1527,8 @@ for my $test (
   ['Z' => 'TimeZone', undef, 'Z'],
   ['+00:00' => 'TimeZone', undef, 'Z'],
   ['-00:30' => 'TimeZone', undef, '-00:30'],
+  ['-0030' => 'TimeZone', undef, '-00:30',
+   [{type => 'tz:syntax error', level => 'm'}]],
   ['+25:00' => undef, undef, undef,
    [{type => 'datetime:bad timezone hour', value => 25, level => 'm'}]],
   ['-00:00' => 'TimeZone', undef, 'Z',
@@ -1548,6 +1563,9 @@ for my $test (
    '0031-02-04T00:12:44Z', 'Z'],
   ['1970-01-01T00:00:00Z' => {year => 1, month => 1, day => 1, time => 1, offset => 1},
    '1970-01-01T00:00:00Z', 'Z'],
+  ['2012-03-02T00:12:00+0400' => {year => 1, month => 1, day => 1, time => 1, offset => 1},
+   '2012-03-01T20:12:00Z', '+04:00',
+   [{type => 'tz:syntax error', level => 'm'}]],
   ['0001-W01' => {year => 1, week => 1}, '0001-01-01T00:00:00Z', undef],
   ['0001-W02' => {year => 1, week => 1}, '0001-01-08T00:00:00Z', undef],
   ['10001-W02' => {year => 1, week => 1}, '10001-01-08T00:00:00Z', undef],
@@ -1733,7 +1751,7 @@ run_tests;
 
 =head1 LICENSE
 
-Copyright 2014-2016 Wakaba <wakaba@suikawiki.org>.
+Copyright 2014-2018 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

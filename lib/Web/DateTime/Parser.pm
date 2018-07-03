@@ -483,10 +483,10 @@ sub parse_global_date_and_time_string ($$) {
     ([0-9]{4,})-([0-9]{2})-([0-9]{2})
     [T\x20]
     ([0-9]{2}):([0-9]{2})(?>:([0-9]{2})(?>(\.[0-9]+))?)?
-    (?>Z|([+-][0-9]{2}):([0-9]{2}))
+    (?>Z|([+-][0-9]{2})(:?)([0-9]{2}))
   \z/x) {
-    my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm)
-        = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+    my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zc, $zm)
+        = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
     if (0 < $M and $M < 13) {
       $self->onerror->(type => 'datetime:bad day',
                        value => $d,
@@ -522,6 +522,9 @@ sub parse_global_date_and_time_string ($$) {
                        value => $zh,
                        level => 'm'), return undef
           if $zh > 23 or $zh < -23;
+      $self->onerror->(type => 'tz:syntax error',
+                       level => 'm') # no return
+          if not $zc;
       $self->onerror->(type => 'datetime:bad timezone minute',
                        value => $zm,
                        level => 'm'), return undef
@@ -573,10 +576,10 @@ sub _parse_rfc3339_date_time_string ($$;%) {
     ([0-9]{4})-([0-9]{2})-([0-9]{2})
     [T]
     ([0-9]{2}):([0-9]{2})(?>:([0-9]{2})(?>(\.[0-9]+))?)
-    (?>[Z]|([+-][0-9]{2}):([0-9]{2}))
+    (?>[Z]|([+-][0-9]{2})(:?)([0-9]{2}))
   \z/x) {
-    my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm)
-        = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+    my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zc, $zm)
+        = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
     if (0 < $M and $M < 13) {
       $self->onerror->(type => 'datetime:bad day',
                        value => $d,
@@ -621,6 +624,9 @@ sub _parse_rfc3339_date_time_string ($$;%) {
                          level => 'm')
             if $zh > +$args{max_zh} or $zh < -$args{max_zh};
       }
+      $self->onerror->(type => 'tz:syntax error',
+                       level => 'm') # no return
+          if not $zc;
       $self->onerror->(type => 'datetime:bad timezone minute',
                        value => $zm,
                        level => 'm'), return undef
@@ -671,10 +677,10 @@ sub parse_xs_date_time_string ($$) {
     (-?[0-9]{4,})-([0-9]{2})-([0-9]{2})
     [T]
     ([0-9]{2}):([0-9]{2})(?>:([0-9]{2})(?>(\.[0-9]+))?)
-    (Z|([+-][0-9]{2}):([0-9]{2}))?
+    (Z|([+-][0-9]{2})(:?)([0-9]{2}))?
   \z/x) {
-    my ($y, $M, $d, $h, $m, $s, $sf, $has_zone, $zh, $zm)
-        = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
+    my ($y, $M, $d, $h, $m, $s, $sf, $has_zone, $zh, $zc, $zm)
+        = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);
     $self->onerror->(type => 'datetime:negative year',
                      value => $y,
                      level => 'w')
@@ -724,6 +730,9 @@ sub parse_xs_date_time_string ($$) {
                          value => $zh,
                          level => 'm'), return undef
             if $zh > 13 or $zh < -13;
+        $self->onerror->(type => 'tz:syntax error',
+                         level => 'm') # no return
+            if not $zc;
         $self->onerror->(type => 'datetime:bad timezone minute',
                          value => $zm,
                          level => 'm'), return undef
@@ -749,10 +758,10 @@ sub parse_xs_date_time_stamp_string ($$) {
     (-?[0-9]{4,})-([0-9]{2})-([0-9]{2})
     [T]
     ([0-9]{2}):([0-9]{2})(?>:([0-9]{2})(?>(\.[0-9]+))?)
-    (?>Z|([+-][0-9]{2}):([0-9]{2}))
+    (?>Z|([+-][0-9]{2})(:?)([0-9]{2}))
   \z/x) {
-    my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm)
-        = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+    my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zc, $zm)
+        = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
     $self->onerror->(type => 'datetime:negative year',
                      value => $y,
                      level => 'w')
@@ -800,6 +809,9 @@ sub parse_xs_date_time_stamp_string ($$) {
                          value => $zh,
                          level => 'm'), return undef
             if $zh > 13 or $zh < -13;
+        $self->onerror->(type => 'tz:syntax error',
+                         level => 'm') # no return
+            if not $zc;
         $self->onerror->(type => 'datetime:bad timezone minute',
                          value => $zm,
                          level => 'm'), return undef
@@ -827,11 +839,11 @@ sub parse_schema_org_date_time_string ($$) {
     ([0-9]{2}):([0-9]{2}):([0-9]{2})
     (
       Z |
-      ([+-][0-9]{2}):([0-9]{2})
+      ([+-][0-9]{2})(:?)([0-9]{2})
     )?
   \z/x) {
-    my ($y, $M, $d, $h, $m, $s, $z, $zh, $zm)
-        = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+    my ($y, $M, $d, $h, $m, $s, $z, $zh, $zc, $zm)
+        = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
     if (0 < $M and $M < 13) {
       $self->onerror->(type => 'datetime:bad day',
                        value => $d,
@@ -879,6 +891,9 @@ sub parse_schema_org_date_time_string ($$) {
                        value => $zh,
                        level => 'm'), return undef
           if $zh > +24 or $zh < -24;
+      $self->onerror->(type => 'tz:syntax error',
+                       level => 'm') # no return
+          if not $zc;
       $self->onerror->(type => 'datetime:bad timezone minute',
                        value => $zm,
                        level => 'm'), return undef
@@ -1314,12 +1329,12 @@ sub parse_js_date_time_string ($$) {
       )?
       (
         [Zz] | # Z in ECMA-262
-        ([+-][0-9]{2}):?([0-9]{2}) # : required in ECMA-262
+        ([+-][0-9]{2})(:?)([0-9]{2}) # : required in ECMA-262
       )?
     )?
   \z}x) {
-    my ($y, $M, $d, $h, $m, $s, $sf, $z, $zh, $zm)
-        = ($1, $2, $3, $4 || 0, $5 || 0, $6 || 0, $7, $8, $9, $10);
+    my ($y, $M, $d, $h, $m, $s, $sf, $z, $zh, $zc, $zm)
+        = ($1, $2, $3, $4 || 0, $5 || 0, $6 || 0, $7, $8, $9, $10, $11);
     if (not defined $M or not defined $d) {
       $M ||= 1;
       $d ||= 1;
@@ -1363,6 +1378,9 @@ sub parse_js_date_time_string ($$) {
                        value => $zh,
                        level => 'm'), return undef
         if $zh > 23 or $zh < -23;
+      $self->onerror->(type => 'tz:syntax error',
+                       level => 'm') # no return
+          if not $zc;
       $self->onerror->(type => 'datetime:bad timezone minute',
                        value => $zm,
                        level => 'm'), return undef
@@ -1471,13 +1489,13 @@ sub parse_w3c_dtf_string ($$) {
         (?:
           T
           ([0-9]{2}):([0-9]{2})(?>:([0-9]{2})(?>(\.[0-9]+))?)?
-          (?>Z|([+-][0-9]{2}):([0-9]{2}))
+          (?>Z|([+-][0-9]{2})(:?)([0-9]{2}))
         )?
       )?
     )?
   \z/x) {
-    my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm)
-        = ($1, $2, $3, $4 || 0, $5 || 0, $6 || 0, $7, $8, $9);
+    my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zc, $zm)
+        = ($1, $2, $3, $4 || 0, $5 || 0, $6 || 0, $7, $8, $9, $10);
     my $has_month = defined $2;
     my $has_day = defined $3;
     my $has_time = defined $4;
@@ -1515,6 +1533,9 @@ sub parse_w3c_dtf_string ($$) {
                        value => $zh,
                        level => 'm'), return undef
           if $zh > 23 or $zh < -23;
+      $self->onerror->(type => 'tz:syntax error',
+                       level => 'm') # no return
+          if not $zc;
       $self->onerror->(type => 'datetime:bad timezone minute',
                        value => $zm,
                        level => 'm'), return undef
@@ -1535,19 +1556,19 @@ sub parse_w3c_dtf_string ($$) {
 } # parse_w3c_dtf_string
 
 ## Parse a date or time string
-## <http://www.whatwg.org/specs/web-apps/current-work/#parse-a-date-or-time-string>
+## <https://www.whatwg.org/specs/web-apps/current-work/#parse-a-date-or-time-string>
 ## but time-only string is not allowed
-## <http://www.whatwg.org/specs/web-apps/current-work/#attr-mod-datetime>
+## <https://www.whatwg.org/specs/web-apps/current-work/#attr-mod-datetime>
 sub parse_date_string_with_optional_time ($$) {
   my ($self, $value) = @_;
   if ($value =~ /\A
     ([0-9]{4,})-([0-9]{2})-([0-9]{2})
     (?:[T\x20]
       ([0-9]{2}):([0-9]{2})(?>:([0-9]{2})(?>(\.[0-9]+))?)?
-      (?>Z|([+-][0-9]{2}):([0-9]{2})))?
+      (?>Z|([+-][0-9]{2})(:?)([0-9]{2})))?
   \z/x) {
-    my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zm)
-        = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+    my ($y, $M, $d, $h, $m, $s, $sf, $zh, $zc, $zm)
+        = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
     if (0 < $M and $M < 13) {
       $self->onerror->(type => 'datetime:bad day',
                        value => $d,
@@ -1585,6 +1606,9 @@ sub parse_date_string_with_optional_time ($$) {
                          value => $zh,
                          level => 'm'), return undef
             if $zh > 23 or $zh < -23;
+        $self->onerror->(type => 'tz:syntax error',
+                         level => 'm') # no return
+            if not $zc;
         $self->onerror->(type => 'datetime:bad timezone minute',
                          value => $zm,
                          level => 'm'), return undef
@@ -1648,7 +1672,7 @@ sub parse_html_datetime_value ($$) {
   } elsif ($value =~ /^[0-9]{4,}\W[0-9]+\W[0-9]+$/) {
     return $self->parse_date_string ($value);
   } elsif ($value =~ /^[0-9]{4,}\W[0-9]+\W[0-9]+.[0-9]+\W[0-9]+/) {
-    if ($value =~ /Z$/ or $value =~ /[+-][0-9]+\W[0-9]+$/) {
+    if ($value =~ /Z$/ or $value =~ /[+-](?:[0-9]+\W[0-9]+|[0-9]{4,})$/) {
       return $self->parse_global_date_and_time_string ($value);
     } else {
       return $self->parse_local_date_and_time_string ($value);
@@ -1674,15 +1698,18 @@ sub parse_time_zone_offset_string ($$) {
   if ($value =~ /\A(?:
     Z
     |
-    ([+-])([0-9]{2}):([0-9]{2})
+    ([+-])([0-9]{2})(:?)([0-9]{2})
   )\z/x) {
-    my ($zs, $zh, $zm) = ($1, $2, $3);
+    my ($zs, $zh, $zc, $zm) = ($1, $2, $3, $4);
     if (defined $zh) {
       $zs .= '1';
       $self->onerror->(type => 'datetime:bad timezone hour',
                        value => $zh,
                        level => 'm'), return undef
           if $zh > 23;
+      $self->onerror->(type => 'tz:syntax error',
+                       level => 'm') # no return
+          if not $zc;
       $self->onerror->(type => 'datetime:bad timezone minute',
                        value => $zm,
                        level => 'm'), return undef
@@ -1708,14 +1735,17 @@ sub parse_time_zone_offset_string ($$) {
 sub parse_vcard_time_zone_offset_string ($$) {
   my ($self, $value) = @_;
   if ($value =~ /\A(?:
-    ([+-])([0-9]{2}):([0-9]{2})
+    ([+-])([0-9]{2})(:?)([0-9]{2})
   )\z/x) {
-    my ($zs, $zh, $zm) = ($1, $2, $3);
+    my ($zs, $zh, $zc, $zm) = ($1, $2, $3, $4);
     $zs .= '1';
     $self->onerror->(type => 'datetime:bad timezone hour',
                      value => $zh,
                      level => 'm'), return undef
         if $zh > 23;
+    $self->onerror->(type => 'tz:syntax error',
+                     level => 'm') # no return
+        if not $zc;
     $self->onerror->(type => 'datetime:bad timezone minute',
                      value => $zm,
                      level => 'm'), return undef
@@ -2305,7 +2335,7 @@ sub parse_weekly_time_range_string ($$) {
 
 =head1 LICENSE
 
-Copyright 2008-2014 Wakaba <wakaba@suikawiki.org>.
+Copyright 2008-2018 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
