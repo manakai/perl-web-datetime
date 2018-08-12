@@ -464,6 +464,75 @@ for my $test (
 }
 
 for my $test (
+  ['120302001200', undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['120302001200z', undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['12-03-02T00:12:00Z', undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['120302001200Z', '2012-03-02T00:12:00Z'],
+  ['000229001200Z', '2000-02-29T00:12:00Z'],
+  ['160907055507Z', '2016-09-07T05:55:07Z'],
+  ['500907055507Z', '1950-09-07T05:55:07Z'],
+  ['490907055507Z', '2049-09-07T05:55:07Z'],
+  ['990907055507Z', '1999-09-07T05:55:07Z'],
+  ['000907055507Z', '2000-09-07T05:55:07Z'],
+  ['120302001200+0400', undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['120302001200+0000', undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['120401012312.1222Z', undef,
+   [{type => 'datetime:syntax error', level => 'm'}]],
+  ['120401002360Z', undef,
+   [{type => 'datetime:bad second', value => '60', level => 'm'}]],
+  ['120401006023Z', undef,
+   [{type => 'datetime:bad minute', value => '60', level => 'm'}]],
+  ['120401602300Z', undef,
+   [{type => 'datetime:bad hour', value => '60', level => 'm'}]],
+  ['120400002300Z', undef,
+   [{type => 'datetime:bad day', value => '00', level => 'm'}]],
+  ['120431002300Z', undef,
+   [{type => 'datetime:bad day', value => '31', level => 'm'}]],
+  ['120001002300Z', undef,
+   [{type => 'datetime:bad month', value => '00', level => 'm'}]],
+  ['110229002300Z', undef,
+   [{type => 'datetime:bad day', value => '29', level => 'm'}]],
+  ['140701000060Z', undef,
+   [{type => 'datetime:bad second', value => 60, level => 'm'}]],
+  ['140630235960Z', undef,
+   [{type => 'datetime:bad second', value => 60, level => 'm'}]],
+  ['120630235960Z', undef,
+   [{type => 'datetime:bad second', value => 60, level => 'm'}]],
+  ['120630235961Z', undef,
+   [{type => 'datetime:bad second', value => 61, level => 'm'}]],
+  ['120630235860Z', undef,
+   [{type => 'datetime:bad second', value => 60, level => 'm'}]],
+  ['120701000060Z', undef,
+   [{type => 'datetime:bad second', value => 60, level => 'm'}]],
+) {
+  test {
+    my $c = shift;
+    my $parser = Web::DateTime::Parser->new;
+    my @error;
+    $parser->onerror (sub {
+      push @error, {@_};
+    });
+    my $dt = $parser->parse_pkix_utc_time_string ($test->[0]);
+    if (defined $test->[1]) {
+      isa_ok $dt, 'Web::DateTime';
+      is $dt && $dt->to_global_date_and_time_string, $test->[1];
+      is $dt && $dt->time_zone && $dt->time_zone->to_offset_string, 'Z';
+    } else {
+      is $dt, undef;
+      ok 1;
+      ok 1;
+    }
+    eq_or_diff \@error, $test->[2] || [];
+    done $c;
+  } n => 4, name => ['parse_pkix_utc_time_string', $test->[0]];
+}
+
+for my $test (
   ['Mon, 19 May 2014 02:12:01 GMT', '2014-05-19T02:12:01Z'],
   ['moN, 19 mAY 2014 02:12:01 gmt', '2014-05-19T02:12:01Z'],
   ['Mon, 19 May 2014 02:12:01', '2014-05-19T02:12:01Z',
