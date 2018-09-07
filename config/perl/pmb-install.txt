@@ -23,14 +23,14 @@ Package::Stash::XS~0.28
 Params::ValidationCompiler~0.30
 Path::Tiny~0.108
 Role::Tiny~2.000006
-Specio::Exporter~0.42
+Specio::Library::Builtins~0.42
 Sub::Exporter::Progressive~0.001013
 Sub::Identify~0.14
 Sub::Quote~2.005001
 Term::ANSIColor~4.06
-Test::Builder~1.302140
 Test::Differences~0.64
 Test::Fatal~0.014
+Test::More~1.302140
 Text::Diff~1.45
 Time::HiRes~1.9758
 Time::Piece~1.33
