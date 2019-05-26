@@ -9,7 +9,7 @@ Class::Singleton~1.5
 DateTime~1.51
 DateTime::Locale~1.24
 DateTime::TimeZone~2.35
-Devel::StackTrace~2.03
+Devel::StackTrace~2.04
 Eval::Closure~0.14
 Exception::Class~1.44
 File::ShareDir~1.116
