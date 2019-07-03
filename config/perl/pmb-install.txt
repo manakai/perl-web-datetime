@@ -8,7 +8,7 @@ Class::Inspector~1.34
 Class::Singleton~1.5
 DateTime~1.51
 DateTime::Locale~1.24
-DateTime::TimeZone~2.35
+DateTime::TimeZone~2.36
 Devel::StackTrace~2.04
 Eval::Closure~0.14
 Exception::Class~1.44
@@ -22,8 +22,9 @@ Package::Stash~0.38
 Package::Stash::XS~0.29
 Params::ValidationCompiler~0.30
 Path::Tiny~0.108
-Role::Tiny::With~2.000006
-Specio~0.43
+Role::Tiny~2.000006
+Scalar::Util~1.50
+Specio::Library::String~0.43
 Sub::Exporter::Progressive~0.001013
 Sub::Identify~0.14
 Sub::Quote~2.006003
