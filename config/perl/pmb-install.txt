@@ -8,7 +8,7 @@ Class::Inspector~1.36
 Class::Singleton~1.5
 DateTime~1.51
 DateTime::Locale~1.25
-DateTime::TimeZone~2.37
+DateTime::TimeZone~2.38
 Devel::StackTrace~2.04
 Eval::Closure~0.14
 Exception::Class~1.44
@@ -22,15 +22,15 @@ Package::Stash~0.38
 Package::Stash::XS~0.29
 Params::ValidationCompiler~0.30
 Path::Tiny~0.108
-Role::Tiny~2.001004
-Specio::Library::Numeric~0.44
+Role::Tiny::With~2.001004
+Specio::Library::String~0.44
 Sub::Exporter::Progressive~0.001013
 Sub::Identify~0.14
 Sub::Quote~2.006006
 Term::ANSIColor~4.06
+Test::Builder~1.302168
 Test::Differences~0.67
 Test::Fatal~0.014
-Test::More~1.302168
 Text::Diff~1.45
 Time::HiRes~1.9760
 Time::Piece~1.33
