@@ -21,7 +21,7 @@ Module::Implementation~0.09
 Package::Stash~0.38
 Package::Stash::XS~0.29
 Params::ValidationCompiler~0.30
-Path::Tiny~0.110
+Path::Tiny~0.112
 Role::Tiny~2.001004
 Specio::Exporter~0.45
 Sub::Exporter::Progressive~0.001013
