@@ -23,7 +23,6 @@ Package::Stash::XS~0.29
 Params::ValidationCompiler~0.30
 Path::Tiny~0.114
 Role::Tiny~2.001004
-Scalar::Util~1.55
 Specio::Library::String~0.46
 Sub::Exporter::Progressive~0.001013
 Sub::Identify~0.14
@@ -37,6 +36,6 @@ Time::HiRes~1.9764
 Time::Piece~1.3401
 Try::Tiny~0.30
 Variable::Magic~0.62
-XString~0.002
+XString~0.005
 namespace::autoclean~0.29
 namespace::clean~0.27
