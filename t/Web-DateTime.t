@@ -63,7 +63,7 @@ test {
   my $c = shift;
   my $date = Web::DateTime->new_from_unix_time (0.00000000000000001111004);
   is $date->to_unix_integer, 0;
-  like $date->second_fraction_string, qr/^\.00000/;
+  is $date->second_fraction_string, '';
   is $date->time_zone->offset_as_seconds, 0;
   done $c;
 } n => 3, name => 'new_from_unix_time positive fractional small';
@@ -72,10 +72,38 @@ test {
   my $c = shift;
   my $date = Web::DateTime->new_from_unix_time (-0.00000000000000001111004);
   is $date->to_unix_integer, -1;
-  like $date->second_fraction_string, qr/(?:^\.00000|^$)/;
+  is $date->second_fraction_string, '';
   is $date->time_zone->offset_as_seconds, 0;
   done $c;
 } n => 3, name => 'new_from_unix_time negative fractional small';
+
+test {
+  my $c = shift;
+  my $date = Web::DateTime->new_from_unix_time (0.01234567890);
+  is $date->second_fraction_string, '.012345679';
+  done $c;
+} n => 1, name => 'fraction subnanoseconds';
+
+test {
+  my $c = shift;
+  my $date = Web::DateTime->new_from_unix_time (0.01234567812);
+  is $date->second_fraction_string, '.012345678';
+  done $c;
+} n => 1, name => 'fraction subnanoseconds';
+
+test {
+  my $c = shift;
+  my $date = Web::DateTime->new_from_unix_time (120.01234567812);
+  is $date->second_fraction_string, '.012345678';
+  done $c;
+} n => 1, name => 'fraction subnanoseconds';
+
+test {
+  my $c = shift;
+  my $date = Web::DateTime->new_from_unix_time (-120.01234567812);
+  is $date->second_fraction_string, '.987654322';
+  done $c;
+} n => 1, name => 'fraction subnanoseconds';
 
 test {
   my $c = shift;
@@ -240,6 +268,9 @@ for my $test (
   ['00:00:03.000000000001' => '00:00:03.000000000001'],
   ['00:03' => '00:03'],
   ['00:03:00.44440014440000' => '00:03:00.4444001444'],
+  ['00:03:00.123456789' => '00:03:00.123456789'],
+  ['00:03:00.1234567891' => '00:03:00.1234567891'],
+  ['00:03:00.12345678901' => '00:03:00.12345678901'],
 ) {
   test {
     my $c = shift;
@@ -1078,7 +1109,7 @@ run_tests;
 
 =head1 LICENSE
 
-Copyright 2008-2016 Wakaba <wakaba@suikawiki.org>.
+Copyright 2008-2021 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

@@ -422,7 +422,7 @@ sub second_fraction_string ($) {
   if ($self->{second_fraction}) {
     my $v = $self->{second_fraction};
     unless (substr ($v, 0, 1) eq '.') {
-      $v = sprintf '%.100f', $v;
+      $v = sprintf '%.9f', $v;
       $v = substr $v, 1;
     }
     $v = substr $v, 1;
@@ -621,7 +621,7 @@ sub to_time_piece_local ($) {
 
 =head1 LICENSE
 
-Copyright 2008-2016 Wakaba <wakaba@suikawiki.org>.
+Copyright 2008-2021 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
