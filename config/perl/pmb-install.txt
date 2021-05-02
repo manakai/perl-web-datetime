@@ -11,7 +11,7 @@ DateTime::Locale~1.32
 DateTime::TimeZone~2.47
 Devel::StackTrace~2.04
 Eval::Closure~0.14
-Exception::Class~1.44
+Exception::Class~1.45
 File::ShareDir~1.118
 File::ShareDir::Install~0.13
 Filter::Util::Call~1.60
@@ -22,7 +22,7 @@ Package::Stash~0.39
 Package::Stash::XS~0.29
 Params::ValidationCompiler~0.30
 Path::Tiny~0.118
-Role::Tiny::With~2.002004
+Role::Tiny~2.002004
 Scalar::Util~1.56
 Specio::Library::String~0.47
 Sub::Exporter::Progressive~0.001013
