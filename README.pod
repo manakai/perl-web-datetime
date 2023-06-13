@@ -53,6 +53,10 @@ modules):
 HTML, Schema.org, Data-Vocabulary.org, HTTP, Cookies, JavaScript, Atom
 0.3, Atom 1.0, RSS 1.0, RSS 2.0, OGP, RDF, PKIX.
 
+=head1 DEPENDENCY
+
+These modules require Perl 5.14 or later.
+
 =head1 SEE ALSO
 
 SuikaWiki:Webの日時形式
@@ -64,7 +68,7 @@ Wakaba <wakaba@suikawiki.org>.
 
 =head1 LICENSE
 
-Copyright 2008-2016 Wakaba <wakaba@suikawiki.org>.
+Copyright 2008-2023 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
