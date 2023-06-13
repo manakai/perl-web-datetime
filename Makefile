@@ -73,3 +73,5 @@ test-deps: deps local/jd-g.txt local/jd-j.txt
 
 test-main:
 	$(PROVE) t/*.t
+
+## License: Public Domain.
