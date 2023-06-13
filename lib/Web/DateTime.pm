@@ -77,6 +77,45 @@ sub new_from_components ($$$$$$$) {
        undef, undef);
 } # new_from_components
 
+sub new_from_time_components ($$$$;$) {
+  my ($class, $ref_time, $h, $m, $s) = @_;
+
+  my $ref_time_value = $ref_time->to_unix_number;
+  my $tz = $ref_time->time_zone;
+  my $delta = 0;
+  $delta = $tz->offset_as_seconds if defined $tz;
+  
+  my $time1 = $class->new_from_components
+      ($ref_time->year, $ref_time->month, $ref_time->day,
+       $h, $m, ($s || 0) - $delta);
+  my $time1_value = $time1->to_unix_number;
+  my $time0_value = $time1_value - 24*60*60;
+  my $time2_value = $time1_value + 24*60*60;
+
+  my $delta0 = abs ($time0_value - $ref_time_value);
+  my $delta1 = abs ($time1_value - $ref_time_value);
+  my $delta2 = abs ($time2_value - $ref_time_value);
+
+  my $time_value;
+  if ($delta0 < $delta1) {
+    if ($delta2 < $delta0) {
+      $time_value = $time2_value;
+    } else {
+      $time_value = $time0_value;
+    }
+  } else { # $delta1 <= $delta0
+    if ($delta2 < $delta1) {
+      $time_value = $time2_value;
+    } else {
+      $time_value = $time1_value;
+    }
+  }
+
+  my $dt = $class->new_from_unix_time ($time_value);
+  $dt->set_time_zone ($tz);
+  return $dt;
+} # new_from_time_components
+
 {
   ## Derived from |Time::Local|
   ## <http://cpansearch.perl.org/src/DROLSKY/Time-Local-1.2300/lib/Time/Local.pm>.
@@ -621,7 +660,7 @@ sub to_time_piece_local ($) {
 
 =head1 LICENSE
 
-Copyright 2008-2021 Wakaba <wakaba@suikawiki.org>.
+Copyright 2008-2023 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

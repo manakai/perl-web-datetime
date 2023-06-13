@@ -2,3 +2,11 @@
 	path = t_deps/modules/test-x1
 	url = https://github.com/wakaba/perl-test-x1
 	track = master
+[submodule "t_deps/modules/tests-datetime"]
+	path = t_deps/modules/tests-datetime
+	url = https://github.com/manakai/tests-datetime
+	track = master
+[submodule "t_deps/modules/testdataparser"]
+	path = t_deps/modules/testdataparser
+	url = https://github.com/wakaba/testdataparser
+	track = master

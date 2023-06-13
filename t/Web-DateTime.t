@@ -1105,11 +1105,48 @@ for my $test (
   } n => 4, name => ['julian', $test->[1]];
 }
 
+test {
+  my $c = shift;
+
+  my $dt0 = Web::DateTime->new_from_components (2023, 12, 4, 0, 12, 44);
+
+  my $dt = Web::DateTime->new_from_time_components ($dt0, 21, 42, 01);
+  is $dt->to_time_zoned_global_date_and_time_string, '2023-12-03T21:42:01Z';
+  is $dt->time_zone, undef;
+
+  done $c;
+} n => 2, name => 'new_from_time_components 1';
+
+test {
+  my $c = shift;
+
+  my $dt0 = Web::DateTime->new_from_components (2023, 12, 4, 14, 12, 44);
+
+  my $dt = Web::DateTime->new_from_time_components ($dt0, 21, 42, 01);
+  is $dt->to_time_zoned_global_date_and_time_string, '2023-12-04T21:42:01Z';
+
+  done $c;
+} n => 1, name => 'new_from_time_components 2';
+
+test {
+  my $c = shift;
+
+  my $dt0 = Web::DateTime->new_from_components (2023, 12, 4, 0, 12, 44);
+  my $tz = Web::DateTime::TimeZone->new_from_offset (5120);
+  $dt0->set_time_zone ($tz);
+
+  my $dt = Web::DateTime->new_from_time_components ($dt0, 21, 42, 01);
+  is $dt->to_time_zoned_global_date_and_time_string, '2023-12-03T21:42:01+01:25';
+  is $dt->time_zone, $tz;
+
+  done $c;
+} n => 2, name => 'new_from_time_components 3';
+
 run_tests;
 
 =head1 LICENSE
 
-Copyright 2008-2021 Wakaba <wakaba@suikawiki.org>.
+Copyright 2008-2023 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
