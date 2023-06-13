@@ -55,7 +55,7 @@ HTML, Schema.org, Data-Vocabulary.org, HTTP, Cookies, JavaScript, Atom
 
 =head1 DEPENDENCY
 
-These modules require Perl 5.10 or later.
+These modules require Perl 5.14 or later.
 
 =head1 SEE ALSO
 
