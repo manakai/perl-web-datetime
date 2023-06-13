@@ -58,6 +58,28 @@ be useful.
 
 No time zone offset is set to the object.
 
+=item $dt = Web::DateTime->new_from_time_components ($ref_dt, $hour, $minute, $second)
+
+Create a new instance of C<Web::DateTime> from a reference time and
+the specified set of time components.
+
+The first argument is the reference time.  It must be a
+C<Web::DateTime> object representing the time.  If it has a time-zone
+specified, that time-zone is used as part of the reference.
+
+The remaining arguments are interpreted as the hour, minute, and
+second components of the time in the 24-hour clock system.  The second
+component is optional and can be a fractional number.  The components
+can be out of range (e.g. hour can be 33, minute can be -1, and so
+on), but the returned object might or might not be useful.
+
+The newly created object represents one of the times whose time-of-day
+is equal to the specified hour, minute, and second, within the time
+zone (if specified), that is nearest to the reference time.
+
+The time-zone offset is set to the same object (if any) as the
+reference time.
+
 =item $dt = Web::DateTime->new_from_object ($obj)
 
 Create a new instance of C<Web::DateTime> from the specified date/time
@@ -518,7 +540,7 @@ are:
 
 =head1 LICENSE
 
-Copyright 2008-2016 Wakaba <wakaba@suikawiki.org>.
+Copyright 2008-2023 Wakaba <wakaba@suikawiki.org>.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
